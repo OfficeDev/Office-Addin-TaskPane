@@ -9,7 +9,21 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run-script", "start", "desktop"]
+      "runtimeArgs": ["run", "start", "desktop", "--", "--app", "excel"]
+    },
+    {
+      "name": "PowerPoint Desktop",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "desktop", "--", "--app", "powerpoint"]
+    },
+    {
+      "name": "Word Desktop",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "desktop", "--", "--app", "word"]
     },
     {
       "name": "Office Online (Edge)",
