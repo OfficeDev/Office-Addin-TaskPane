@@ -26,6 +26,17 @@
       "runtimeArgs": ["run", "start", "desktop", "--", "--app", "word"]
     },
     {
+      "name": "Office Online (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      // To debug your Add-in:
+      // 1. When prompted, enter the url (share link) to an Office Online document.
+      // 2. Sideload your Add-in. https://docs.microsoft.com/en-us/office/dev/add-ins/testing/sideload-office-add-ins-for-testing
+      "url": "${input:officeOnlineDocumentUrl}",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "Debug: Web"
+    },
+    {
       "name": "Office Online (Edge)",
       "type": "edge",
       "request": "launch",
