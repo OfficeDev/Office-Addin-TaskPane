@@ -3,10 +3,12 @@ import * as assert from "assert";
 import * as mocha from "mocha";
 const yellowColor: string = "#FFFF00";
 const port: number = 8080;
+import TestServer from "node_modules/office-addin-test-server/lib/testServer";
+const testServer = new TestServer(port);
 let testValues : any = [];
 const promiseSetupTestEnvironment = testInfra.setupTestEnvironment("excel");
-const promiseStartTestServer = testInfra.startTestServer(port);
-const promiseGetTestResults = testInfra.getTestResults();
+const promiseStartTestServer = testServer.startTestServer();
+const promiseGetTestResults = testServer.getTestResults();
 
 describe("Setup test environment", function () {
     describe("Start sideload, start dev-server, and start test-server", function () {

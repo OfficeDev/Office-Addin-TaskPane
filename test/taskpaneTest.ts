@@ -3,13 +3,15 @@ const port: number = 8080;
 let testValues = []; 
 
 export async function isTestServerStarted(): Promise<boolean> {
-    const testServerResponse: any = await testHelper.pingTestServer(port);
-    if (testServerResponse["status"] === 200) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return new Promise<boolean>(async (resolve, reject) => {
+        const testServerResponse: any = await testHelper.pingTestServer(port);
+        if (testServerResponse["status"] === 200) {
+            resolve(true);
+        }
+        else {
+            resolve(false);
+        }
+    });
 }
 
 export async function readSendData(): Promise<void> {

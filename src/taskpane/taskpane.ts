@@ -14,8 +14,9 @@ $(document).ready(() => {
 Office.initialize = async () => {
   $("#sideload-msg").hide();
   $("#app-body").show();
-  if (taskPaneTest.isTestServerStarted()) {
-    run(); 
+  const serverStarted :boolean = await taskPaneTest.isTestServerStarted();
+  if (serverStarted) {
+    run();
     taskPaneTest.readSendData();
   }
 };

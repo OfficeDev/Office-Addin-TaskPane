@@ -19,7 +19,7 @@ export async function pingTestServer(portNumber: number | undefined): Promise<Ob
                 resolve(serverResponse);
             }
             else if (xhr.readyState === 4 && xhr.status === 0 && xhr.statusText.message === "XHR error") {
-                reject(serverResponse);
+                resolve(serverResponse);
             }
         };
         xhr.open("GET", pingUrl, true);
