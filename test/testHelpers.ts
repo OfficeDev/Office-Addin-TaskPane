@@ -38,15 +38,15 @@ export async function sendTestResults(data: Object, portNumber: number | undefin
         const url: string = `https://localhost:${port}/results/`;
         const dataUrl: string = url + "?data=" + encodeURIComponent(json);
 
-        xhr.open("POST", dataUrl, true);
-        xhr.send();
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4 && xhr.status === 200 && xhr.responseText === "200") {
                 resolve(true);
             }
             else if (xhr.readyState === 4 && xhr.status === 0 && xhr.statusTest === "XHR error") {
-                reject(false);
+                resolve(false);
             }
         };
+        xhr.open("GET", dataUrl, true);
+        xhr.send();
     });
 }

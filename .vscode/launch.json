@@ -20,7 +20,10 @@
         "ts-node/register",
         "${workspaceFolder}/test/**/*.ts"
       ],
-      "internalConsoleOptions": "openOnSessionStart"
+      "internalConsoleOptions": "openOnSessionStart",
+      "runtimeArgs": [
+        "--preserve-symlinks"
+    ]
     },
     {
       "name": "Excel Desktop",
