@@ -4,18 +4,23 @@
  */
 
 import * as OfficeHelpers from "@microsoft/office-js-helpers";
+import * as taskPaneTest from "../../test/taskpaneTest";
 
 $(document).ready(() => {
   $("#run").click(run);
 });
 
 // The initialize function must be run each time a new page is loaded
-Office.initialize = () => {
+Office.initialize = async () => {
   $("#sideload-msg").hide();
   $("#app-body").show();
+  if (taskPaneTest.isTestServerStarted()) {
+    run(); 
+    taskPaneTest.readSendData();
+  }
 };
 
-async function run() {
+export async function run() {
   switch (Office.context.host) {
     case Office.HostType.Excel:
       return runExcel();
