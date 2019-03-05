@@ -1,36 +1,41 @@
-import * as testInfra from "office-addin-test-server";
 import * as assert from "assert";
 import * as mocha from "mocha";
+import * as testHelper from "./testHelpers";
+import * as testServerInfra from "office-addin-test-server";
 const yellowColor: string = "#FFFF00";
 const port: number = 8080;
-import TestServer from "../node_modules/office-addin-test-server/lib/testServer.js";
-const testServer = new TestServer(port);
+const testServer = new testServerInfra.TestServer(port);
 let testValues : any = [];
-const promiseSetupTestEnvironment = testInfra.setupTestEnvironment("excel", port);
-const promiseStartTestServer = testServer.startTestServer();
-const promiseGetTestResults = testServer.getTestResults();
+// const promiseGetTestResults = testServer.getTestResults();
+// const promiseSideloadApplication = testHelper.sideloadApplicaiton("excel");
+// const promiseStartDevServer= testHelper.startDevServer();
+// const promiseStartTestServer = testServer.startTestServer();
 
 describe("Setup test environment", function () {
     describe("Start sideload, start dev-server, and start test-server", function () {
         it("Sideload should have completed and dev-server should have started", async function () {
-            const setupTestEnvironmentSucceeded = await promiseSetupTestEnvironment;
-            assert.equal(setupTestEnvironmentSucceeded, true);
+            this.timeout(0);
+            const startDevServer = await testHelper.startDevServer();
+            const sideloadApplication = await testHelper.sideloadApplicaiton("excel");
+            assert.equal(startDevServer, true);
+            assert.equal(sideloadApplication, true);
         });
         it("Test server should have started and Excel should have pinged the server", async function () {
-            const testServerStarted = await promiseStartTestServer;
-                assert.equal(testServerStarted, true);
+            this.timeout(0);
+            const testServerStarted = await testServer.startTestServer();
+            assert.equal(testServerStarted, true);
         });
     });
-});
+ });
 
 describe("Test Taskpane Project", function () {
     describe("Get test results for taskpane project", function () {
         it("should get results from the taskpane application", async function () {
-            testValues = await promiseGetTestResults;
-            // Expecting one result
+            this.timeout(0);
+            testValues = await testServer.getTestResults();
             assert.equal(testValues.length, 1);
         });
-        it("Cell font color should have changes to red", async function () {
+        it("Cell fill color should be yellow", async function () {
             assert.equal(yellowColor, testValues[0].Value);
         });
     });
@@ -39,7 +44,10 @@ describe("Test Taskpane Project", function () {
 describe("Teardown test environment", function () {
     describe("Kill Excel and the test server", function () {
         it("should close Excel and stop the test server", async function () {
-            await testInfra.teardownTestEnvironment(process.platform == 'win32' ? "EXCEL" : "Excel");
+            this.timeout(10000);
+            const stopTestServer = await testServer.stopTestServer();
+            assert.equal(stopTestServer, true);
+            await testHelper.teardownTestEnvironment(process.platform == 'win32' ? "EXCEL" : "Excel");
         });
     });
 })
