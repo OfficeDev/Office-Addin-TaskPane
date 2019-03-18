@@ -1,6 +1,6 @@
-import * as testHelper from "../test/testHelpers";
+import * as testHelper from "office-addin-test-helpers";
 const port: number = 8080;
-let testValues = []; 
+let testValues = [];
 
 export async function isTestServerStarted(): Promise<boolean> {
     return new Promise<boolean>(async (resolve, reject) => {
@@ -16,20 +16,20 @@ export async function isTestServerStarted(): Promise<boolean> {
 
 export async function readSendData(): Promise<void> {
     await Excel.run(async context => {
-            const range = context.workbook.getSelectedRange();
-            const cellFill = range.format.fill;
-            cellFill.load('color');
-            await context.sync();
+        const range = context.workbook.getSelectedRange();
+        const cellFill = range.format.fill;
+        cellFill.load('color');
+        await context.sync();
 
-            var data  = {};
-            var nameKey = "Name";
-            var valueKey = "Value";            
-            data[nameKey] = "fill-color";
-            data[valueKey] = cellFill.color;
-            testValues.push(data);
+        var data = {};
+        var nameKey = "Name";
+        var valueKey = "Value";
+        data[nameKey] = "fill-color";
+        data[valueKey] = cellFill.color;
+        testValues.push(data);
 
-            if (testValues.length > 0) {
-                testHelper.sendTestResults(testValues, port)
-            }
+        if (testValues.length > 0) {
+            testHelper.sendTestResults(testValues, port)
+        }
     });
 }

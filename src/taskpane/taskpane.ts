@@ -4,7 +4,7 @@
  */
 
 import * as OfficeHelpers from "@microsoft/office-js-helpers";
-import * as taskPaneTest from "../../test/taskpaneTest";
+import * as taskPaneTest from "../../test/taskpaneTest"; 
 
 $(document).ready(() => {
   $("#run").click(run);
@@ -14,7 +14,9 @@ $(document).ready(() => {
 Office.initialize = async () => {
   $("#sideload-msg").hide();
   $("#app-body").show();
-  const serverStarted :boolean = await taskPaneTest.isTestServerStarted();
+
+  // If a test server is running, then click Run and send results to the test server
+  const serverStarted: boolean = await taskPaneTest.isTestServerStarted();
   if (serverStarted) {
     run();
     taskPaneTest.readSendData();
