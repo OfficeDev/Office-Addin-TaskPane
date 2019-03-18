@@ -14,7 +14,24 @@ export async function isTestServerStarted(): Promise<boolean> {
     });
 }
 
-export async function readSendData(): Promise<void> {
+export async function runTest(host: string) {
+    switch (host.toLocaleLowerCase()) {
+        case 'excel':
+            runExcelTest();
+        case 'onenote':
+            runOneNoteTest();
+        case 'outlook':
+            runOutlookTest();
+        case 'powerpoint':
+            runPowerPointTest()
+        case 'project':
+            runProjectTest();
+        case 'word':
+            return runWordTest();
+    }
+}
+
+async function runExcelTest(): Promise<void> {
     await Excel.run(async context => {
         const range = context.workbook.getSelectedRange();
         const cellFill = range.format.fill;
@@ -29,7 +46,41 @@ export async function readSendData(): Promise<void> {
         testValues.push(data);
 
         if (testValues.length > 0) {
-            testHelper.sendTestResults(testValues, port)
+            sendTestResults();
         }
     });
+}
+
+async function runOneNoteTest() {
+    /**
+     * Insert your Outlook code here
+     */
+}
+
+async function runOutlookTest() {
+    /**
+     * Insert your Outlook code here
+     */
+}
+
+async function runPowerPointTest() {
+    /**
+     * Insert your Outlook code here
+     */
+}
+
+async function runProjectTest() {
+    /**
+     * Insert your Outlook code here
+     */
+}
+
+async function runWordTest() {
+    /**
+     * Insert your Outlook code here
+     */
+}
+
+async function sendTestResults(): Promise<void> {
+    await testHelper.sendTestResults(testValues, port);
 }

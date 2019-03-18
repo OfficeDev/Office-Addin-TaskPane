@@ -15,11 +15,11 @@ Office.initialize = async () => {
   $("#sideload-msg").hide();
   $("#app-body").show();
 
-  // If a test server is running, then click Run and send results to the test server
+  // If a test server is running, then run UI test
   const serverStarted: boolean = await taskPaneTest.isTestServerStarted();
   if (serverStarted) {
     run();
-    taskPaneTest.readSendData();
+    taskPaneTest.runTest(Office.context.host.toString());
   }
 };
 
