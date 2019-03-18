@@ -23,7 +23,7 @@ Office.initialize = async () => {
   }
 };
 
-export async function run() {
+async function run() {
   switch (Office.context.host) {
     case Office.HostType.Excel:
       return runExcel();
@@ -43,9 +43,6 @@ export async function run() {
 async function runExcel() {
   try {
     await Excel.run(async context => {
-      /**
-       * Insert your Excel code here
-       */
       const range = context.workbook.getSelectedRange();
 
       // Read the range address
