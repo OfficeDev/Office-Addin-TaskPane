@@ -47,7 +47,6 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "clean-webpack-plugin": "^1.0.1",
-    "current-processes": "^0.2.1",
     "copy-webpack-plugin": "^4.6.0",
     "file-loader": "^3.0.1",
     "fs": "0.0.1-security",
@@ -62,7 +61,6 @@
     "typescript": "^3.3.3",
     "webpack": "^4.29.5",
     "webpack-cli": "^3.2.3",
-    "webpack-dev-server": "^3.2.0",
-    "xmlhttprequest": "^1.8.0"
+    "webpack-dev-server": "^3.2.0"
   }
 }
