@@ -7,8 +7,7 @@ export async function isTestServerStarted(): Promise<boolean> {
         const testServerResponse: any = await testHelper.pingTestServer(port);
         if (testServerResponse["status"] === 200) {
             resolve(true);
-        }
-        else {
+        } else {
             resolve(false);
         }
     });
