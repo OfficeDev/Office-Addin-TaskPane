@@ -43,7 +43,8 @@ describe("Teardown test environment", function () {
             this.timeout(10000);
             const stopTestServer = await testServer.stopTestServer();
             assert.equal(stopTestServer, true);
-            await testHelper.teardownTestEnvironment(process.platform == 'win32' ? "EXCEL" : "Excel");
+            const testEnvironmentTornDown = await testHelper.teardownTestEnvironment('excel');
+            assert.equal(testEnvironmentTornDown, true);
         });
     });
 })

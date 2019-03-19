@@ -17,7 +17,6 @@ module.exports = (env, options) => {
       extensions: [".ts", ".tsx", ".html", ".js"]
     },
     node: {
-      fs: 'empty',
       child_process: 'empty'
     },
     module: {
