@@ -32,13 +32,13 @@ ul {
     align-items: center;
     -webkit-flex: 1 0 0;
     flex: 1 0 0;
-    padding: 30px 20px;
+    padding: 10px 20px;
 }
 
 .ms-welcome__main > h2 {
     width: 100%;
     text-align: center;
-    padding-bottom: 30px;
+    padding-bottom: 20px;
 }
 
 .ms-welcome__features.ms-List .ms-ListItem {
