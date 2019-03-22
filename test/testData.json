@@ -1,0 +1,7 @@
+{
+    "hosts": {
+        "excel": {
+            "expectedResult": "#FFFF00"
+        }
+    }
+}

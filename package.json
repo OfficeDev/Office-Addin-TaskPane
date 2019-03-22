@@ -54,6 +54,8 @@
     "html-webpack-plugin": "^3.2.0",
     "mocha": "^5.2.0",
     "office-addin-debugging": "^2.1.3",
+    "office-addin-test-helpers": "^0.0.1",
+    "office-addin-test-server": "^0.0.1",
     "office-toolbox": "^0.1.1",
     "source-map-loader": "^0.2.4",
     "ts-loader": "^5.3.1",
