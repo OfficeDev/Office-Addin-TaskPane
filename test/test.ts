@@ -7,10 +7,11 @@ import * as testHelper from "office-addin-test-helpers"
 import * as testServerInfra from "office-addin-test-server";
 const port: number = 8080;
 const testServer = new testServerInfra.TestServer(port);
-let testValues : any = [];
 
 Object.keys(testJsonData.hosts).forEach(function (host) {
-    const expectedResult: string = testJsonData.hosts[host].expectedResult;
+    const resultName = testJsonData.hosts[host].resultName;
+    const resultValue: string = testJsonData.hosts[host].resultValue;
+    let testValues: any = [];
 
     describe("Setup test environment", function () {
         describe("Start sideload, start dev-server, and start test-server", function () {
@@ -36,8 +37,11 @@ Object.keys(testJsonData.hosts).forEach(function (host) {
                 testValues = await testServer.getTestResults();
                 assert.equal(testValues.length > 0, true);
             });
-            it("Validate expcted result", async function () {
-                assert.equal(testValues[0].Value, expectedResult);
+            it("Validate expected result name", async function () {
+                assert.equal(testValues[0].Name, resultName);
+            });
+            it("Validate expected result", async function () {
+                assert.equal(testValues[0].Value, resultValue);
             });
         });
     });
@@ -54,6 +58,8 @@ Object.keys(testJsonData.hosts).forEach(function (host) {
         });
     })
 });
+
+
 
 
 

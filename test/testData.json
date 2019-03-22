@@ -1,7 +1,12 @@
 {
     "hosts": {
         "excel": {
-            "expectedResult": "#FFFF00"
+            "resultName": "fill-color",
+            "resultValue": "#FFFF00"
+        },
+        "powerpoint": {
+            "resultName": "test-string",
+            "resultValue": "Hello World!"
         }
     }
 }

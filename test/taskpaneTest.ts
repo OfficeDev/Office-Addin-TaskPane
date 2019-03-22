@@ -1,6 +1,5 @@
-import * as testHelper from "office-addin-test-helpers";
+import * as testHelper from "office-addin-test-helpers"; 
 const port: number = 8080;
-let testValues = [];
 
 export async function isTestServerStarted(): Promise<boolean> {
     return new Promise<boolean>(async (resolve, reject) => {
@@ -17,14 +16,19 @@ export async function runTest(host: string) {
     switch (host.toLocaleLowerCase()) {
         case 'excel':
             runExcelTest();
+            break;
         case 'onenote':
             runOneNoteTest();
+            break;
         case 'outlook':
             runOutlookTest();
+            break;
         case 'powerpoint':
-            runPowerPointTest()
+            runPowerPointTest();
+            break;
         case 'project':
             runProjectTest();
+            break;
         case 'word':
             return runWordTest();
     }
@@ -36,17 +40,7 @@ async function runExcelTest(): Promise<void> {
         const cellFill = range.format.fill;
         cellFill.load('color');
         await context.sync();
-
-        var data = {};
-        var nameKey = "Name";
-        var valueKey = "Value";
-        data[nameKey] = "fill-color";
-        data[valueKey] = cellFill.color;
-        testValues.push(data);
-
-        if (testValues.length > 0) {
-            sendTestResults();
-        }
+        sendTestResults(cellFill.color, "fill-color");
     });
 }
 
@@ -62,10 +56,10 @@ async function runOutlookTest() {
      */
 }
 
-async function runPowerPointTest() {
-    /**
-     * Insert your Outlook code here
-     */
+async function runPowerPointTest(): Promise<void>{
+    Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, function (result) {
+        sendTestResults(result.value, "test-string")
+    }); 
 }
 
 async function runProjectTest() {
@@ -80,6 +74,14 @@ async function runWordTest() {
      */
 }
 
-async function sendTestResults(): Promise<void> {
+async function sendTestResults(result: any, resultType: string): Promise<void> {
+    var data = {};
+    let testValues = [];
+    var nameKey = "Name";
+    var valueKey = "Value";
+    data[nameKey] = resultType;
+    data[valueKey] = result
+    testValues.push(data);
+
     await testHelper.sendTestResults(testValues, port);
 }
