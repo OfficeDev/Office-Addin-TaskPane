@@ -1,17 +1,18 @@
+const devCerts = require("office-addin-dev-certs");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require("fs");
 const webpack = require("webpack");
 
-module.exports = (env, options) => {
+module.exports = async (env, options) => {
   const dev = options.mode === "development";
   const config = {
     devtool: "source-map",
     entry: {
       polyfill: 'babel-polyfill',
       taskpane: "./src/taskpane/taskpane.ts",
-      ribbon: "./src/ribbon/ribbon.ts"
+      commands: "./src/commands/commands.ts"
     },
     resolve: {
       extensions: [".ts", ".tsx", ".html", ".js"]
@@ -56,20 +57,16 @@ module.exports = (env, options) => {
         }
       ]),
       new HtmlWebpackPlugin({
-        filename: "ribbon.html",
-        template: "./src/ribbon/ribbon.html",
-        chunks: ["polyfill", "ribbon"]
+        filename: "commands.html",
+        template: "./src/commands/commands.html",
+        chunks: ["polyfill", "commands"]
       }),
     ],
     devServer: {
       headers: {
         "Access-Control-Allow-Origin": "*"
       },
-      https: {
-        key: fs.readFileSync("./certs/server.key"),
-        cert: fs.readFileSync("./certs/server.crt"),
-        ca: fs.readFileSync("./certs/ca.crt")
-      },
+      https: await devCerts.getHttpsServerOptions(),
       port: 3000
     }
   };
