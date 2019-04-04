@@ -1,11 +1,13 @@
 import * as assert from "assert";
 import * as fs from "fs";
 import * as mocha from "mocha";
-const testJsonFile: string = `${__dirname}/testData.json`;
+import * as path from "path";
+const manifestPath = "./src/test/test-manifest.xml";
+const testJsonFile: string = path.resolve(`${process.cwd()}/src/test/testData.json`);
 const testJsonData = JSON.parse(fs.readFileSync(testJsonFile).toString());
 import * as testHelper from "office-addin-test-helpers"
 import * as testServerInfra from "office-addin-test-server";
-const port: number = 8080;
+const port: number = 4201;
 const testServer = new testServerInfra.TestServer(port);
 
 Object.keys(testJsonData.hosts).forEach(function (host) {
@@ -18,13 +20,13 @@ Object.keys(testJsonData.hosts).forEach(function (host) {
             it(`Sideload should have completed for ${host} and dev-server should have started`, async function () {
                 this.timeout(0);
                 const startDevServer = await testHelper.startDevServer();
-                const sideloadApplication = await testHelper.sideloadDesktopApp(host, "test/test-manifest.xml");
+                const sideloadApplication = await testHelper.sideloadDesktopApp(host, manifestPath);
                 assert.equal(startDevServer, true);
                 assert.equal(sideloadApplication, true);
             });
             it(`Test server should have started and ${host} should have pinged the server`, async function () {
                 this.timeout(0);
-                const testServerStarted = await testServer.startTestServer();
+                const testServerStarted = await testServer.startTestServer(true /* mochaTest */);
                 assert.equal(testServerStarted, true);
             });
         });

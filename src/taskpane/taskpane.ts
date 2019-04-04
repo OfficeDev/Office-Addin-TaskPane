@@ -3,21 +3,14 @@
  * See LICENSE in the project root for license information.
  */
 
-import * as taskPaneTest from "../../test/taskpaneTest"; 
 // The initialize function must be run each time a new page is loaded
-Office.initialize = async () => {
-  document.getElementById('sideload-msg').style.display='none';
-  document.getElementById('app-body').style.display='flex';
+Office.initialize = () => {
+  document.getElementById('sideload-msg').style.display = 'none';
+  document.getElementById('app-body').style.display = 'flex';
   document.getElementById('run').onclick = run;
-  // If a test server is running, then run UI test
-  const serverStarted: boolean = await taskPaneTest.isTestServerStarted();
-  if (serverStarted) {
-    run();
-    taskPaneTest.runTest(Office.context.host.toString());
-  }
 };
 
-async function run() {
+export async function run() {
   switch (Office.context.host) {
     case Office.HostType.Excel:
       return runExcel();

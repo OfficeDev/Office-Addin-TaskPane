@@ -22,37 +22,25 @@
     <Host Name="Workbook"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:3000/taskpane.html"/>
+    <SourceLocation DefaultValue="https://localhost:3000/test.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
     <Hosts>
       <Host xsi:type="Document">
         <AllFormFactors>
-          <ExtensionPoint xsi:type="Contoso">
-            <Namespace resid="Contoso.Taskpane.Namespace" />
-          </ExtensionPoint>
         </AllFormFactors>
       </Host>
       <Host xsi:type="Notebook">
         <AllFormFactors>
-          <ExtensionPoint xsi:type="Contoso">
-            <Namespace resid="Contoso.Taskpane.Namespace" />
-          </ExtensionPoint>
         </AllFormFactors>
       </Host>
       <Host xsi:type="Presentation">
         <AllFormFactors>
-          <ExtensionPoint xsi:type="Contoso">
-            <Namespace resid="Contoso.Taskpane.Namespace" />
-          </ExtensionPoint>
         </AllFormFactors>
       </Host>
       <Host xsi:type="Workbook">
         <AllFormFactors>
-          <ExtensionPoint xsi:type="Contoso">
-            <Namespace resid="Contoso.Taskpane.Namespace" />
-          </ExtensionPoint>
         </AllFormFactors>
       </Host>
     </Hosts>
@@ -65,7 +53,7 @@
       <bt:Urls>
         <bt:Url id="Contoso.GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812" />
         <bt:Url id="Contoso.Ribbon.Url" DefaultValue="https://localhost:3000/ribbon.html" />
-        <bt:Url id="Contoso.Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html" />
+        <bt:Url id="Contoso.Taskpane.Url" DefaultValue="https://localhost:3000/test.html" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="Contoso.Functions.Namespace" DefaultValue="CONTOSO" />
