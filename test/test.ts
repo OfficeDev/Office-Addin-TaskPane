@@ -17,22 +17,22 @@ if (process.platform == 'win32') {
         const resultValue: string = testJsonData.hosts[host].resultValue;
         let testValues: any = [];
 
-        describe("Setup test environment", function () {
+        describe("Test Task Pane Project", function () {
             before("Test Server should be started", async function () {
                 const testServerStarted = await testServer.startTestServer(true /* mochaTest */);
                 const serverResponse = await testHelper.pingTestServer(port);
                 assert.equal(testServerStarted, true);
                 assert.equal(serverResponse["status"], 200);
             }),
-                describe("Start dev-server and sideload application", function () {
-                    it(`Sideload should have completed for ${host} and dev-server should have started`, async function () {
-                        this.timeout(0);
-                        const startDevServer = await testHelper.startDevServer();
-                        const sideloadApplication = await testHelper.sideloadDesktopApp(host, manifestPath);
-                        assert.equal(startDevServer, true);
-                        assert.equal(sideloadApplication, true);
-                    });
+            describe("Start dev-server and sideload application", function () {
+                it(`Sideload should have completed for ${host} and dev-server should have started`, async function () {
+                    this.timeout(0);
+                    const startDevServer = await testHelper.startDevServer();
+                    const sideloadApplication = await testHelper.sideloadDesktopApp(host, manifestPath);
+                    assert.equal(startDevServer, true);
+                    assert.equal(sideloadApplication, true);
                 });
+            });
             describe("Get test results for taskpane project", function () {
                 it("Validate expected result count", async function () {
                     this.timeout(0);
