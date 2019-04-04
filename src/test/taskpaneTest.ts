@@ -10,9 +10,8 @@ Office.initialize = async () => {
     document.getElementById('app-body').style.display = 'flex';
     document.getElementById('run').onclick = run;
 
-    const pingPromise = await pingTestServer(port)
     const testServerResponse: object = await pingTestServer(port);
-    if (pingPromise) {
+    if (testServerResponse["status"] == 200) {
         await runTest(testServerResponse["platform"]);
         await sendTestResults(testValues, port);
     }
