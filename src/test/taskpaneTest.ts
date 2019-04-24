@@ -1,4 +1,4 @@
-import * as taskpane from '../taskpane/taskpane';
+import * as excelTaskpane from '../taskpane/excel';
 import * as testDataJson from './testData.json';
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
 const port: number = 4201;
@@ -43,7 +43,7 @@ async function runExcelTest(platform: string): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
         try {
             // Execute taskpane code
-            await taskpane.run();
+            await excelTaskpane.run();
 
             // Mac is much slower so we need to wait longer for the function to return a value
             await sleep(platform === "Win32" ? 2000 : 8000);
