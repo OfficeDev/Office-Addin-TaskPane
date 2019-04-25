@@ -1,9 +1,10 @@
 import * as excelTaskpane from '../taskpane/excel';
+import * as wordTaskpane from '../taskpane/word';
 import * as testDataJson from './testData.json';
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
 const port: number = 4201;
 const testData = (<any>testDataJson).hosts;
-let testValues = [];
+let testValues = []; 
 
 Office.initialize = async () => {
     document.getElementById('sideload-msg').style.display = 'none';
@@ -14,6 +15,7 @@ Office.initialize = async () => {
     if (testServerResponse["status"] == 200) {
         await runTest(testServerResponse["platform"]);
         await sendTestResults(testValues, port);
+        testValues.pop();
     }
 };
 
@@ -58,7 +60,7 @@ async function runExcelTest(platform: string): Promise<void> {
                 // Mac is much slower so we need to wait longer for the function to return a value
                 await sleep(platform === "Win32" ? 2000 : 8000);
 
-                addTestResult(testData.excel.resultName, cellFill.color);
+                addTestResult(testData.Excel.resultName, cellFill.color);
                 resolve();
             });
         } catch {
@@ -92,9 +94,31 @@ async function runProjectTest(platform: string) {
 }
 
 async function runWordTest(platform: string) {
-    /**
-     * Insert your Outlook code here
-     */
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            // Execute taskpane code
+            await wordTaskpane.run();
+
+            // Mac is much slower so we need to wait longer for the function to return a value
+            await sleep(platform === "Win32" ? 2000 : 8000);
+
+            // Get output of executed taskpane code
+            Word.run(async (context) => {
+                var firstParagraph = context.document.body.paragraphs.getFirst();
+                firstParagraph.load("text");
+                await context.sync();
+
+                // Mac is much slower so we need to wait longer for the function to return a value
+                await sleep(platform === "Win32" ? 2000 : 8000);
+
+                addTestResult(testData.Word.resultName, firstParagraph.text);
+                resolve();
+
+            });
+        } catch {
+            reject();
+        }
+    });
 }
 
 function addTestResult(resultName: string, resultValue: any) {
