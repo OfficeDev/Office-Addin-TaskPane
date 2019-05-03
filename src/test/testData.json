@@ -6,7 +6,7 @@
         },
         "Word": {
             "resultName": "output-message",
-            "resultValue": "foo"
+            "resultValue": "Hello World"
         }
     }
 }
