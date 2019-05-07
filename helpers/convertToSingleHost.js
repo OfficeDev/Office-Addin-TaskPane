@@ -14,6 +14,8 @@ const hosts = [
     "word"
 ];
 
+modifyProjectForSingleHost('c:/generator-office/foo', 'taskpane', 'excel', true);
+
 export function modifyProjectForSingleHost(projectFolder, projectType, host, typescript) {
     return new Promise(async (resolve, reject) => {
         try {
