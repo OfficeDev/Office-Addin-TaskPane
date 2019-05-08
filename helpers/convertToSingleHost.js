@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as util from "util";
 const fs = require('fs');
 const readFileAsync = util.promisify(fs.readFile);
@@ -66,13 +65,13 @@ async function convertProjectToSingleHost(projectFolder, projectType, host, type
                 {
                     // copy host-specific App.tsx[js] over src/taskpane/app/components/App.tsx[js]
                     extension = typescript ? "tsx" : "js";
-                    const srcContent = await readFileAsync(path.resolve(`${projectFolder}/src/taskpane/components/${_.upperFirst(host)}.App.${extension}`), 'utf8');
+                    const srcContent = await readFileAsync(path.resolve(`${projectFolder}/src/taskpane/components/${(host)}.App.${extension}`), 'utf8');
                     await writeFileAsync(path.resolve(`${projectFolder}/src/taskpane/components/App.${extension}`), srcContent);
 
                     // delete all host specific files
                     hosts.forEach(async function (host) {
                         await unlinkFileAsync(path.resolve(`${projectFolder}/manifest.${host}.xml`));
-                        await unlinkFileAsync(path.resolve(`${projectFolder}/src/taskpane/components/${_.upperFirst(host)}.App.${extension}`));
+                        await unlinkFileAsync(path.resolve(`${projectFolder}/src/taskpane/components/${(host)}.App.${extension}`));
                     });
                     break;
                 }
