@@ -13,12 +13,12 @@ const hosts = [
     "word"
 ];
 
-modifyProjectForSingleHost(projectFolder, projectType, host, typescript);
+modifyProjectForSingleHost(projectFolder, host, typescript);
 
-async function modifyProjectForSingleHost(projectFolder, projectType, host, typescript) {
+async function modifyProjectForSingleHost(projectFolder, host, typescript) {
     return new Promise(async (resolve, reject) => {
         try {
-            await convertProjectToSingleHost(projectFolder, projectType, host, typescript);
+            await convertProjectToSingleHost(projectFolder, host, typescript);
             await updatePackageJsonForSingleHost(projectFolder, host);
             return resolve();
         } catch (err) {
@@ -27,7 +27,7 @@ async function modifyProjectForSingleHost(projectFolder, projectType, host, type
     });
 }
 
-async function convertProjectToSingleHost(projectFolder, projectType, host, typescript) {
+async function convertProjectToSingleHost(projectFolder, host, typescript) {
     try {
         let extension = typescript ? "ts" : "js";
 
