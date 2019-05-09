@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const projectFolder = process.env['projectFolder'];
-const projectType = process.env['projectType'];
 const host = process.env['host'];
 const typescript = (process.env['typescript'] == 'true') ? true : false;
 
