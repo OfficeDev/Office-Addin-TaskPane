@@ -61,7 +61,7 @@ async function updatePackageJsonForSingleHost(host) {
   });
 
   // write updated json to file
-  await writeFileAsync(packageJson, JSON.stringify(content, null, 4));
+  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
 
