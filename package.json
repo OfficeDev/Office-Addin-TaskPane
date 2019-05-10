@@ -29,7 +29,7 @@
     "unload:word": "office-toolbox remove -m manifest.xml -a word",
     "validate": "office-toolbox validate -m manifest.xml",
     "watch": "webpack --mode development --watch",
-    "convert-to-single-host": "node ./helpers/convertToSingleHost.js"
+    "convert-to-single-host": "node ./scripts/convertToSingleHost.js"
   },
   "dependencies": {},
   "devDependencies": {
