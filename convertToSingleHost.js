@@ -71,4 +71,5 @@ async function updatePackageJsonForSingleHost(host) {
  */
 modifyProjectForSingleHost(host).catch(err => {
     console.error(`Error: ${err instanceof Error ? err.message : err}`);
+    process.exitCode = 1;
 });
