@@ -42,7 +42,7 @@
     {
       "label": "Dev Server",
       "type": "npm",
-      "script": "dev-server",
+      "script": "test-dev-server",
       "presentation": {
         "clear": true,
         "panel": "dedicated"

@@ -1,5 +1,5 @@
-import * as excelTaskpane from '../taskpane/excel';
-import * as wordTaskpane from '../taskpane/word';
+import * as excelTaskpane from './../../src/taskpane/excel'
+import * as wordTaskpane from './../../src/taskpane/word';
 import * as testDataJson from './testData.json';
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
 const port: number = 4201;
@@ -61,6 +61,10 @@ async function runExcelTest(platform: string): Promise<void> {
                 await sleep(platform === "Win32" ? 2000 : 8000);
 
                 addTestResult(testData.Excel.resultName, cellFill.color);
+
+                //Close workbook without saving
+                // context.workbook.close(Excel.CloseBehavior.skipSave);
+
                 resolve();
             });
         } catch {
@@ -113,7 +117,6 @@ async function runWordTest(platform: string) {
 
                 addTestResult(testData.Word.resultName, firstParagraph.text);
                 resolve();
-
             });
         } catch {
             reject();

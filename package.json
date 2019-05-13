@@ -14,6 +14,7 @@
   "scripts": {
     "build": "webpack -p --mode production",
     "build-dev": "webpack --mode development",
+    "build-test": "webpack --config ./test/webpack.config.js --mode development",
     "dev-server": "webpack-dev-server --mode development",
     "sideload": "echo Please specify which app using 'npm run sideload:app'.",
     "sideload:excel": "office-toolbox sideload -m manifest.xml -a excel",
@@ -23,7 +24,8 @@
     "start:desktop": "office-addin-debugging start manifest.xml desktop",
     "start:web": "office-addin-debugging start manifest.xml web",
     "stop": "office-addin-debugging stop manifest.xml",
-    "test": "mocha -r ts-node/register test/**/*.ts",
+    "test": "mocha -r ts-node/register test/*.ts",
+    "test-dev-server": "webpack-dev-server --config ./test/webpack.config.js --mode development",
     "unload": "echo Please specify which app using 'npm run unload:app'.",
     "unload:excel": "office-toolbox remove -m manifest.xml -a excel",
     "unload:powerpoint": "office-toolbox remove -m manifest.xml -a powerpoint",
@@ -31,9 +33,7 @@
     "validate": "office-toolbox validate -m manifest.xml",
     "watch": "webpack --mode development --watch"
   },
-  "dependencies": {
-    "office-addin-test-helpers": "^0.0.4"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.4.4",
     "@babel/polyfill": "^7.4.4",
@@ -51,6 +51,7 @@
     "mocha": "^5.2.0",
     "office-addin-debugging": "^2.1.3",
     "office-addin-dev-certs": "^1.0.1",
+    "office-addin-test-helpers": "^0.1.1",
     "office-addin-test-server": "^0.0.4",
     "office-toolbox": "^0.1.1",
     "source-map-loader": "^0.2.4",

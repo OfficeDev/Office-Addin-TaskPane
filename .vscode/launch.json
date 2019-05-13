@@ -18,7 +18,7 @@
         "${workspaceFolder}/test",
         "-r",
         "ts-node/register",
-        "${workspaceFolder}/test/**/*.ts"
+        "${workspaceFolder}/test/*.ts"
       ],
       "internalConsoleOptions": "openOnSessionStart",
       "runtimeArgs": [
