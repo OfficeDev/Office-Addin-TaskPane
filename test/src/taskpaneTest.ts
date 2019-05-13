@@ -63,7 +63,8 @@ async function runExcelTest(platform: string): Promise<void> {
                 addTestResult(testData.Excel.resultName, cellFill.color);
 
                 //Close workbook without saving
-                // context.workbook.close(Excel.CloseBehavior.skipSave);
+                // @ts-ignore
+                context.workbook.close(Excel.CloseBehavior.skipSave);
 
                 resolve();
             });
