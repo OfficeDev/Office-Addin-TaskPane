@@ -9,16 +9,8 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "start",
-        "desktop"
-      ],
-      "args": [
-        "--",
-        "--app",
-        "excel"
-      ]
+      "runtimeArgs": ["run", "start", "desktop"],
+      "args": ["--", "--app", "excel"]
     },
     {
       "name": "PowerPoint Desktop",
