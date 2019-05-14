@@ -14,7 +14,11 @@
   "scripts": {
     "build": "webpack -p --mode production",
     "build-dev": "webpack --mode development",
+<<<<<<< HEAD
+    "build-test": "webpack --config ./test/webpack.config.js --mode development",
+=======
     "convert-to-single-host": "node convertToSingleHost.js",
+>>>>>>> origin/master
     "dev-server": "webpack-dev-server --mode development",
     "dev-server-test": "webpack-dev-server --config ./test/webpack.config.js --mode development",
     "sideload": "echo Please specify which app using 'npm run sideload:app'.",
