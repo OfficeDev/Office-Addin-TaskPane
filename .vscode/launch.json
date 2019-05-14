@@ -25,32 +25,16 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "start",
-        "desktop"
-      ],
-      "args": [
-        "--",
-        "--app",
-        "powerpoint"
-      ]
+      "runtimeArgs": ["run", "start", "desktop"],
+      "args": ["--", "--app", "powerpoint"]
     },
     {
       "name": "Word Desktop",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "start",
-        "desktop"
-      ],
-      "args": [
-        "--",
-        "--app",
-        "word"
-      ]
+      "runtimeArgs": ["run", "start", "desktop"],
+      "args": ["--", "--app", "word"]
     },
     {
       "name": "Office Online (Chrome)",
