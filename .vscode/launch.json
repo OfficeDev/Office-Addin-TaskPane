@@ -5,49 +5,52 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-u",
-        "tdd",
-        "--timeout",
-        "999999",
-        "--colors",
-        "${workspaceFolder}/test",
-        "-r",
-        "ts-node/register",
-        "${workspaceFolder}/test/*.ts"
-      ],
-      "internalConsoleOptions": "openOnSessionStart",
-      "runtimeArgs": [
-        "--preserve-symlinks"
-    ]
-    },
-    {
       "name": "Excel Desktop",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "desktop"],
-      "args": ["--", "--app", "excel"]
+      "runtimeArgs": [
+        "run",
+        "start",
+        "desktop"
+      ],
+      "args": [
+        "--",
+        "--app",
+        "excel"
+      ]
     },
     {
       "name": "PowerPoint Desktop",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "desktop"],
-      "args": ["--", "--app", "powerpoint"]
+      "runtimeArgs": [
+        "run",
+        "start",
+        "desktop"
+      ],
+      "args": [
+        "--",
+        "--app",
+        "powerpoint"
+      ]
     },
     {
       "name": "Word Desktop",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "desktop"],
-      "args": ["--", "--app", "word"]
+      "runtimeArgs": [
+        "run",
+        "start",
+        "desktop"
+      ],
+      "args": [
+        "--",
+        "--app",
+        "word"
+      ]
     },
     {
       "name": "Office Online (Chrome)",

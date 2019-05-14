@@ -2,6 +2,7 @@ const devCerts = require("office-addin-dev-certs");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const fs = require("fs");
 const webpack = require("webpack");
 
 module.exports = async (env, options) => {
@@ -11,13 +12,10 @@ module.exports = async (env, options) => {
     entry: {
       polyfill: "@babel/polyfill",
       taskpane: "./src/taskpane/taskpane.ts",
-      commands: "./src/commands/commands.ts",
+      commands: "./src/commands/commands.ts"
     },
     resolve: {
       extensions: [".ts", ".tsx", ".html", ".js"]
-    },
-    node: {
-      child_process: 'empty'
     },
     module: {
       rules: [
@@ -59,7 +57,7 @@ module.exports = async (env, options) => {
         filename: "commands.html",
         template: "./src/commands/commands.html",
         chunks: ["polyfill", "commands"]
-      }),
+      })
     ],
     devServer: {
       headers: {
