@@ -47,7 +47,7 @@ Object.keys(testJsonData.hosts).forEach(function (host) {
         after(`Teardown test environment and shutdown ${host}`, async function () {
             const stopTestServer = await testServer.stopTestServer();
             assert.equal(stopTestServer, true);
-            const testEnvironmentTornDown = await testHelper.teardownTestEnvironment(host, host != 'Excel')
+            const testEnvironmentTornDown = await testHelper.teardownTestEnvironment(host)
             assert.equal(testEnvironmentTornDown, true);
         });
     });
