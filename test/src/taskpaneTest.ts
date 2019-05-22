@@ -4,7 +4,8 @@ import * as testDataJson from './testData.json';
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
 const port: number = 4201;
 const testData = (<any>testDataJson).hosts;
-let testValues = []; 
+let host = undefined;
+let testValues = [];
 
 Office.initialize = async () => {
     document.getElementById('sideload-msg').style.display = 'none';
@@ -16,27 +17,36 @@ Office.initialize = async () => {
         await runTest(testServerResponse["platform"]);
         await sendTestResults(testValues, port);
         testValues.pop();
+        if (host === "excel") {
+            await closeWorkbook();
+        }
     }
 };
 
 export async function runTest(platform: string) {
     switch (Office.context.host.toString().toLowerCase()) {
         case 'excel':
+            host = "excel";
             await runExcelTest(platform);
             break;
         case 'onenote':
+            host = "onenote";
             await runOneNoteTest(platform);
             break;
         case 'outlook':
+            host = "outlook";
             await runOutlookTest(platform);
             break;
         case 'powerpoint':
+            host = "powerpoint";
             await runPowerPointTest(platform);
             break;
         case 'project':
+            host = "project";
             await runProjectTest(platform);
             break;
         case 'word':
+            host = "word";
             await runWordTest(platform);
     }
 }
@@ -47,8 +57,8 @@ async function runExcelTest(platform: string): Promise<void> {
             // Execute taskpane code
             await excelTaskpane.run();
 
-            // Mac is much slower so we need to wait longer for the function to return a value
-            await sleep(platform === "Win32" ? 2000 : 8000);
+            // Mac is slower so we need to wait longer for the function to return a value
+            await sleep(platform === "Windows" ? 2000 : 8000);
 
             // Get output of executed taskpane code
             await Excel.run(async context => {
@@ -57,15 +67,10 @@ async function runExcelTest(platform: string): Promise<void> {
                 cellFill.load('color');
                 await context.sync();
 
-                // Mac is much slower so we need to wait longer for the function to return a value
-                await sleep(platform === "Win32" ? 2000 : 8000);
+                // Mac is slower so we need to wait longer for the function to return a value
+                await sleep(platform === "Windows" ? 2000 : 8000);
 
                 addTestResult(testData.Excel.resultName, cellFill.color);
-
-                //Close workbook without saving
-                // @ts-ignore
-                context.workbook.close(Excel.CloseBehavior.skipSave);
-
                 resolve();
             });
         } catch {
@@ -86,7 +91,7 @@ async function runOutlookTest(platform: string) {
      */
 }
 
-async function runPowerPointTest(platform: string): Promise<void>{
+async function runPowerPointTest(platform: string): Promise<void> {
     /**
      * Insert your Outlook code here
      */
@@ -104,8 +109,8 @@ async function runWordTest(platform: string) {
             // Execute taskpane code
             await wordTaskpane.run();
 
-            // Mac is much slower so we need to wait longer for the function to return a value
-            await sleep(platform === "Win32" ? 2000 : 8000);
+            // Mac is slower so we need to wait longer for the function to return a value
+            await sleep(platform === "Windows" ? 2000 : 8000);
 
             // Get output of executed taskpane code
             Word.run(async (context) => {
@@ -113,10 +118,24 @@ async function runWordTest(platform: string) {
                 firstParagraph.load("text");
                 await context.sync();
 
-                // Mac is much slower so we need to wait longer for the function to return a value
-                await sleep(platform === "Win32" ? 2000 : 8000);
+                // Mac is slower so we need to wait longer for the function to return a value
+                await sleep(platform === "Windows" ? 2000 : 8000);
 
                 addTestResult(testData.Word.resultName, firstParagraph.text);
+                resolve();
+            });
+        } catch {
+            reject();
+        }
+    });
+}
+
+async function closeWorkbook(): Promise<void> {
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            await Excel.run(async context => {
+                // @ts-ignore
+                context.workbook.close(Excel.CloseBehavior.skipSave);
                 resolve();
             });
         } catch {

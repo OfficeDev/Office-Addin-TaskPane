@@ -2,7 +2,7 @@ import * as assert from "assert";
 import * as fs from "fs";
 import * as mocha from "mocha";
 import * as path from "path";
-const manifestPath = path.resolve(`${process.cwd()}/test/src/test-manifest.xml`);
+const manifestPath = path.resolve(`${process.cwd()}/test/manifest.xml`);
 const testJsonFile: string = path.resolve(`${process.cwd()}/test/src/testData.json`);
 const testJsonData = JSON.parse(fs.readFileSync(testJsonFile).toString());
 import * as testHelper from "office-addin-test-helpers";
