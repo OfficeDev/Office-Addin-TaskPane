@@ -1,6 +1,44 @@
 import * as childProcess from "child_process";
 import * as cps from "current-processes";
+let devServerProcess: any;
+let devServerStarted: boolean = false;
 
+export async function startDevServer(): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+        devServerStarted = false;
+        const cmdLine = "npm run dev-server-test";
+        devServerProcess = childProcess.spawn(cmdLine, [], {
+            detached: true,
+            shell: true,
+            stdio: "ignore"
+        });
+        devServerProcess.on("error", (err) => {
+            reject(err);
+        });
+
+        devServerStarted = devServerProcess.pid != undefined;
+        resolve(devServerStarted);
+    });
+}
+
+export async function stopDevServer(): Promise<boolean> {
+    return new Promise<boolean>(async function (resolve, reject) {
+        let devServerKilled: boolean = false;
+        if (devServerStarted) {
+            try {
+                if (process.platform == "win32") {
+                    childProcess.spawn("taskkill", ["/pid", devServerProcess.pid, '/f', '/t']);
+                } else {
+                    devServerProcess.kill();
+                }
+                devServerKilled = true;
+            } catch (err) {
+                reject(`Stopping dev-server failed: ${err}`);
+            }
+        }
+        resolve(devServerKilled);
+    });
+}
 
 export async function closeDesktopApplication(application: string): Promise<boolean> {
     return new Promise<boolean>(async function (resolve, reject) {
