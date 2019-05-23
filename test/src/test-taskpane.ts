@@ -56,9 +56,7 @@ async function runExcelTest(platform: string): Promise<void> {
         try {
             // Execute taskpane code
             await excelTaskpane.run();
-
-            // Mac is slower so we need to wait longer for the function to return a value
-            await sleep(platform === "Windows" ? 2000 : 8000);
+            await sleep(2000);
 
             // Get output of executed taskpane code
             await Excel.run(async context => {
@@ -66,9 +64,7 @@ async function runExcelTest(platform: string): Promise<void> {
                 const cellFill = range.format.fill;
                 cellFill.load('color');
                 await context.sync();
-
-                // Mac is slower so we need to wait longer for the function to return a value
-                await sleep(platform === "Windows" ? 2000 : 8000);
+                await sleep(2000);
 
                 addTestResult(testData.Excel.resultName, cellFill.color);
                 resolve();
@@ -107,19 +103,14 @@ async function runWordTest(platform: string) {
     return new Promise<void>(async (resolve, reject) => {
         try {
             // Execute taskpane code
-            await wordTaskpane.run();
-
-            // Mac is slower so we need to wait longer for the function to return a value
-            await sleep(platform === "Windows" ? 2000 : 8000);
+            await sleep(2000);
 
             // Get output of executed taskpane code
             Word.run(async (context) => {
                 var firstParagraph = context.document.body.paragraphs.getFirst();
                 firstParagraph.load("text");
                 await context.sync();
-
-                // Mac is slower so we need to wait longer for the function to return a value
-                await sleep(platform === "Windows" ? 2000 : 8000);
+                await sleep(2000);
 
                 addTestResult(testData.Word.resultName, firstParagraph.text);
                 resolve();
