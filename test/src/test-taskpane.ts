@@ -1,6 +1,6 @@
 import * as excelTaskpane from './../../src/taskpane/excel'
 import * as wordTaskpane from './../../src/taskpane/word';
-import * as testDataJson from './testData.json';
+import * as testDataJson from './test-data.json';
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
 const port: number = 4201;
 const testData = (<any>testDataJson).hosts;

@@ -11,7 +11,7 @@ module.exports = async (env, options) => {
         devtool: "source-map",
         entry: {
             polyfill: "@babel/polyfill",
-            test: path.resolve(__dirname, './src/taskpaneTest.ts')
+            test: path.resolve(__dirname, './src/test-taskpane.ts')
         },
         output: { path: path.resolve(__dirname, "testBuild") },
         resolve: {
@@ -47,7 +47,7 @@ module.exports = async (env, options) => {
             new CleanWebpackPlugin(),
             new HtmlWebpackPlugin({
                 filename: "taskpane.html",
-                template: path.resolve(__dirname, './src/taskpane.html'),
+                template: path.resolve(__dirname, './src/test-taskpane.html'),
                 chunks: ["polyfill", "test"]
             }),
             new CopyWebpackPlugin([
