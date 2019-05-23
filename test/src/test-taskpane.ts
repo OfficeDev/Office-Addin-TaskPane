@@ -103,6 +103,7 @@ async function runWordTest(platform: string) {
     return new Promise<void>(async (resolve, reject) => {
         try {
             // Execute taskpane code
+            await wordTaskpane.run();
             await sleep(2000);
 
             // Get output of executed taskpane code
