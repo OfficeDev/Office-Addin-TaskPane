@@ -26,10 +26,15 @@ async function convertProjectToSingleHost(host) {
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
   await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
 
+  // copy over host-specific taskpane test code to test-taskpane.ts
+  const testContent = await readFileAsync(`./test/src/${host}-test-taskpane.ts`, "utf8");
+  await writeFileAsync(`./test/src/test-taskpane.ts`, testContent);
+
   // delete all host-specific files
-  hosts.forEach(async function(host) {
+  hosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+    await unlinkFileAsync(`./test/src/${host}-test-taskpane.ts`);
   });
 
   // delete this script
@@ -51,9 +56,9 @@ async function updatePackageJsonForSingleHost(host) {
   });
 
   // remove scripts that are unrelated to the selected host
-  Object.keys(content.scripts).forEach(function(key) {
-    if (key.startsWith("sideload:") 
-      || key.startsWith("unload:") 
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.startsWith("sideload:")
+      || key.startsWith("unload:")
       || key === "convert-to-single-host"
     ) {
       delete content.scripts[key];
@@ -70,6 +75,6 @@ async function updatePackageJsonForSingleHost(host) {
  * @param host The host to support.
  */
 modifyProjectForSingleHost(host).catch(err => {
-    console.error(`Error: ${err instanceof Error ? err.message : err}`);
-    process.exitCode = 1;
+  console.error(`Error: ${err instanceof Error ? err.message : err}`);
+  process.exitCode = 1;
 });
