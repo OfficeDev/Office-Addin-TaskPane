@@ -1,5 +1,4 @@
 import * as assert from "assert";
-import * as fs from "fs";
 import * as mocha from "mocha";
 import { AppType, startDebugging, stopDebugging } from "office-addin-debugging";
 import * as officeAddinTestHelpers from "office-addin-test-helpers";
