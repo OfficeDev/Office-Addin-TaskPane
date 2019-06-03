@@ -4,6 +4,8 @@ const host = process.argv[2];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
 const path = require("path");
 const util = require("util");
+const testPackages = ["@types/mocha", "@types/node", "current-processes", "mocha", "office-addin-test-helpers",
+  "office-addin-test-server", "ts-node"];
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
@@ -29,7 +31,7 @@ async function convertProjectToSingleHost(host) {
   await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
 
   // delete all test files by default for now - eventually we want to convert the tests by default
-  if (convertTest && (host === "excel"|| host === "word")) {
+  if (convertTest && (host === "excel" || host === "word")) {
     // copy over host-specific taskpane test code to test-taskpane.ts
     const testTaskpaneContent = await readFileAsync(`./test/src/${host}-test-taskpane.ts`, "utf8");
     const updatedTestTaskpaneContent = testTaskpaneContent.replace(`../../src/taskpane/${host}`, `./src/taskpane/taskpane`);
@@ -83,8 +85,32 @@ async function updatePackageJsonForSingleHost(host) {
     }
   });
 
+  if (!convertTest) {
+    // remove test-related scripts
+    Object.keys(content.scripts).forEach(function (key) {
+      if (key.includes("test")) {
+        delete content.scripts[key];
+      }
+    });
+
+    // remove test-related packages
+    Object.keys(content.devDependencies).forEach(function (key) {
+      if (testPackages.includes(key)) {
+        delete content.devDependencies[key]
+      }
+    });
+  }
+
   // write updated json to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
+}
+
+async function updateLaunchJsonForSingleHost(host) {
+  // update launch.json to reflect selected host
+  const launchJson = `.vscode/package.json`;
+  const data = await readFileAsync(launchJson, "utf8");
+  let content = JSON.parse(data);
+
 }
 
 function deleteFolder(folder) {
