@@ -19,6 +19,9 @@ async function modifyProjectForSingleHost(host) {
   }
   await convertProjectToSingleHost(host);
   await updatePackageJsonForSingleHost(host);
+  if (!convertTest) {
+    await updateLaunchJsonFile();
+  }
 }
 
 async function convertProjectToSingleHost(host) {
@@ -34,7 +37,7 @@ async function convertProjectToSingleHost(host) {
   if (convertTest && (host === "excel" || host === "word")) {
     // copy over host-specific taskpane test code to test-taskpane.ts
     const testTaskpaneContent = await readFileAsync(`./test/src/${host}-test-taskpane.ts`, "utf8");
-    const updatedTestTaskpaneContent = testTaskpaneContent.replace(`../../src/taskpane/${host}`, `./src/taskpane/taskpane`);
+    const updatedTestTaskpaneContent = testTaskpaneContent.replace(`../../src/taskpane/${host}`, `../../src/taskpane/taskpane`);
     await writeFileAsync(`./test/src/test-taskpane.ts`, updatedTestTaskpaneContent);
 
     // update ui-test.ts to only run against specified host
@@ -44,7 +47,9 @@ async function convertProjectToSingleHost(host) {
 
     // delete all host-specific test files after converting to single host
     hosts.forEach(async function (host) {
-      await unlinkFileAsync(`./test/src/${host}-test-taskpane.ts`);
+      if (host == "excel" || host == "word") {
+        await unlinkFileAsync(`./test/src/${host}-test-taskpane.ts`);
+      }
     });
   }
   else {
@@ -105,12 +110,13 @@ async function updatePackageJsonForSingleHost(host) {
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
-async function updateLaunchJsonForSingleHost(host) {
-  // update launch.json to reflect selected host
-  const launchJson = `.vscode/package.json`;
-  const data = await readFileAsync(launchJson, "utf8");
-  let content = JSON.parse(data);
-
+async function updateLaunchJsonFile() {
+  // remove 'Debug Tests' configuration from launch.json
+  const launchJson = `.vscode/launch.json`;
+  const launchJsonContent = await readFileAsync(launchJson, "utf8");
+  const regex = /"configurations": \[\r?\n(.*{(.*\r?\n)*?.*"name": "Debug Tests",\r?\n(.*\r?\n)*?.*},)/gm;
+  const updatedContent = launchJsonContent.replace(regex, `"configurations": [`);
+  await writeFileAsync(launchJson, updatedContent);
 }
 
 function deleteFolder(folder) {
