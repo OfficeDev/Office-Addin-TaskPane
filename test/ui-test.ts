@@ -1,15 +1,16 @@
 import * as assert from "assert";
 import * as mocha from "mocha";
+import * as os from "os";
 import { AppType, startDebugging, stopDebugging } from "office-addin-debugging";
 import * as officeAddinTestHelpers from "office-addin-test-helpers";
 import * as officeAddinTestServer from "office-addin-test-server";
 import * as path from "path";
 import * as testHelpers from "./src/test-helpers";
 const hosts = ["Excel", "Word"];
-const manifestPath = path.resolve(`${process.cwd()}/test/test-manifest.xml`);
 const testServerPort: number = 4201;
 
 hosts.forEach(function (host) {
+    let manifestPath = path.resolve(`${process.cwd()}/test/test-manifest.xml`);
     const testServer = new officeAddinTestServer.TestServer(testServerPort);
     let testValues: any = [];
 
@@ -48,6 +49,11 @@ hosts.forEach(function (host) {
             assert.equal(stopTestServer, true);
 
             // Unregister the add-in
+            if (process.platform === "darwin") {
+                const sideloadingDirectory = path.join(os.homedir(), `Library/Containers/com.microsoft.${host}/Data/Documents/wef`);
+                manifestPath = path.join(sideloadingDirectory, path.basename(manifestPath));
+            }
+
             const unregisterCmd = `node ./node_modules/office-toolbox/app/office-toolbox.js remove -m ${manifestPath} -a ${host}`;
             await stopDebugging(manifestPath, unregisterCmd);
 
