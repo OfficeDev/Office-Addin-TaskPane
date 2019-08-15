@@ -15,7 +15,7 @@ hosts.forEach(function (host) {
     const testServer = new officeAddinTestServer.TestServer(testServerPort);
     let testValues: any = [];
 
-    describe(`Test ${host} Task Pane Project`, function () {
+    describe(`Test ${host} Content Project`, function () {
         before(`Setup test environment and sideload ${host}`, async function () {
             this.timeout(0);
             // Start test server and ping to ensure it's started
@@ -29,7 +29,7 @@ hosts.forEach(function (host) {
             const devServerPort = parseNumber(process.env.npm_package_config_dev_server_port || 3000);
             await startDebugging(manifestPath, AppType.Desktop, toOfficeApp(host), undefined, undefined, devServerCmd, devServerPort);
         }),
-        describe(`Get test results for ${host} taskpane project`, function () {
+        describe(`Get test results for ${host} content project`, function () {
             it("Validate expected result count", async function () {
                 this.timeout(0);
                 testValues = await testServer.getTestResults();
