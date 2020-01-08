@@ -7,6 +7,7 @@ const webpack = require("webpack");
 
 module.exports = async (env, options) => {
   const dev = options.mode === "development";
+  const buildType = dev ? "dev" : "prod";
   const config = {
     devtool: "source-map",
     entry: {
@@ -50,6 +51,19 @@ module.exports = async (env, options) => {
         {
           to: "content.css",
           from: "./src/content/content.css"
+        },
+        {
+          to: "manifest." + buildType + ".xml",
+          from: "manifest.xml",
+          transform(content) {
+            if (dev) {
+              return content;
+            } else {
+              const urlDev = "https://localhost:3000/";
+              const urlProd = "https://akrantz.github.io/office-addins/content/";
+              return content.toString().replace(new RegExp(urlDev, "g"), urlProd);
+            }
+          }          
         }
       ])
     ],
