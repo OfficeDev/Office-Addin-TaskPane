@@ -4,6 +4,8 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require("fs");
 const webpack = require("webpack");
+const path = require("path");
+const os = require("os");
 
 module.exports = async (env, options) => {
   const dev = options.mode === "development";
@@ -57,6 +59,10 @@ module.exports = async (env, options) => {
         filename: "commands.html",
         template: "./src/commands/commands.html",
         chunks: ["polyfill", "commands"]
+      }),
+      new webpack.DefinePlugin({
+        __USAGEDATAENABLED__: fs.existsSync(path.join(os.homedir(), "/office-addin-usage-data.json")) ? 
+        JSON.parse(fs.readFileSync(path.join(os.homedir(), "/office-addin-usage-data.json"), "utf8")).usageDataInstances["office-addin-usage-data"] : false
       })
     ],
     devServer: {
