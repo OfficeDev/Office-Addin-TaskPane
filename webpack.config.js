@@ -42,6 +42,9 @@ module.exports = async (env, options) => {
       ]
     },
     plugins: [
+      new webpack.DefinePlugin({
+        __USAGEDATAENABLED__: usageData.readUsageDataEnabled()
+      }),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
         filename: "taskpane.html",
@@ -58,9 +61,6 @@ module.exports = async (env, options) => {
         filename: "commands.html",
         template: "./src/commands/commands.html",
         chunks: ["polyfill", "commands"]
-      }),
-      new webpack.DefinePlugin({
-        __USAGEDATAENABLED__: usageData.readUsageDataEnabled()
       })
     ],
     devServer: {

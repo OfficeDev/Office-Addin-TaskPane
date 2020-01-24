@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
  */
-
+declare var __USAGEDATAENABLED__: boolean;
 Office.onReady(info => {
   if (info.host === Office.HostType.Excel) {
     document.getElementById("sideload-msg").style.display = "none";
@@ -25,8 +25,7 @@ export async function run() {
 
       // Update the fill color
       range.format.fill.color = "yellow";
-      console.log("hello");
-      //let someBoolean: boolean = __USAGEDATAENABLED__;
+      console.log(__USAGEDATAENABLED__);
 
       await context.sync();
       console.log(`The range address was ${range.address}.`);
