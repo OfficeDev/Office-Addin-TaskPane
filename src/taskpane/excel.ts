@@ -17,9 +17,7 @@ export async function run() {
       /**
        * Insert your Excel code here
        */
-      if(__USAGEDATAENABLED__) {
-        console.log("telemetry enabled");
-      }
+      
       const range = context.workbook.getSelectedRange();
 
       // Read the range address
@@ -27,6 +25,8 @@ export async function run() {
 
       // Update the fill color
       range.format.fill.color = "yellow";
+      console.log("hello");
+      //let someBoolean: boolean = __USAGEDATAENABLED__;
 
       await context.sync();
       console.log(`The range address was ${range.address}.`);

@@ -4,7 +4,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require("fs");
 const webpack = require("webpack");
-const usageDataWeb = require("office-addin-usage-data-web");
+const usageData = require("office-addin-usage-data");
 
 module.exports = async (env, options) => {
   const dev = options.mode === "development";
@@ -60,7 +60,7 @@ module.exports = async (env, options) => {
         chunks: ["polyfill", "commands"]
       }),
       new webpack.DefinePlugin({
-        __USAGEDATAENABLED__: usageDataWeb.readUsageDataEnabled()
+        __USAGEDATAENABLED__: usageData.readUsageDataEnabled()
       })
     ],
     devServer: {
