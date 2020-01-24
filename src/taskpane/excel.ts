@@ -17,6 +17,9 @@ export async function run() {
       /**
        * Insert your Excel code here
        */
+      if(__USAGEDATAENABLED__) {
+        console.log("telemetry enabled");
+      }
       const range = context.workbook.getSelectedRange();
 
       // Read the range address
