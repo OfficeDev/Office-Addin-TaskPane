@@ -42,10 +42,10 @@ module.exports = async (env, options) => {
       ]
     },
     plugins: [
+      new CleanWebpackPlugin(),
       new webpack.DefinePlugin({
         __USAGEDATAENABLED__: usageData.readUsageDataEnabled()
       }),
-      new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
         filename: "taskpane.html",
         template: "./src/taskpane/taskpane.html",
