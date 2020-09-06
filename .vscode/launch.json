@@ -26,28 +26,40 @@
       ]
     },
     {
-      "name": "Excel Desktop",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "desktop"],
-      "args": ["--", "--app", "excel"]
+      "name": "Excel Desktop (Edge)",
+      "type": "office-addin",
+      "request": "attach",
+      "port": 9222,
+      "url": "https://localhost:3000/taskpane.html?_host_Info=Excel$Win32$16.01$en-US$$$$0",
+      "trace": "verbose",
+      "webRoot": "${workspaceRoot}",
+      "timeout": 45000,
+      "preLaunchTask": "Debug: Excel Desktop",
+      "postDebugTask": "Stop Debug"
     },
     {
-      "name": "PowerPoint Desktop",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "desktop"],
-      "args": ["--", "--app", "powerpoint"]
+      "name": "PowerPoint Desktop (Edge)",
+      "type": "office-addin",
+      "request": "attach",
+      "port": 9222,
+      "url": "https://localhost:3000/taskpane.html?_host_Info=PowerPoint$Win32$16.01$en-US$$$$0",
+      "trace": "verbose",
+      "webRoot": "${workspaceRoot}",
+      "timeout": 45000,
+      "preLaunchTask": "Debug: PowerPoint Desktop",
+      "postDebugTask": "Stop Debug"
     },
     {
-      "name": "Word Desktop",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "desktop"],
-      "args": ["--", "--app", "word"]
+      "name": "Word Desktop (Edge)",
+      "type": "office-addin",
+      "request": "attach",
+      "port": 9222,
+      "url": "https://localhost:3000/taskpane.html?_host_Info=Word$Win32$16.01$en-US$$$$0",
+      "trace": "verbose",
+      "webRoot": "${workspaceRoot}",
+      "timeout": 45000,
+      "preLaunchTask": "Debug: Word Desktop",
+      "postDebugTask": "Stop Debug"
     },
     {
       "name": "Office Online (Chrome)",
