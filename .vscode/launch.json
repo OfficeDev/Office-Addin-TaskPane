@@ -26,7 +26,18 @@
       ]
     },
     {
-      "name": "Excel Desktop (Edge)",
+      "name": "Excel Desktop (Edge Chromium)",
+      "type": "edge",
+      "request": "attach",
+      "useWebView": "advanced",
+      "port": 9222,
+      "timeout": 45000,
+      "webRoot": "${workspaceRoot}",
+      "preLaunchTask": "Debug: Excel Desktop",
+      "postDebugTask": "Stop Debug"
+    },
+    {
+      "name": "Excel Desktop (Edge Legacy)",
       "type": "office-addin",
       "request": "attach",
       "port": 9222,
@@ -38,7 +49,18 @@
       "postDebugTask": "Stop Debug"
     },
     {
-      "name": "PowerPoint Desktop (Edge)",
+      "name": "PowerPoint Desktop (Edge Chromium)",
+      "type": "edge",
+      "request": "attach",
+      "useWebView": "advanced",
+      "port": 9222,
+      "timeout": 45000,
+      "webRoot": "${workspaceRoot}",
+      "preLaunchTask": "Debug: PowerPoint Desktop",
+      "postDebugTask": "Stop Debug"
+    },
+    {
+      "name": "PowerPoint Desktop (Edge Legacy)",
       "type": "office-addin",
       "request": "attach",
       "port": 9222,
@@ -50,7 +72,18 @@
       "postDebugTask": "Stop Debug"
     },
     {
-      "name": "Word Desktop (Edge)",
+      "name": "Word Desktop (Edge Chromium)",
+      "type": "edge",
+      "request": "attach",
+      "useWebView": "advanced",
+      "port": 9222,
+      "timeout": 45000,
+      "webRoot": "${workspaceRoot}",
+      "preLaunchTask": "Debug: Word Desktop",
+      "postDebugTask": "Stop Debug"
+    },
+    {
+      "name": "Word Desktop (Edge Legacy)",
       "type": "office-addin",
       "request": "attach",
       "port": 9222,
