@@ -2,6 +2,7 @@ import * as assert from "assert";
 import * as mocha from "mocha";
 import { parseNumber } from "office-addin-cli";
 import { AppType, startDebugging, stopDebugging } from "office-addin-debugging";
+import { addLoopbackExemptionForAppcontainer, getAppcontainerNameFromManifestPath } from "office-addin-dev-settings";
 import { toOfficeApp } from "office-addin-manifest";
 import * as officeAddinTestHelpers from "office-addin-test-helpers";
 import * as officeAddinTestServer from "office-addin-test-server";
@@ -27,6 +28,8 @@ hosts.forEach(function (host) {
             // Call startDebugging to start dev-server and sideload
             const devServerCmd = `npm run dev-server -- --config ./test/webpack.config.js `;
             const devServerPort = parseNumber(process.env.npm_package_config_dev_server_port || 3000);
+            const appContainerName = await getAppcontainerNameFromManifestPath(manifestPath);
+            await addLoopbackExemptionForAppcontainer(appContainerName);
             await startDebugging(manifestPath, AppType.Desktop, toOfficeApp(host), undefined, undefined, devServerCmd, devServerPort);
         }),
         describe(`Get test results for ${host} taskpane project`, function () {
