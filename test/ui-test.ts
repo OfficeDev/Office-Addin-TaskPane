@@ -7,7 +7,7 @@ import * as officeAddinTestHelpers from "office-addin-test-helpers";
 import * as officeAddinTestServer from "office-addin-test-server";
 import * as path from "path";
 import * as testHelpers from "./src/test-helpers";
-const hosts = ["Excel", "Word"];
+const hosts = ["Excel", "PowerPoint"];
 const manifestPath = path.resolve(`${process.cwd()}/test/test-manifest.xml`);
 const testServerPort: number = 4201;
 
@@ -15,7 +15,7 @@ hosts.forEach(function (host) {
     const testServer = new officeAddinTestServer.TestServer(testServerPort);
     let testValues: any = [];
 
-    describe(`Test ${host} Task Pane Project`, function () {
+    describe(`Test ${host} Content Project`, function () {
         before(`Setup test environment and sideload ${host}`, async function () {
             this.timeout(0);
             // Start test server and ping to ensure it's started
@@ -30,7 +30,7 @@ hosts.forEach(function (host) {
             await startDebugging(manifestPath, AppType.Desktop, toOfficeApp(host), undefined, undefined, 
                 devServerCmd, devServerPort, undefined, undefined, undefined, false /* enableDebugging */);
         }),
-        describe(`Get test results for ${host} taskpane project`, function () {
+        describe(`Get test results for ${host} content project`, function () {
             it("Validate expected result count", async function () {
                 this.timeout(0);
                 testValues = await testServer.getTestResults();

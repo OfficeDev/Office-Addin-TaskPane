@@ -1,7 +1,7 @@
 const convertTest = process.argv[3] === "convert-test";
 const fs = require("fs");
 const host = process.argv[2];
-const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+const hosts = ["excel", "powerpoint"];
 const path = require("path");
 const util = require("util");
 const testPackages = ["@types/mocha", "@types/node", "current-processes", "mocha", "office-addin-test-helpers",

@@ -15,8 +15,7 @@ module.exports = async (env, options) => {
     devtool: "source-map",
     entry: {
       polyfill: "@babel/polyfill",
-      taskpane: "./src/taskpane/taskpane.ts",
-      commands: "./src/commands/commands.ts"
+      content: "./src/content/content.ts",
     },
     resolve: {
       extensions: [".ts", ".tsx", ".html", ".js"]
@@ -50,33 +49,31 @@ module.exports = async (env, options) => {
     plugins: [
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
-        filename: "taskpane.html",
-        template: "./src/taskpane/taskpane.html",
-        chunks: ["polyfill", "taskpane"]
+        filename: "content.html",
+        template: "./src/content/content.html",
+        chunks: ["polyfill", "content"]
       }),
       new CopyWebpackPlugin({
         patterns: [
-        {
-          to: "taskpane.css",
-          from: "./src/taskpane/taskpane.css"
-        },
-        {
-          to: "[name]." + buildType + ".[ext]",
-          from: "manifest*.xml",
-          transform(content) {
-            if (dev) {
-              return content;
-            } else {
-              return content.toString().replace(new RegExp(urlDev, "g"), urlProd);
-            }
+          {
+            to: "content.css",
+            from: "./src/content/content.css"
+          },
+          {
+            to: "manifest." + buildType + ".xml",
+            from: "manifest.xml",
+            transform(content) {
+              if (dev) {
+                return content;
+              } else {
+                const urlDev = "https://localhost:3000/";
+                const urlProd = "https://akrantz.github.io/office-addins/content/";
+                return content.toString().replace(new RegExp(urlDev, "g"), urlProd);
+              }
+            }          
           }
-        }
-      ]}),
-      new HtmlWebpackPlugin({
-        filename: "commands.html",
-        template: "./src/commands/commands.html",
-        chunks: ["polyfill", "commands"]
-      })
+        ]
+      }),
     ],
     devServer: {
       headers: {
