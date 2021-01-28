@@ -15,8 +15,6 @@
     <AppDomain>https://www.contoso.com</AppDomain>
   </AppDomains>
   <Hosts>
-    <Host Name="Document"/>
-    <Host Name="Notebook"/>
     <Host Name="Presentation"/>
     <Host Name="Workbook"/>
   </Hosts>

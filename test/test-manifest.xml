@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
-  xsi:type="ContentApp">
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xsi:type="ContentApp">
   <Id>c190ef8f-c1e3-47cf-b0d9-2a112cb12da9</Id>
   <Version>1.0.0.0</Version>
   <ProviderName>Contoso</ProviderName>
@@ -16,8 +15,6 @@
     <AppDomain>https://www.contoso.com</AppDomain>
   </AppDomains>
   <Hosts>
-    <Host Name="Document"/>
-    <Host Name="Notebook"/>
     <Host Name="Presentation"/>
     <Host Name="Workbook"/>
   </Hosts>

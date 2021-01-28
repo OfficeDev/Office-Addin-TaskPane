@@ -8,34 +8,27 @@ Office.onReady(async (info) => {
     if (info.host === Office.HostType.PowerPoint) {
         const testServerResponse: object = await pingTestServer(port);
         if (testServerResponse["status"] == 200) {
-            await runTest();
+            runTest();
         }
     }
 });
 
 export async function runTest(): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
-        try {
-            // Execute taskpane code
-            await run();
-            await run();
-            await testHelpers.sleep(6000);
+    // Execute taskpane code
+    await run();
+    await run();
+    await testHelpers.sleep(6000);
 
-            // Get output of executed taskpane code
-            await Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (asyncResult) => {
-                if (asyncResult.status === Office.AsyncResultStatus.Failed) {
-                    console.error(asyncResult.error.message);
-                    testHelpers.addTestResult(testValues, "output-message", asyncResult.error.message, " Hello World!");
-                } else {
-                    console.log(`The selected data is "${asyncResult.value}".`);
-                    testHelpers.addTestResult(testValues, "output-message", asyncResult.value, " Hello World!");
-                }
-                await sendTestResults(testValues, port);
-                testValues.pop();
-                resolve();
-            });
-        } catch {
-            reject();
+    // Get output of executed taskpane code
+    await Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (asyncResult) => {
+        if (asyncResult.status === Office.AsyncResultStatus.Failed) {
+            console.error(asyncResult.error.message);
+            testHelpers.addTestResult(testValues, "output-message", asyncResult.error.message, " Hello World!");
+        } else {
+            console.log(`The selected data is "${asyncResult.value}".`);
+            testHelpers.addTestResult(testValues, "output-message", asyncResult.value, " Hello World!");
         }
+        await sendTestResults(testValues, port);
+        testValues.pop();
     });
 }
