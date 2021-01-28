@@ -20,7 +20,7 @@ export async function runTest(): Promise<void> {
     await testHelpers.sleep(6000);
 
     // Get output of executed taskpane code
-    await Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (asyncResult) => {
+    return Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (asyncResult) => {
         if (asyncResult.status === Office.AsyncResultStatus.Failed) {
             console.error(asyncResult.error.message);
             testHelpers.addTestResult(testValues, "output-message", asyncResult.error.message, " Hello World!");
