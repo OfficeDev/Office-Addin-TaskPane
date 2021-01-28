@@ -7,7 +7,7 @@ import * as officeAddinTestHelpers from "office-addin-test-helpers";
 import * as officeAddinTestServer from "office-addin-test-server";
 import * as path from "path";
 import * as testHelpers from "./src/test-helpers";
-const hosts = ["Excel", "Word"];
+const hosts = ["Excel", "Word", "PowerPoint"];
 const manifestPath = path.resolve(`${process.cwd()}/test/test-manifest.xml`);
 const testServerPort: number = 4201;
 
@@ -50,7 +50,9 @@ hosts.forEach(function (host) {
             assert.equal(stopTestServer, true);
 
             // Unregister the add-in
-            await stopDebugging(manifestPath);
+            if (host == hosts[hosts.length - 1]) {
+                await stopDebugging(manifestPath);
+            }
 
             // Close desktop application for all apps but Excel, which has it's own closeWorkbook API
             if (host != 'Excel') {
