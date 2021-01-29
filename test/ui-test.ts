@@ -49,11 +49,6 @@ hosts.forEach(function (host) {
             const stopTestServer = await testServer.stopTestServer();
             assert.equal(stopTestServer, true);
 
-            // Unregister the add-in
-            if (host == hosts[hosts.length - 1]) {
-                await stopDebugging(manifestPath);
-            }
-
             // Close desktop application for all apps but Excel, which has it's own closeWorkbook API
             if (host != 'Excel') {
                 const applicationClosed = await testHelpers.closeDesktopApplication(host);
@@ -63,8 +58,6 @@ hosts.forEach(function (host) {
     });
 });
 
-after(`Unregister the add-in`, callback => {
-    stopDebugging(manifestPath).then(() => {
-        setImmediate(callback);
-    });
+after(`Unregister the add-in`, async function () {
+    return stopDebugging(manifestPath);
 });
