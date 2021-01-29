@@ -63,6 +63,8 @@ hosts.forEach(function (host) {
     });
 });
 
-after(`Unregister the add-in`, async function () {
-    return stopDebugging(manifestPath);
+after(`Unregister the add-in`, callback => {
+    stopDebugging(manifestPath).then(() => {
+        setImmediate(callback);
+    });
 });
