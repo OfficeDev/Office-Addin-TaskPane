@@ -34,4 +34,6 @@ export async function runTest(): Promise<void> {
 
     // send test results
     testHelpers.addTestResult(testValues, "output-message", selectedText, "Hello World!");
+
+    await sendTestResults(testValues, port);
 }
