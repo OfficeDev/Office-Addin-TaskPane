@@ -7,7 +7,7 @@ import * as officeAddinTestHelpers from "office-addin-test-helpers";
 import * as officeAddinTestServer from "office-addin-test-server";
 import * as path from "path";
 import * as testHelpers from "./src/test-helpers";
-const hosts = ["PowerPoint"]; // ["Excel", "PowerPoint", "Word"];
+const hosts = ["Excel", "PowerPoint", "Word"];
 const manifestPath = path.resolve(`${process.cwd()}/test/test-manifest.xml`);
 const testServerPort: number = 4201;
 
