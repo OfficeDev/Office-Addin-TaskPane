@@ -13,22 +13,27 @@ Office.onReady(async (info) => {
     }
 });
 
+async function getSelectedText(): Promise<string> {
+    return new Promise((resolve, reject) => {
+        Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, (result: Office.AsyncResult<string>) => {
+            if (result.status === Office.AsyncResultStatus.Failed) {
+                reject(result.error);
+            } else {
+                resolve(result.value);
+            }
+        });
+    })    
+}
+
 export async function runTest(): Promise<void> {
     // Execute taskpane code
     await run();
-    await run();
-    await testHelpers.sleep(6000);
 
-    // Get output of executed taskpane code
-    return Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (asyncResult) => {
-        if (asyncResult.status === Office.AsyncResultStatus.Failed) {
-            console.error(asyncResult.error.message);
-            testHelpers.addTestResult(testValues, "output-message", asyncResult.error.message, " Hello World!");
-        } else {
-            console.log(`The selected data is "${asyncResult.value}".`);
-            testHelpers.addTestResult(testValues, "output-message", asyncResult.value, " Hello World!");
-        }
-        await sendTestResults(testValues, port);
-        testValues.pop();
-    });
+    // get selected text
+    const selectedText = await getSelectedText();
+
+    // send test results
+    testHelpers.addTestResult(testValues, "output-message", selectedText, "Hello World!");
+
+    await sendTestResults(testValues, port);
 }
