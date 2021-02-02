@@ -13,44 +13,25 @@ Office.onReady(async (info) => {
     }
 });
 
-export async function runTest(): Promise<void> {
-    // Set up textbox and cursor for taskpane code test
-    await new Promise<void>((resolve, reject) => {
-        Office.context.document.setSelectedDataAsync(
-            " ",
-            {
-                coercionType: Office.CoercionType.Text
-            },
-            result => {
-                if (result.status === Office.AsyncResultStatus.Failed) {
-                    console.error(result.error.message);
-                    reject(result.error);
-                }
-                resolve();
+async function getSelectedText(): Promise<string> {
+    new Promise((resolve, reject) => {
+        Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (result: Office.AsyncResult<string>) => {
+            if (result.status === Office.AsyncResultStatus.Failed) {
+                reject(result.error);
+            } else {
+                resolve(result.value);
             }
-        )
-    });
-
-    // Execute taskpane code
-    await run();
-    await testHelpers.sleep(6000);
-    await actualTest();
+        });
+    })    
 }
 
-async function actualTest() {
-    // Get output of executed taskpane code
-    return new Promise<void>((resolve) => {
-        Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (asyncResult) => {
-            if (asyncResult.status === Office.AsyncResultStatus.Failed) {
-                console.error(asyncResult.error.message);
-                testHelpers.addTestResult(testValues, "output-message", asyncResult.error.message, "Hello World!");
-            } else {
-                console.log(`The selected data is "${asyncResult.value}".`);
-                testHelpers.addTestResult(testValues, "output-message", asyncResult.value, "Hello World!");
-            }
-            await sendTestResults(testValues, port);
-            testValues.pop();
-            resolve();
-        });
-    });
+export async function runTest(): Promise<void> {
+    // Execute taskpane code
+    await run();
+
+    // get selected text
+    const selectedText = await getSelectedText();
+
+    // send test results
+    testHelpers.addTestResult(testValues, "output-message", selectedText, "Hello World!");
 }

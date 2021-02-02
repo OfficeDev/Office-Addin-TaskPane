@@ -8,7 +8,7 @@ import "../../assets/icon-16.png";
 import "../../assets/icon-32.png";
 import "../../assets/icon-80.png";
 
-/* global console, document, Office */
+/* global document, Office */
 
 Office.onReady(info => {
   if (info.host === Office.HostType.PowerPoint) {
@@ -22,20 +22,8 @@ export async function run() {
   /**
    * Insert your PowerPoint code here
    */
+  const options: Office.SetSelectedDataOptions = { coercionType: Office.CoercionType.Text };
 
-  return new Promise<void>((resolve, reject) => {
-    Office.context.document.setSelectedDataAsync(
-      "Hello World!",
-      {
-        coercionType: Office.CoercionType.Text
-      },
-      result => {
-        if (result.status === Office.AsyncResultStatus.Failed) {
-          console.error(result.error.message);
-          reject(result.error);
-        }
-        resolve();
-      }
-    );
-  });
+  await Office.context.document.setSelectedDataAsync(" ", options);
+  await Office.context.document.setSelectedDataAsync("Hello World!", options);
 }
