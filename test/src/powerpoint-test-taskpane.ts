@@ -14,8 +14,8 @@ Office.onReady(async (info) => {
 });
 
 async function getSelectedText(): Promise<string> {
-    new Promise((resolve, reject) => {
-        Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, async (result: Office.AsyncResult<string>) => {
+    return new Promise((resolve, reject) => {
+        Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, (result: Office.AsyncResult<string>) => {
             if (result.status === Office.AsyncResultStatus.Failed) {
                 reject(result.error);
             } else {
