@@ -27,8 +27,8 @@ hosts.forEach(function(host) {
       assert.strictEqual(testServerStarted, true);
       assert.strictEqual(serverResponse["status"], 200);
 
-      // Call startDebugging to start dev-server and sideload
-      const devServerCmd = `npm run dev-server -- --config ./test/webpack.config.js `;
+      // Call startDebugging to start dev_server and sideload
+      const devServerCmd = `npm run dev_server -- --config ./test/webpack.config.js `;
       const devServerPort = parseNumber(process.env.npm_package_config_dev_server_port || 3000);
       await startDebugging(manifestPath, {
         app: toOfficeApp(host),
