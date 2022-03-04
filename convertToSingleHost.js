@@ -1,8 +1,9 @@
 /* global require, process, console */
 
-const convertTest = process.argv[3] === "convert-test";
+const convertTest = process.argv[4] === "convert-test";
 const fs = require("fs");
 const host = process.argv[2];
+const manifestType = process.argv[3] ?? "xml";
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
 const manifestTypes = ["json", "xml"];
 const path = require("path");
@@ -21,21 +22,21 @@ const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
 
-async function modifyProjectForSingleHost(host) {
+async function modifyProjectForSingleHost(host, manifestType) {
   if (!host) {
     throw new Error("The host was not provided.");
   }
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
-  await convertProjectToSingleHost(host);
-  await updatePackageJsonForSingleHost(host);
+  await convertProjectToSingleHost(host, manifestType);
+  await updatePackageJsonForSingleHost(host, manifestType);
   if (!convertTest) {
     await updateLaunchJsonFile();
   }
 }
 
-async function convertProjectToSingleHost(host, manifestType = "xml") {
+async function convertProjectToSingleHost(host, manifestType) {
   // copy host-specific manifest over manifest.xml
   const manifestContent = await readFileAsync(`./manifest.${host}.${manifestType}`, "utf8");
   await writeFileAsync(`./manifest.${manifestType}`, manifestContent);
@@ -71,9 +72,9 @@ async function convertProjectToSingleHost(host, manifestType = "xml") {
 
   // delete all host-specific files
   hosts.forEach(async function (host) {
+    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
     manifestTypes.forEach(async function (manifestType) {
       await unlinkFileAsync(`./manifest.${host}.${manifestType}`);
-      await unlinkFileAsync(`./src/taskpane/${host}.ts`);
     });
   });
 
@@ -87,7 +88,7 @@ async function convertProjectToSingleHost(host, manifestType = "xml") {
   await deleteSupportFiles();
 }
 
-async function updatePackageJsonForSingleHost(host) {
+async function updatePackageJsonForSingleHost(host, manifestType) {
   // update package.json to reflect selected host
   const packageJson = `./package.json`;
   const data = await readFileAsync(packageJson, "utf8");
@@ -98,6 +99,11 @@ async function updatePackageJsonForSingleHost(host) {
 
   // remove 'engines' section
   delete content.engines;
+
+  // Change .xml references to .json
+  Object.keys(content.scripts).forEach(function (key) {
+    content.scripts[key] = content.scripts[key].replace(/manifest.xml/gi, `manifest.${manifestType}`);
+  });
 
   // update sideload and unload scripts to use selected host.
   ["sideload", "unload"].forEach((key) => {
@@ -176,7 +182,7 @@ async function deleteSupportFiles() {
  * Modify the project so that it only supports a single host.
  * @param host The host to support.
  */
-modifyProjectForSingleHost(host).catch((err) => {
+modifyProjectForSingleHost(host, manifestType).catch((err) => {
   console.error(`Error: ${err instanceof Error ? err.message : err}`);
   process.exitCode = 1;
 });
