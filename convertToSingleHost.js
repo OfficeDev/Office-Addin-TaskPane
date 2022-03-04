@@ -4,6 +4,7 @@ const convertTest = process.argv[3] === "convert-test";
 const fs = require("fs");
 const host = process.argv[2];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+const manifestTypes = ["json", "xml"];
 const path = require("path");
 const util = require("util");
 const testPackages = [
@@ -34,10 +35,10 @@ async function modifyProjectForSingleHost(host) {
   }
 }
 
-async function convertProjectToSingleHost(host) {
+async function convertProjectToSingleHost(host, manifestType = "xml") {
   // copy host-specific manifest over manifest.xml
-  const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
-  await writeFileAsync(`./manifest.xml`, manifestContent);
+  const manifestContent = await readFileAsync(`./manifest.${host}.${manifestType}`, "utf8");
+  await writeFileAsync(`./manifest.${manifestType}`, manifestContent);
 
   // copy over host-specific taskpane code to taskpane.ts
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
@@ -70,8 +71,10 @@ async function convertProjectToSingleHost(host) {
 
   // delete all host-specific files
   hosts.forEach(async function (host) {
-    await unlinkFileAsync(`./manifest.${host}.xml`);
-    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+    manifestTypes.forEach(async function (manifestType) {
+      await unlinkFileAsync(`./manifest.${host}.${manifestType}`);
+      await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+    });
   });
 
   // delete the .github folder
