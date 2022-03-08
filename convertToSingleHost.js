@@ -35,9 +35,6 @@ async function modifyProjectForSingleHost(host) {
 }
 
 async function convertProjectToSingleHost() {
-  // delete all test files by default for now - eventually we want to convert the tests by default
-  deleteFolder(path.resolve(`./test`));
-
   // delete the .github folder
   deleteFolder(path.resolve(`./.github`));
 
