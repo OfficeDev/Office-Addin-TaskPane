@@ -51,9 +51,6 @@ async function updatePackageJsonForSingleHost(host) {
   const data = await readFileAsync(packageJson, "utf8");
   let content = JSON.parse(data);
 
-  // update 'config' section in package.json to use selected host
-  content.config["app_to_debug"] = host;
-
   // remove 'engines' section
   delete content.engines;
 
@@ -73,22 +70,6 @@ async function updatePackageJsonForSingleHost(host) {
       delete content.scripts[key];
     }
   });
-
-  if (!convertTest) {
-    // remove test-related scripts
-    Object.keys(content.scripts).forEach(function (key) {
-      if (key.includes("test")) {
-        delete content.scripts[key];
-      }
-    });
-
-    // remove test-related packages
-    Object.keys(content.devDependencies).forEach(function (key) {
-      if (testPackages.includes(key)) {
-        delete content.devDependencies[key];
-      }
-    });
-  }
 
   // write updated json to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));

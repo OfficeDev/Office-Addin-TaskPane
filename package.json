@@ -7,7 +7,7 @@
   },
   "license": "MIT",
   "config": {
-    "app_to_debug": "excel",
+    "app_to_debug": "outlook",
     "app_type_to_debug": "desktop",
     "dev_server_port": 3000
   },
@@ -28,9 +28,6 @@
     "start:desktop:outlook": "office-addin-debugging start manifest.outlook.json desktop --app outlook",
     "start:web": "office-addin-debugging start manifest.json web",
     "stop": "office-addin-debugging stop manifest.json",
-    "test": "npm run test:unit && npm run test:e2e",
-    "test:e2e": "mocha -r ts-node/register test/end-to-end/*.ts",
-    "test:unit": "mocha -r ts-node/register test/unit/*.test.ts",
     "validate": "office-addin-manifest validate manifest.json",
     "watch": "webpack --mode development --watch"
   },
