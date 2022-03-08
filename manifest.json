@@ -1,63 +1,43 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
-  "packageName": "helloworld",
+  "$schema": "./schema.json",
   "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
   "version": "1.0.0",
-  "developer": {
-      "name": "Contoso",
-      "websiteUrl": "https://www.contoso.com",
-      "privacyUrl": "https://www.contoso.com/privacy",
-      "termsOfUseUrl": "https://www.contoso.com/servicesagreement"
-  },
+  "manifestVersion": "m365DevPreview",
   "name": {
       "short": "Contoso Task Pane Add-in",
       "full": "Contoso Task Pane Add-in"
   },
   "description": {
       "short": "A template to get started.",
-      "full": "A template to get started."
+      "full": "This is the template to get started."
+  },
+  "developer": {
+      "name": "Contoso",
+      "websiteUrl": "https://www.contoso.com",
+      "privacyUrl": "https://www.contoso.com/privacy",
+      "termsOfUseUrl": "https://www.contoso.com/servicesagreement"
   },
   "icons": {
       "outline": "assets/icon-64.png",
       "color": "assets/icon-128.png"
   },
-  "accentColor": "#004578",
-  "staticTabs": [
-      {
-          "entityId": "ee0ab78d-284e-4275-b720-fc084f80a0a3",
-          "name": "helloworld",
-          "contentUrl": "https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=ee0ab78d-284e-4275-b720-fc084f80a0a3%26teams%26personal%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js",
-          "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",
+  "accentColor": "#230201",
+  "extension": {
+      "requirements": {
           "scopes": [
-              "personal"
+              "document",
+              "workbook"
           ]
-      }
-  ],
-  "configurableTabs": [
-      {
-          "configurationUrl": "https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=ee0ab78d-284e-4275-b720-fc084f80a0a3%26openPropertyPane=true%26teams%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js",
-          "canUpdateConfiguration": true,
-          "scopes": [
-              "team"
-          ]
-      }
-  ],
-  "permissions": [
-      "identity",
-      "messageTeamMembers"
-  ],
-  "validDomains": [
-      "*.login.microsoftonline.com",
-      "*.sharepoint.com",
-      "*.sharepoint-df.com",
-      "spoppe-a.akamaihd.net",
-      "spoprod-a.akamaihd.net",
-      "resourceseng.blob.core.windows.net",
-      "msft.spoppe.com"
-  ],
-  "webApplicationInfo": {
-      "resource": "https://{teamSiteDomain}",
-      "id": "00000003-0000-0ff1-ce00-000000000000"
+      },
+      "runtimes": [
+          {
+              "id": "taskpane",
+              "type": "general",
+              "code": {
+                  "page": "https://wikipedia.firstpartyapps.oaspapps.com/wikipedia/wikipedia_dev.html"
+              },
+              "lifetime": "short"
+          }
+]
   }
 }
