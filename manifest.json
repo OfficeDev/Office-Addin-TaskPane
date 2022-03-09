@@ -1,0 +1,43 @@
+{
+  "$schema": "./schema.json",
+  "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+  "version": "1.0.0",
+  "manifestVersion": "m365DevPreview",
+  "name": {
+      "short": "Contoso Task Pane Add-in",
+      "full": "Contoso Task Pane Add-in"
+  },
+  "description": {
+      "short": "A template to get started.",
+      "full": "This is the template to get started."
+  },
+  "developer": {
+      "name": "Contoso",
+      "websiteUrl": "https://www.contoso.com",
+      "privacyUrl": "https://www.contoso.com/privacy",
+      "termsOfUseUrl": "https://www.contoso.com/servicesagreement"
+  },
+  "icons": {
+      "outline": "assets/icon-64.png",
+      "color": "assets/icon-128.png"
+  },
+  "accentColor": "#230201",
+  "extension": {
+      "requirements": {
+          "scopes": [
+              "document",
+              "workbook"
+          ]
+      },
+      "runtimes": [
+          {
+              "id": "taskpane",
+              "type": "general",
+              "code": {
+                  "page": "https://wikipedia.firstpartyapps.oaspapps.com/wikipedia/wikipedia_dev.html"
+              },
+              "lifetime": "short"
+          }
+    ]
+  }
+}
