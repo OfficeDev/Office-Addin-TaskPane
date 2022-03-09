@@ -71,6 +71,20 @@ async function updatePackageJsonForSingleHost(host) {
     }
   });
 
+  // remove test-related scripts
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.includes("test")) {
+      delete content.scripts[key];
+    }
+  });
+
+  // remove test-related packages
+  Object.keys(content.devDependencies).forEach(function (key) {
+    if (testPackages.includes(key)) {
+      delete content.devDependencies[key];
+    }
+  });
+
   // write updated json to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }

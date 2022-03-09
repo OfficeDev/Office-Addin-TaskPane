@@ -28,6 +28,7 @@
     "start:desktop:outlook": "office-addin-debugging start manifest.outlook.json desktop --app outlook",
     "start:web": "office-addin-debugging start manifest.json web",
     "stop": "office-addin-debugging stop manifest.json",
+    "test": "",
     "validate": "office-addin-manifest validate manifest.json",
     "watch": "webpack --mode development --watch"
   },
