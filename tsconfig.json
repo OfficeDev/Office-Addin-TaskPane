@@ -4,7 +4,6 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "jsx": "react",
     "noEmitOnError": true,
     "outDir": "lib",
     "sourceMap": true,
