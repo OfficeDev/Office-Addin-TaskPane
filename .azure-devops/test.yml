@@ -9,8 +9,8 @@ steps:
       script: |
         
         echo Setting WebView Type: ${{ parameters.webView }}
-        call npx office-addin-dev-settings webview manifest.xml ${{ parameters.webView }}
-        call npx office-addin-dev-settings webview test/end-to-end/test-manifest.xml ${{ parameters.webView }}
+        call npx office-addin-dev-settings webview manifest.json ${{ parameters.webView }}
+        call npx office-addin-dev-settings webview test/end-to-end/test-manifest.json ${{ parameters.webView }}
         
         echo Running Tests
         npm run test
