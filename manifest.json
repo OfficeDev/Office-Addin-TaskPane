@@ -22,22 +22,59 @@
       "color": "assets/icon-128.png"
   },
   "accentColor": "#230201",
+  "localizationInfo": {
+    "defaultLanguageTag": "en-us",
+    "additionalLanguages": [
+        {
+            "languageTag": "es-es",
+            "file": "locales/es-es.json"
+        }
+    ]
+  },
+  "authorization": {
+      "permissions": {
+          "resourceSpecific": [
+              {
+                  "name": "Mailbox.ReadWrite",
+                  "type": "Delegated"
+              }
+          ]
+      }
+  },
   "extension": {
       "requirements": {
           "scopes": [
-              "document",
-              "workbook"
+              "mail"
+          ],
+          "capabilities": [
+             { "name": "AddinCommands", "minVersion": "1.1" }
           ]
       },
+      "getStartedMessages": [
+        {
+            "requirements": {
+                "formFactors": ["desktop"]
+            },
+            "title": "Get Started",
+            "description": "Your sample add-in loaded succesfully. Click the buttons to get started.",
+            "learnMoreUrl": "https://www.contoso.com/learnmore"
+        }
+      ],
       "runtimes": [
-          {
-              "id": "taskpane",
-              "type": "general",
-              "code": {
-                  "page": "https://wikipedia.firstpartyapps.oaspapps.com/wikipedia/wikipedia_dev.html"
-              },
-              "lifetime": "short"
-          }
+        {
+          "requirements": {
+              "capabilities": [
+                  { "name": "MailBox", "minVersion": "1.10" }
+              ]
+          },
+          "id": "text",
+          "type": "general",
+          "code": {
+              "page": "https://localhost:3000/taskpane.html",
+              "script": "https://localhost:3000/taskpane.js"
+          },
+          "lifetime": "short"
+      }
     ]
   }
 }
