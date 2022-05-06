@@ -22,6 +22,7 @@
     "dev-server": "webpack serve --mode development",
     "lint": "office-addin-lint check",
     "lint:fix": "office-addin-lint fix",
+    "postinstall": "node checkDotNet.js",
     "prettier": "office-addin-lint prettier",
     "start": "office-addin-debugging start manifest/manifest.json",
     "start:desktop": "office-addin-debugging start manifest/manifest.json desktop",
