@@ -87,7 +87,10 @@
       ],
       "ribbons": [
         {
-          "context": ["mailRead"],
+          "contexts": [
+            "mailCompose",
+            "meetingDetailsOrganizer"
+          ],
           "tabs": [
             {
               "builtInTabId": "TabDefault",
