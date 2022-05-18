@@ -69,7 +69,7 @@
           ]
         },
         {
-          "id": "ExecuteFunction",
+          "id": "CommandsRuntime",
           "type": "general",
           "code": {
             "page": "https://localhost:3000/commands.html",
@@ -78,9 +78,9 @@
           "lifetime": "short",
           "actions": [
             {
-              "id": "ExecuteFunction.action",
+              "id": "CommandsRuntime.action",
               "type": "executeFunction",
-              "displayName": "ExecuteFunction.action"
+              "displayName": "CommandsRuntime.action"
             }
           ]
         }
@@ -131,7 +131,7 @@
                         "title": "Perform an action",
                         "description": "Perform an action when clicked."
                       },
-                      "actionId": "ExecuteFunction.action"
+                      "actionId": "CommandsRuntime.action"
                     }
                   ]
                 }
