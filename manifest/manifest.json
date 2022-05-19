@@ -78,9 +78,9 @@
           "lifetime": "short",
           "actions": [
             {
-              "id": "CommandsRuntime.action",
+              "id": "action",
               "type": "executeFunction",
-              "displayName": "CommandsRuntime.action"
+              "displayName": "action"
             }
           ]
         }
@@ -131,7 +131,7 @@
                         "title": "Perform an action",
                         "description": "Perform an action when clicked."
                       },
-                      "actionId": "CommandsRuntime.action"
+                      "actionId": "action"
                     }
                   ]
                 }
