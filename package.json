@@ -23,13 +23,13 @@
     "lint": "office-addin-lint check",
     "lint:fix": "office-addin-lint fix",
     "prettier": "office-addin-lint prettier",
-    "start": "office-addin-debugging start manifest/manifest.json",
-    "start:desktop": "office-addin-debugging start manifest/manifest.json desktop",
+    "start": "office-addin-debugging start manifest.json",
+    "start:desktop": "office-addin-debugging start manifest.json desktop",
     "start:desktop:outlook": "office-addin-debugging start manifest.outlook.json desktop --app outlook",
-    "start:web": "office-addin-debugging start manifest/manifest.json web",
-    "stop": "office-addin-debugging stop manifest/manifest.json",
+    "start:web": "office-addin-debugging start manifest.json web",
+    "stop": "office-addin-debugging stop manifest.json",
     "test": "echo \"No tests.\"",
-    "validate": "office-addin-manifest validate manifest/manifest.json",
+    "validate": "office-addin-manifest validate manifest.json",
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
