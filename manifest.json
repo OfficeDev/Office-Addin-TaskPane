@@ -42,14 +42,14 @@
       "requirements": {
         "scopes": ["mail"],
         "capabilities": [
-          { "name": "MailBox", "minVersion": "1.3" }
+          { "name": "Mailbox", "minVersion": "1.3" }
         ]
       },
       "runtimes": [
         {
           "requirements": {
             "capabilities": [
-              { "name": "MailBox", "minVersion": "1.3" }
+              { "name": "Mailbox", "minVersion": "1.3" }
             ]
           },
           "id": "TaskPaneRuntime",
