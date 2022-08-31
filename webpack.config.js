@@ -26,7 +26,7 @@ module.exports = async (env, options) => {
       clean: true,
     },
     resolve: {
-      extensions: [".ts", ".tsx", ".html", ".js"],
+      extensions: [".ts", ".html", ".js"],
     },
     module: {
       rules: [
@@ -39,11 +39,6 @@ module.exports = async (env, options) => {
               presets: ["@babel/preset-typescript"],
             },
           },
-        },
-        {
-          test: /\.tsx?$/,
-          exclude: /node_modules/,
-          use: "ts-loader",
         },
         {
           test: /\.html$/,
