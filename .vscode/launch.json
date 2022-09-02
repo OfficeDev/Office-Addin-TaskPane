@@ -6,7 +6,7 @@
   "configurations": [
     {
       "name": "Outlook Desktop (Edge Chromium)",
-      "type": "pwa-msedge",
+      "type": "msedge",
       "request": "attach",
       "useWebView": true,
       "port": 9229,
@@ -35,7 +35,7 @@
     },
     {
       "name": "Office Online (Edge Chromium)",
-      "type": "pwa-msedge",
+      "type": "msedge",
       "request": "launch",
       "port": 9222,
       "webRoot": "${workspaceFolder}",
