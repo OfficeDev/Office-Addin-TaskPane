@@ -8,7 +8,6 @@
       "name": "Outlook Desktop (Edge Chromium)",
       "type": "msedge",
       "request": "attach",
-      "useWebView": true,
       "port": 9229,
       "timeout": 600000,
       "webRoot": "${workspaceRoot}",
