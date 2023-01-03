@@ -5,7 +5,7 @@
 jobs:
   - job: Windows_10_Latest
     pool:
-      name: OE-OfficeClientApps
+      name: OEDevJeff-OfficeClientApps
     steps:
       - template: ./install.yml
       - template: ./lint.yml
@@ -18,7 +18,7 @@ jobs:
 
   - job: WebView_EdgeLegacy
     pool:
-      name: OE-OfficeClientApps
+      name: OEDevJeff-OfficeClientApps
     steps:
       - template: ./install.yml
       - template: ./lint.yml
@@ -31,7 +31,7 @@ jobs:
 
   - job: WebView_IE
     pool:
-      name: OE-OfficeClientApps
+      name: OEDevJeff-OfficeClientApps
     steps:
       - template: ./install.yml
       - template: ./lint.yml
