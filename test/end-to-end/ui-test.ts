@@ -7,7 +7,7 @@ import * as officeAddinTestServer from "office-addin-test-server";
 import * as path from "path";
 import * as testHelpers from "./src/test-helpers";
 
-/* global process, describe, before, it, after, require */
+/* global process, describe, before, it, after */
 
 const hosts = ["Excel", "PowerPoint", "Word"];
 const manifestPath = path.resolve(`${process.cwd()}/test/end-to-end/test-manifest.xml`);
@@ -38,14 +38,6 @@ hosts.forEach(function (host) {
       });
     }),
       describe(`Get test results for ${host} taskpane project`, function () {
-        // let shotCount = 0;
-        // function getScreenShot() {
-        //   shotCount++;
-        //   const screenshot = require("screenshot-desktop");
-        //   screenshot({ filename: `screen-${shotCount}.jpg` });
-        // }
-        // let interval = setInterval(getScreenShot, 10000);
-
         it("Validate expected result count", async function () {
           this.timeout(0);
           testValues = await testServer.getTestResults();
@@ -60,8 +52,6 @@ hosts.forEach(function (host) {
         it("Validate expected result", async function () {
           assert.strictEqual(testValues[0].resultValue, testValues[0].expectedValue);
         });
-        const screenshot = require("screenshot-desktop");
-        screenshot({ filename: `screen-validation.jpg` });
       });
     after(`Teardown test environment and shutdown ${host}`, async function () {
       this.timeout(0);
