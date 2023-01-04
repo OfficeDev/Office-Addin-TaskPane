@@ -38,8 +38,8 @@ hosts.forEach(function (host) {
       });
     }),
       describe(`Get test results for ${host} taskpane project`, function () {
-        const screenshot = require("screenshot-desktop");
-        screenshot({ filename: `screen-validation.jpg` });
+        // const screenshot = require("screenshot-desktop");
+        // screenshot({ filename: `screen-validation.jpg` });
         // let shotCount = 0;
         // function getScreenShot() {
         //   shotCount++;
