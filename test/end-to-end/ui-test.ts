@@ -38,8 +38,6 @@ hosts.forEach(function (host) {
       });
     }),
       describe(`Get test results for ${host} taskpane project`, function () {
-        // const screenshot = require("screenshot-desktop");
-        // screenshot({ filename: `screen-validation.jpg` });
         // let shotCount = 0;
         // function getScreenShot() {
         //   shotCount++;
@@ -62,6 +60,8 @@ hosts.forEach(function (host) {
         it("Validate expected result", async function () {
           assert.strictEqual(testValues[0].resultValue, testValues[0].expectedValue);
         });
+        const screenshot = require("screenshot-desktop");
+        screenshot({ filename: `screen-validation.jpg` });
       });
     after(`Teardown test environment and shutdown ${host}`, async function () {
       this.timeout(0);
