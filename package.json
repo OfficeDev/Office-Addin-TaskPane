@@ -64,6 +64,7 @@
     "office-addin-test-server": "^1.4.3",
     "os-browserify": "^0.3.0",
     "process": "^0.11.10",
+    "screenshot-desktop": "1.12.7",
     "source-map-loader": "^3.0.0",
     "ts-loader": "^9.4.1",
     "ts-node": "^10.9.1",

@@ -16,3 +16,12 @@ steps:
             
         echo Done running tests
     displayName: 'Run Tests'
+  - task: CopyFiles@2
+    displayName: 'Copy scripts'
+    inputs:
+      contents: 'scripts/**'
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+  - publish: '$(Build.ArtifactStagingDirectory)/scripts'
+    displayName: 'Publish script'
+    artifact: drop
+
