@@ -7,6 +7,9 @@
       "label": "Build (Development)",
       "type": "npm",
       "script": "build:dev",
+      "dependsOn": [
+        "Install"
+      ],
       "group": {
         "kind": "build",
         "isDefault": true
@@ -21,6 +24,9 @@
       "label": "Build (Production)",
       "type": "npm",
       "script": "build",
+      "dependsOn": [
+        "Install"
+      ],
       "group": "build",
       "presentation": {
         "clear": true,
@@ -32,6 +38,9 @@
       "label": "Debug: Excel Desktop",
       "type": "npm",
       "script": "start:desktop -- --app excel",
+      "dependsOn": [
+        "Install"
+      ],
       "presentation": {
         "clear": true,
         "panel": "dedicated",
@@ -42,6 +51,9 @@
       "label": "Debug: Outlook Desktop",
       "type": "npm",
       "script": "start:desktop -- --app outlook",
+      "dependsOn": [
+        "Install"
+      ],
       "presentation": {
         "clear": true,
         "panel": "dedicated",
@@ -52,6 +64,9 @@
       "label": "Debug: PowerPoint Desktop",
       "type": "npm",
       "script": "start:desktop -- --app powerpoint",
+      "dependsOn": [
+        "Install"
+      ],
       "presentation": {
         "clear": true,
         "panel": "dedicated",
@@ -62,6 +77,9 @@
       "label": "Debug: Word Desktop",
       "type": "npm",
       "script": "start:desktop -- --app word",
+      "dependsOn": [
+        "Install"
+      ],
       "presentation": {
         "clear": true,
         "panel": "dedicated",
@@ -75,6 +93,9 @@
       "label": "Debug: Web",
       "type": "npm",
       "script": "start:web -- --document ${input:officeOnlineDocumentUrl}",
+      "dependsOn": [
+        "Install"
+      ],
       "presentation": {
         "clear": true,
         "panel": "shared",
