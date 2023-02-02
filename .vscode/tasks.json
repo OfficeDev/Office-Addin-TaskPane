@@ -7,6 +7,9 @@
       "label": "Build (Development)",
       "type": "npm",
       "script": "build:dev",
+      "dependsOn": [
+        "Install"
+      ],
       "group": {
         "kind": "build",
         "isDefault": true
@@ -21,6 +24,9 @@
       "label": "Build (Production)",
       "type": "npm",
       "script": "build",
+      "dependsOn": [
+        "Install"
+      ],
       "group": "build",
       "presentation": {
         "clear": true,
@@ -32,6 +38,9 @@
       "label": "Debug: Outlook Desktop",
       "type": "npm",
       "script": "start:desktop -- --app outlook",
+      "dependsOn": [
+        "Install"
+      ],
       "presentation": {
         "clear": true,
         "panel": "dedicated",
