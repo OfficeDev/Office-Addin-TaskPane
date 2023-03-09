@@ -37,7 +37,7 @@
     {
       "label": "Debug: Outlook Desktop",
       "type": "npm",
-      "script": "start:desktop",
+      "script": "start",
       "dependsOn": [
         "Install"
       ],
