@@ -39,6 +39,7 @@
       "type": "npm",
       "script": "start",
       "dependsOn": [
+        "Check OS",
         "Install"
       ],
       "presentation": {
@@ -105,5 +106,22 @@
       },
       "problemMatcher": []
     },
+    {
+      "label": "Check OS",
+      "type": "shell",
+      "windows": {
+        "command": "echo 'Sideloading in Outlook on Windows is supported'"
+      },
+      "linux": {
+        "command": "echo 'Sideloading on Linux is not supported' && exit 1"
+      },
+      "osx": {
+        "command": "echo 'Sideloading in Outlook on Mac is not supported' && exit 1"
+      },
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated",
+      },
+    }
   ],
 }
