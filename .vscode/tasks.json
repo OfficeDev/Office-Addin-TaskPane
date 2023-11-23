@@ -35,9 +35,51 @@
       }
     },
     {
+      "label": "Debug: Word Desktop",
+      "type": "npm",
+      "script": "start:desktop -- --app word",
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ],
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated",
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Debug: Excel Desktop",
+      "type": "npm",
+      "script": "start:desktop -- --app excel",
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ],
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated",
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Debug: PowerPoint Desktop",
+      "type": "npm",
+      "script": "start:desktop -- --app powerpoint",
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ],
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated",
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Debug: Outlook Desktop",
       "type": "npm",
-      "script": "start",
+      "script": "start:desktop -- --app outlook",
       "dependsOn": [
         "Check OS",
         "Install"
@@ -110,13 +152,13 @@
       "label": "Check OS",
       "type": "shell",
       "windows": {
-        "command": "echo 'Sideloading in Outlook on Windows is supported'"
+        "command": "echo 'Sideloading on Windows is supported'"
       },
       "linux": {
         "command": "echo 'Sideloading on Linux is not supported' && exit 1"
       },
       "osx": {
-        "command": "echo 'Sideloading in Outlook on Mac is not supported' && exit 1"
+        "command": "echo 'Sideloading on Mac is not supported' && exit 1"
       },
       "presentation": {
         "clear": true,

@@ -7,7 +7,6 @@
   },
   "license": "MIT",
   "config": {
-    "app_to_debug": "outlook",
     "app_type_to_debug": "desktop",
     "dev_server_port": 3000
   },
@@ -25,7 +24,10 @@
     "signin": "office-addin-dev-settings m365-account login",
     "signout": "office-addin-dev-settings m365-account logout",
     "prettier": "office-addin-lint prettier",
-    "start": "office-addin-debugging start manifest.json",
+    "start:word": "office-addin-debugging start manifest.json --app word",
+    "start:excel": "office-addin-debugging start manifest.json --app excel",
+    "start:powerpoint": "office-addin-debugging start manifest.json --app powerpoint",
+    "start:outlook": "office-addin-debugging start manifest.json --app outlook",
     "stop": "office-addin-debugging stop manifest.json",
     "test": "echo \"No tests.\"",
     "validate": "office-addin-manifest validate manifest.json",
