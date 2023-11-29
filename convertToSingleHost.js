@@ -2,7 +2,7 @@
 
 const convertTest = process.argv[3] === "convert-test";
 const fs = require("fs");
-const host = process.argv[2];
+const host = "outlook";
 const hosts = ["outlook", "word", "excel", "powerpoint"];
 const path = require("path");
 const util = require("util");

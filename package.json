@@ -24,7 +24,7 @@
     "signin": "office-addin-dev-settings m365-account login",
     "signout": "office-addin-dev-settings m365-account logout",
     "prettier": "office-addin-lint prettier",
-    "start:desktop": "office-addin-debugging start manifest.json",
+    "start": "office-addin-debugging start manifest.json",
     "stop": "office-addin-debugging stop manifest.json",
     "test": "echo \"No tests.\"",
     "validate": "office-addin-manifest validate manifest.json",

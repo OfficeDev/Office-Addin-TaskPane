@@ -37,7 +37,7 @@
     {
       "label": "Debug: Excel Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app excel",
+      "script": "start -- --app excel",
       "dependsOn": [
         "Check OS",
         "Install"
@@ -51,7 +51,7 @@
     {
       "label": "Debug: Outlook Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app outlook",
+      "script": "start -- --app outlook",
       "dependsOn": [
         "Check OS",
         "Install"
@@ -65,7 +65,7 @@
     {
       "label": "Debug: PowerPoint Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app powerpoint",
+      "script": "start -- --app powerpoint",
       "dependsOn": [
         "Check OS",
         "Install"
@@ -79,7 +79,7 @@
     {
       "label": "Debug: Word Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app word",
+      "script": "start -- --app word",
       "dependsOn": [
         "Check OS",
         "Install"
