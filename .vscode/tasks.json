@@ -114,7 +114,7 @@
     {
       "label": "Link",
       "type": "shell",
-      "command": "npm link office-addin-dev-settings",
+      "command": "npm link office-addin-dev-settings --force",
       "dependsOn": [
         "Install"
       ],
@@ -176,7 +176,7 @@
       },
       "presentation": {
         "clear": true,
-        "panel": "shared",
+        "panel": "dedicated",
       },
     }
   ],
