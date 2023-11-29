@@ -35,9 +35,9 @@
       }
     },
     {
-      "label": "Debug: Word Desktop",
+      "label": "Debug: Excel Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app word",
+      "script": "start:desktop -- --app excel",
       "dependsOn": [
         "Check OS",
         "Install"
@@ -49,9 +49,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Debug: Excel Desktop",
+      "label": "Debug: Outlook Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app excel",
+      "script": "start:desktop -- --app outlook",
       "dependsOn": [
         "Check OS",
         "Install"
@@ -77,9 +77,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Debug: Outlook Desktop",
+      "label": "Debug: Word Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app outlook",
+      "script": "start:desktop -- --app word",
       "dependsOn": [
         "Check OS",
         "Install"

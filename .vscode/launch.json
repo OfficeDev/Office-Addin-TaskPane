@@ -5,6 +5,27 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Excel Desktop (Edge Chromium)",
+      "type": "msedge",
+      "request": "attach",
+      "port": 9229,
+      "timeout": 600000,
+      "webRoot": "${workspaceRoot}",
+      "preLaunchTask": "Debug: Excel Desktop",
+      "postDebugTask": "Stop Debug"
+    },
+    {
+      "name": "Excel Desktop (Edge Legacy)",
+      "type": "office-addin",
+      "request": "attach",
+      "url": "https://localhost:3000/taskpane.html?_host_Info=Excel$Win32$16.01$en-US$$$$0",
+      "port": 9222,
+      "timeout": 600000,
+      "webRoot": "${workspaceRoot}",
+      "preLaunchTask": "Debug: Excel Desktop",
+      "postDebugTask": "Stop Debug"
+    },
+    {
       "name": "Outlook Desktop (Edge Chromium)",
       "type": "msedge",
       "request": "attach",
@@ -26,45 +47,13 @@
       "postDebugTask": "Stop Debug"
     },
     {
-      "name": "Word Desktop (Edge Chromium)",
+      "name": "PowerPoint Desktop (Edge Chromium)",
       "type": "msedge",
       "request": "attach",
       "port": 9229,
       "timeout": 600000,
       "webRoot": "${workspaceRoot}",
-      "preLaunchTask": "Debug: Word Desktop",
-      "postDebugTask": "Stop Debug"
-    },
-    {
-      "name": "Word Desktop (Edge Legacy)",
-      "type": "office-addin",
-      "request": "attach",
-      "url": "https://localhost:3000/taskpane.html?_host_Info=Word$Win32$16.01$en-US$$$$0",
-      "port": 9222,
-      "timeout": 600000,
-      "webRoot": "${workspaceRoot}",
-      "preLaunchTask": "Debug: Word Desktop",
-      "postDebugTask": "Stop Debug"
-    },
-    {
-      "name": "Excel Desktop (Edge Chromium)",
-      "type": "msedge",
-      "request": "attach",
-      "port": 9229,
-      "timeout": 600000,
-      "webRoot": "${workspaceRoot}",
-      "preLaunchTask": "Debug: Excel Desktop",
-      "postDebugTask": "Stop Debug"
-    },
-    {
-      "name": "Excel Desktop (Edge Legacy)",
-      "type": "office-addin",
-      "request": "attach",
-      "url": "https://localhost:3000/taskpane.html?_host_Info=Excel$Win32$16.01$en-US$$$$0",
-      "port": 9222,
-      "timeout": 600000,
-      "webRoot": "${workspaceRoot}",
-      "preLaunchTask": "Debug: Excel Desktop",
+      "preLaunchTask": "Debug: PowerPoint Desktop",
       "postDebugTask": "Stop Debug"
     },
     {
@@ -88,5 +77,15 @@
       "preLaunchTask": "Debug: Word Desktop",
       "postDebugTask": "Stop Debug"
     },
+    {
+      "name": "Word Desktop (Edge Chromium)",
+      "type": "msedge",
+      "request": "attach",
+      "port": 9229,
+      "timeout": 600000,
+      "webRoot": "${workspaceRoot}",
+      "preLaunchTask": "Debug: Word Desktop",
+      "postDebugTask": "Stop Debug"
+    }
   ]
 }
