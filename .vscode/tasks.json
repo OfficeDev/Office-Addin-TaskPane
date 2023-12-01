@@ -102,8 +102,8 @@
     },
     {
       "label": "Install",
-      "type": "npm",
-      "script": "install",
+      "type": "shell",
+      "command": "npm install",
       "presentation": {
         "clear": true,
         "panel": "shared",
