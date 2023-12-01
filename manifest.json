@@ -184,7 +184,7 @@
                     {
                       "id": "msgReadOpenPaneButton",
                       "type": "button",
-                      "label": "Show Taskpane",
+                      "label": "Hello Excel",
                       "icons": [
                         { "size": 16, "file": "https://localhost:3000/assets/icon-16.png" },
                         { "size": 32, "file": "https://localhost:3000/assets/icon-32.png" },
