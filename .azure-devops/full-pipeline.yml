@@ -3,31 +3,31 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 jobs:
-  - job: Windows_10_Latest
-    pool:
-      name: OE-OfficeClientApps
-    steps:
-      - template: ./install.yml
-      - template: ./lint.yml
-      - template: ./build.yml
-      - template: ./devcerts.yml
-      - template: ./edgewebview.yml
-      - template: ./test.yml
-        parameters:
-          webView: "edge-chromium"
+  # - job: Windows_10_Latest
+  #   pool:
+  #     name: OE-OfficeClientApps
+  #   steps:
+  #     - template: ./install.yml
+  #     - template: ./lint.yml
+  #     - template: ./build.yml
+  #     - template: ./devcerts.yml
+  #     - template: ./edgewebview.yml
+  #     - template: ./test.yml
+  #       parameters:
+  #         webView: "edge-chromium"
 
-  - job: WebView_EdgeLegacy
-    pool:
-      name: OE-OfficeClientApps
-    steps:
-      - template: ./install.yml
-      - template: ./lint.yml
-      - template: ./build.yml
-      - template: ./devcerts.yml
-      - template: ./edgewebview.yml
-      - template: ./test.yml
-        parameters:
-          webView: "edge-legacy"
+  # - job: WebView_EdgeLegacy
+  #   pool:
+  #     name: OE-OfficeClientApps
+  #   steps:
+  #     - template: ./install.yml
+  #     - template: ./lint.yml
+  #     - template: ./build.yml
+  #     - template: ./devcerts.yml
+  #     - template: ./edgewebview.yml
+  #     - template: ./test.yml
+  #       parameters:
+  #         webView: "edge-legacy"
 
   - job: WebView_IE
     pool:
@@ -42,12 +42,12 @@ jobs:
         parameters:
           webView: "ie"
 
-  - job: Mac
-    pool:
-      name: OPX Mac Dogfood Pool
-    steps:
-      - template: ./install.yml
-      - template: ./lint.yml
-      - template: ./build.yml
-      - template: ./test.yml
-      - template: ./cleanup.yml
+  # - job: Mac
+  #   pool:
+  #     name: OPX Mac Dogfood Pool
+  #   steps:
+  #     - template: ./install.yml
+  #     - template: ./lint.yml
+  #     - template: ./build.yml
+  #     - template: ./test.yml
+  #     - template: ./cleanup.yml
