@@ -9,7 +9,7 @@ const host = process.argv[2];
 const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
-const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "all"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -68,7 +68,7 @@ async function updatePackageJsonForSingleHost(host) {
   const packageJson = `./package.json`;
   const data = await readFileAsync(packageJson, "utf8");
   let content = JSON.parse(data);
-  
+
   // Update 'config' section in package.json to use selected host
   content.config["app_to_debug"] = host;
 
@@ -98,7 +98,7 @@ async function updatePackageJsonForSingleHost(host) {
       delete content.devDependencies[key];
     }
   });
-  
+
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
@@ -159,7 +159,7 @@ async function updatePackageJsonForXMLManifest() {
   // Remove scripts that are only used with JSON manifest
   delete content.scripts["signin"];
   delete content.scripts["signout"];
-  
+
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
@@ -180,7 +180,7 @@ async function updatePackageJsonForJSONManifest() {
   content.scripts.start = "office-addin-debugging start manifest.json";
   content.scripts.stop = "office-addin-debugging stop manifest.json";
   content.scripts.validate = "office-addin-manifest validate manifest.json";
-  
+
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
@@ -192,15 +192,15 @@ async function updateTasksJsonFileForJSONManifest() {
 
   content.tasks.forEach(function (task) {
     if (task.label.startsWith("Build")) {
-      task.dependsOn = [ "Install" ];
+      task.dependsOn = ["Install"];
     };
     if (task.label === "Debug: Outlook Desktop") {
       task.script = "start";
-      task.dependsOn = [ "Check OS", "Install" ];
+      task.dependsOn = ["Check OS", "Install"];
     }
   });
-  
-  const checkOSTask =  {
+
+  const checkOSTask = {
     label: "Check OS",
     type: "shell",
     windows: {
@@ -236,6 +236,14 @@ async function modifyProjectForJSONManifest() {
   await deleteXMLManifestRelatedFiles();
 }
 
+async function modifyProjectForJSONManifestWXPO() {
+  await updatePackageJsonForJSONManifestWXPO();
+  await updateWebpackConfigForJSONManifest();
+  await updateTasksJsonFileForJSONManifestWXPO();
+  await updateSrcFolderForJSONManifestWXPO();
+  await deleteXMLManifestRelatedFiles();
+}
+
 /**
  * Modify the project so that it only supports a single host.
  * @param host The host to support.
@@ -251,6 +259,12 @@ if ((host !== "outlook") || (manifestType !== "json")) {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
+} else if (manifestType === "json" && host === "all") {
+  manifestPath = "manifest.json";
+  modifyProjectForJSONManifestWXPO().catch((err) => {
+    console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
+    process.exitCode = 1;
+  });
 } else {
   manifestPath = "manifest.json";
   modifyProjectForJSONManifest().catch((err) => {
@@ -265,4 +279,206 @@ if (projectName) {
   }
   manifest.OfficeAddinManifest.modifyManifestFile(manifestPath, appId, projectName);
 }
- 
+
+async function updatePackageJsonForJSONManifestWXPO() {
+  const packageJson = `./package.json`;
+  const data = await readFileAsync(packageJson, "utf8");
+  let content = JSON.parse(data);
+
+  // Remove 'app_to_debug' section
+  delete content.config["app_to_debug"];
+
+  // Remove special start scripts
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.includes("start:")) {
+      delete content.scripts[key];
+    }
+  });
+
+  // Remove special test scripts
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.includes("test:")) {
+      delete content.scripts[key];
+    }
+  });
+
+  // Change test script
+  content.scripts.test = "echo \"No tests.\"";
+
+  // Change manifest file name extension  
+  content.scripts.start = "office-addin-debugging start manifest.json";
+  content.scripts.stop = "office-addin-debugging stop manifest.json";
+  content.scripts.validate = "office-addin-manifest validate manifest.json";
+
+  // Write updated JSON to file
+  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
+}
+
+async function updateTasksJsonFileForJSONManifestWXPO() {
+  const tasksJson = `.vscode/tasks.json`;
+  const data = await readFileAsync(tasksJson, "utf8");
+  let content = JSON.parse(data);
+
+  content.tasks.forEach(function (task) {
+    if (task.label.startsWith("Build")) {
+      task.dependsOn = ["Install"];
+    };
+    if (task.label === "Debug: Excel Desktop") {
+      task.script = "start -- --app excel";
+      task.dependsOn = ["Check OS", "Install"];
+    }
+    if (task.label === "Debug: Outlook Desktop") {
+      task.script = "start -- --app outlook";
+      task.dependsOn = ["Check OS", "Install"];
+    }
+    if (task.label === "Debug: PowerPoint Desktop") {
+      task.script = "start -- --app powerpoint";
+      task.dependsOn = ["Check OS", "Install"];
+    }
+    if (task.label === "Debug: Word Desktop") {
+      task.script = "start -- --app word";
+      task.dependsOn = ["Check OS", "Install"];
+    }
+  });
+
+  const checkOSTask = {
+    label: "Check OS",
+    type: "shell",
+    windows: {
+      command: "echo 'Sideloading on Windows is supported'"
+    },
+    linux: {
+      command: "echo 'Sideloading on Linux is not supported' && exit 1"
+    },
+    osx: {
+      command: "echo 'Sideloading on Mac is not supported' && exit 1"
+    },
+    presentation: {
+      clear: true,
+      panel: "dedicated"
+    }
+  };
+
+  content.tasks.push(checkOSTask);
+  await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
+}
+
+async function updateSrcFolderForJSONManifestWXPO() {
+  const fs = require('fs');
+  const path = require('path');
+
+  const srcFolder = './src/taskpane';
+  const files = ['excel.ts', 'word.ts', 'outlook.ts', 'powerpoint.ts'];
+
+  let content = '';
+  content += `
+  Office.onReady((info) => {
+    if (info.host === Office.HostType.Outlook) {
+      document.getElementById("sideload-msg").style.display = "none";
+      document.getElementById("app-body").style.display = "flex";
+      document.getElementById("run").onclick = runOutlook;
+    }
+  });
+  if(info.host === Office.HostType.Word){
+    document.getElementById("sideload-msg").style.display = "none";
+    document.getElementById("app-body").style.display = "flex";
+    document.getElementById("run").onclick = runWord;
+  }
+  if (info.host === Office.HostType.Excel) {
+    document.getElementById("sideload-msg").style.display = "none";
+    document.getElementById("app-body").style.display = "flex";
+    document.getElementById("run").onclick = runExcel;
+  }
+  if (info.host === Office.HostType.PowerPoint) {
+    document.getElementById("sideload-msg").style.display = "none";
+    document.getElementById("app-body").style.display = "flex";
+    document.getElementById("run").onclick = runPowerPoint;
+  }
+  `;
+
+  files.forEach((file) => {
+    const filePath = path.join(srcFolder, file);
+    content += fs.readFileSync(filePath, 'utf8');
+
+    if (file === 'outlook.ts') {
+      content += `
+      export async function runOutlook() {
+        try {
+          await Outlook.run(async (context) => {
+            /**
+             * Insert your Outlook code here
+             */
+            const item = context.mailbox.item;
+            item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text });
+            item.subject.set("Hello, world!");
+            item.saveAsync();
+            await context.sync();
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      `;
+    }
+    if (file === 'word.ts') {
+      content += `
+      export async function runWord() {
+        try {
+          await Word.run(async (context) => {
+            /**
+             * Insert your Word code here
+             */
+            const range = context.document.getSelection();
+            range.insertText("Hello, world!", Word.InsertLocation.end);
+            range.font.color = "red";
+            await context.sync();
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      `;
+    }
+    if (file === 'excel.ts') {
+      content += `
+      export async function runExcel() {
+        try {
+          await Excel.run(async (context) => {
+            /**
+             * Insert your Excel code here
+             */
+            const range = context.workbook.getSelectedRange();
+            range.values = [["Hello, world!"]];
+            range.format.fill.color = "yellow";
+            await context.sync();
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      `;
+    }
+    if (file === 'powerpoint.ts') {
+      content += `
+      export async function runPowerPoint() {
+        try {
+          await PowerPoint.run(async (context) => {
+            /**
+             * Insert your PowerPoint code here
+             */
+            const slide = context.presentation.slides.getFirst();
+            slide.insertText("Hello World!", "End");
+            await context.sync();
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      `;
+
+    }
+  });
+
+  const taskpanePath = path.join(srcFolder, 'taskpane.ts');
+  fs.writeFileSync(taskpanePath, content);
+}
