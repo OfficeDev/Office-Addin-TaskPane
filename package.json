@@ -59,7 +59,7 @@
     "office-addin-debugging": "^5.0.12",
     "office-addin-dev-certs": "^1.11.4",
     "office-addin-lint": "^2.2.5",
-    "office-addin-manifest": "^1.12.4",
+    "office-addin-manifest": "^1.12.8",
     "office-addin-mock": "^2.3.9",
     "office-addin-prettier-config": "^1.2.0",
     "office-addin-test-helpers": "^1.4.5",
