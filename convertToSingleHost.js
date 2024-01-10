@@ -44,7 +44,7 @@ async function convertProjectToSingleHost(host) {
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
   await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
 
-  if (typeof manifestType === "undefined" || manifestType !== "json") {
+  if (typeof manifestType !== "undefined" && manifestType == "json") {
     hosts = ["project", "onenote"];
   }
 
