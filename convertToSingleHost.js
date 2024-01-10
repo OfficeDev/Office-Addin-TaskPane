@@ -77,10 +77,7 @@ async function updatePackageJsonForSingleHost(host) {
 
   // Remove scripts that are unrelated to the selected host
   Object.keys(content.scripts).forEach(function (key) {
-    if (
-      key === "convert-to-single-host" ||
-      key === "start:desktop:outlook"
-    ) {
+    if (key === "convert-to-single-host" || key === "start:desktop:outlook") {
       delete content.scripts[key];
     }
   });
@@ -355,8 +352,8 @@ async function updateTasksJsonFileForJSONManifestWXPO() {
     },
     presentation: {
       clear: true,
-      panel: "dedicated"
-    }
+      panel: "dedicated",
+    },
   };
 
   content.tasks.push(checkOSTask);
@@ -364,13 +361,13 @@ async function updateTasksJsonFileForJSONManifestWXPO() {
 }
 
 async function updateSrcFolderForJSONManifestWXPO() {
-  const fs = require('fs');
-  const path = require('path');
+  const fs = require("fs");
+  const path = require("path");
 
-  const srcFolder = './src/taskpane';
-  const files = ['excel.ts', 'word.ts', 'outlook.ts', 'powerpoint.ts'];
+  const srcFolder = `./src/taskpane`;
+  const files = ["excel.ts", "word.ts", "outlook.ts", "powerpoint.ts"];
 
-  let content = '';
+  let content = "";
   content += `
   Office.onReady((info) => {
     if (info.host === Office.HostType.Outlook) {
@@ -398,9 +395,9 @@ async function updateSrcFolderForJSONManifestWXPO() {
 
   files.forEach((file) => {
     const filePath = path.join(srcFolder, file);
-    content += fs.readFileSync(filePath, 'utf8');
+    content += fs.readFileSync(filePath, "utf8");
 
-    if (file === 'outlook.ts') {
+    if (file === "outlook.ts") {
       content += `
       export async function runOutlook() {
         try {
@@ -420,7 +417,7 @@ async function updateSrcFolderForJSONManifestWXPO() {
       }
       `;
     }
-    if (file === 'word.ts') {
+    if (file === "word.ts") {
       content += `
       export async function runWord() {
         try {
@@ -439,7 +436,7 @@ async function updateSrcFolderForJSONManifestWXPO() {
       }
       `;
     }
-    if (file === 'excel.ts') {
+    if (file === "excel.ts") {
       content += `
       export async function runExcel() {
         try {
@@ -458,7 +455,7 @@ async function updateSrcFolderForJSONManifestWXPO() {
       }
       `;
     }
-    if (file === 'powerpoint.ts') {
+    if (file === "powerpoint.ts") {
       content += `
       export async function runPowerPoint() {
         try {
@@ -475,10 +472,9 @@ async function updateSrcFolderForJSONManifestWXPO() {
         }
       }
       `;
-
     }
   });
 
-  const taskpanePath = path.join(srcFolder, 'taskpane.ts');
+  const taskpanePath = path.join(srcFolder, "taskpane.ts");
   fs.writeFileSync(taskpanePath, content);
 }
