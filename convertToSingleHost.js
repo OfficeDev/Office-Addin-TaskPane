@@ -40,14 +40,15 @@ async function convertProjectToSingleHost(host) {
   const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
   await writeFileAsync(`./manifest.xml`, manifestContent);
 
-  // Copy over host-specific taskpane code to taskpane.ts
-  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+  if (typeof manifestType == "undefined" || manifestType != "json") {
+    // Copy over host-specific taskpane code to taskpane.ts
+    const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+    await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+  }
 
   if (typeof manifestType !== "undefined" && manifestType == "json") {
     hosts = ["project", "onenote"];
   }
-
   // Delete all host-specific files
   hosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
@@ -150,6 +151,11 @@ async function deleteJSONManifestRelatedFiles() {
 
 async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
+  hosts = ["outlook", "excel", "word", "powerpoint"];
+  for (const host of hosts) {
+    await unlinkFileAsync(`manifest.${host}.xml`);
+    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  }
 }
 
 async function updatePackageJsonForXMLManifest() {
@@ -348,13 +354,13 @@ async function updateTasksJsonFileForJSONManifestWXPO() {
     label: "Check OS",
     type: "shell",
     windows: {
-      command: "echo 'Sideloading on Windows is supported'"
+      command: "echo 'Sideloading on Windows is supported'",
     },
     linux: {
-      command: "echo 'Sideloading on Linux is not supported' && exit 1"
+      command: "echo 'Sideloading on Linux is not supported' && exit 1",
     },
     osx: {
-      command: "echo 'Sideloading on Mac is not supported' && exit 1"
+      command: "echo 'Sideloading on Mac is not supported' && exit 1",
     },
     presentation: {
       clear: true,
