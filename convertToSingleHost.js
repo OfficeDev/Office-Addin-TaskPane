@@ -9,7 +9,7 @@ const host = process.argv[2];
 const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
-const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "all"];
+const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -255,11 +255,11 @@ modifyProjectForSingleHost(host).catch((err) => {
 
 let manifestPath = "manifest.xml";
 
-if ((host !== "outlook") || (manifestType !== "json")) {
+if (host !== "outlook" || manifestType !== "json") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
-} else if (manifestType === "json" && host === "all") {
+} else if (manifestType === "json" && projectName === "TeamsFx") {
   manifestPath = "manifest.json";
   modifyProjectForJSONManifestWXPO().catch((err) => {
     console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
@@ -303,9 +303,9 @@ async function updatePackageJsonForJSONManifestWXPO() {
   });
 
   // Change test script
-  content.scripts.test = "echo \"No tests.\"";
+  content.scripts.test = 'echo "No tests."';
 
-  // Change manifest file name extension  
+  // Change manifest file name extension
   content.scripts.start = "office-addin-debugging start manifest.json";
   content.scripts.stop = "office-addin-debugging stop manifest.json";
   content.scripts.validate = "office-addin-manifest validate manifest.json";
