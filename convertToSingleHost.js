@@ -173,7 +173,7 @@ async function updatePackageJsonForJSONManifest() {
     }
   });
 
-  // Change manifest file name extension  
+  // Change manifest file name extension
   content.scripts.start = "office-addin-debugging start manifest.json";
   content.scripts.stop = "office-addin-debugging stop manifest.json";
   content.scripts.validate = "office-addin-manifest validate manifest.json";
@@ -252,7 +252,7 @@ modifyProjectForSingleHost(host).catch((err) => {
 
 let manifestPath = "manifest.xml";
 
-if (manifestType !== "json" || host !== "outlook") {
+if (manifestType !== "json") {
   console.log("XML manifest detected. Deleting JSON manifest.");
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
