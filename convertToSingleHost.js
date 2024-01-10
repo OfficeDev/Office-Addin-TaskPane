@@ -253,10 +253,12 @@ modifyProjectForSingleHost(host).catch((err) => {
 let manifestPath = "manifest.xml";
 
 if (manifestType !== "json" || host !== "outlook") {
+  console.log("XML manifest detected. Deleting JSON manifest.");
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
 } else if (manifestType === "json" && projectName === "TeamsFx") {
+  console.log("TeamsFx project detected. Updating project for WXPO JSON manifest.");
   manifestPath = "manifest.json";
   modifyProjectForJSONManifestWXPO().catch((err) => {
     console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
