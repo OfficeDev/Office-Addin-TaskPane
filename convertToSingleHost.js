@@ -252,7 +252,7 @@ modifyProjectForSingleHost(host).catch((err) => {
 
 let manifestPath = "manifest.xml";
 
-if (host !== "outlook" || manifestType !== "json") {
+if (manifestType !== "json" || host !== "outlook") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
