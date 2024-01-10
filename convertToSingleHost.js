@@ -9,7 +9,7 @@ const host = process.argv[2];
 const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
-const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+let hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -43,6 +43,10 @@ async function convertProjectToSingleHost(host) {
   // Copy over host-specific taskpane code to taskpane.ts
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
   await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+
+  if (typeof manifestType === "undefined" || manifestType !== "json") {
+    hosts = ["project", "onenote"];
+  }
 
   // Delete all host-specific files
   hosts.forEach(async function (host) {
