@@ -211,18 +211,18 @@ async function updateTasksJsonFileForJSONManifest() {
     label: "Check OS",
     type: "shell",
     windows: {
-      command: "echo 'Sideloading in Outlook on Windows is supported'"
+      command: "echo 'Sideloading in Outlook on Windows is supported'",
     },
     linux: {
-      command: "echo 'Sideloading on Linux is not supported' && exit 1"
+      command: "echo 'Sideloading on Linux is not supported' && exit 1",
     },
     osx: {
-      command: "echo 'Sideloading in Outlook on Mac is not supported' && exit 1"
+      command: "echo 'Sideloading in Outlook on Mac is not supported' && exit 1",
     },
     presentation: {
       clear: true,
-      panel: "dedicated"
-    }
+      panel: "dedicated",
+    },
   };
 
   content.tasks.push(checkOSTask);
@@ -404,8 +404,8 @@ async function updateSrcFolderForJSONManifestWXPO() {
   `;
 
   files.forEach((file) => {
-    const filePath = path.join(srcFolder, file);
-    content += fs.readFileSync(filePath, "utf8");
+    // const filePath = path.join(srcFolder, file);
+    // content += fs.readFileSync(filePath, "utf8");
 
     if (file === "outlook.ts") {
       content += `
