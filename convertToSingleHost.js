@@ -143,7 +143,7 @@ async function deleteSupportFiles() {
   await unlinkFileAsync(".npmrc");
   await unlinkFileAsync("package-lock.json");
   if (manifestType === "json") {
-    await unlinkFileAsync("./node_modules");
+    deleteFolder(path.resolve(`./node_modules`));
   }
 }
 
