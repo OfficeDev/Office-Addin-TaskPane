@@ -46,6 +46,7 @@ async function convertProjectToSingleHost(host) {
     await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
   }
 
+  // Special handling for json manifest
   if (typeof manifestType !== "undefined" && manifestType == "json") {
     hosts = ["project", "onenote"];
   }
@@ -150,12 +151,8 @@ async function deleteJSONManifestRelatedFiles() {
 }
 
 async function deleteXMLManifestRelatedFiles() {
+  await unlinkFileAsync("webpack.config.js");
   await unlinkFileAsync("manifest.xml");
-  hosts = ["outlook", "excel", "word", "powerpoint"];
-  for (const host of hosts) {
-    await unlinkFileAsync(`manifest.${host}.xml`);
-    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
-  }
 }
 
 async function updatePackageJsonForXMLManifest() {
@@ -248,7 +245,7 @@ async function modifyProjectForJSONManifestWXPO() {
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifestWXPO();
   await updateSrcFolderForJSONManifestWXPO();
-  await deleteXMLManifestRelatedFiles();
+  await deleteXMLManifestRelatedFilesWXPO();
 }
 
 /**
@@ -263,12 +260,10 @@ modifyProjectForSingleHost(host).catch((err) => {
 let manifestPath = "manifest.xml";
 
 if (manifestType !== "json") {
-  console.log("XML manifest detected. Deleting JSON manifest.");
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
 } else if (manifestType === "json" && projectName === "TeamsFx") {
-  console.log("TeamsFx project detected. Updating project for WXPO JSON manifest.");
   manifestPath = "manifest.json";
   modifyProjectForJSONManifestWXPO().catch((err) => {
     console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
@@ -489,4 +484,13 @@ async function updateSrcFolderForJSONManifestWXPO() {
 
   const taskpanePath = path.join(srcFolder, "taskpane.ts");
   fs.writeFileSync(taskpanePath, content);
+}
+
+async function deleteXMLManifestRelatedFilesWXPO() {
+  await unlinkFileAsync("manifest.xml");
+  hosts = ["outlook", "excel", "word", "powerpoint"];
+  for (const host of hosts) {
+    await unlinkFileAsync(`manifest.${host}.xml`);
+    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  }
 }
