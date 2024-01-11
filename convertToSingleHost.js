@@ -416,7 +416,10 @@ async function updateSrcFolderForJSONManifestWXPO() {
 
   files.forEach((file) => {
     if (appCodes[file]) {
-      const appName = file.split(".")[0].charAt(0).toUpperCase() + file.split(".")[0].slice(1);
+      let appName = file.split(".")[0].charAt(0).toUpperCase() + file.split(".")[0].slice(1);
+      if (appName === "Powerpoint") {
+        appName = "PowerPoint";
+      }
       content += generateContent(appName, appCodes[file]);
     }
   });
