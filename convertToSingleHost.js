@@ -327,23 +327,17 @@ async function updateTasksJsonFileForJSONManifestWXPO() {
   let content = JSON.parse(data);
 
   content.tasks.forEach(function (task) {
+    const debugScripts = {
+      "Debug: Excel Desktop": "start -- --app excel",
+      "Debug: Outlook Desktop": "start -- --app outlook",
+      "Debug: PowerPoint Desktop": "start -- --app powerpoint",
+      "Debug: Word Desktop": "start -- --app word",
+    };
+
     if (task.label.startsWith("Build")) {
       task.dependsOn = ["Install"];
-    };
-    if (task.label === "Debug: Excel Desktop") {
-      task.script = "start -- --app excel";
-      task.dependsOn = ["Check OS", "Install"];
-    }
-    if (task.label === "Debug: Outlook Desktop") {
-      task.script = "start -- --app outlook";
-      task.dependsOn = ["Check OS", "Install"];
-    }
-    if (task.label === "Debug: PowerPoint Desktop") {
-      task.script = "start -- --app powerpoint";
-      task.dependsOn = ["Check OS", "Install"];
-    }
-    if (task.label === "Debug: Word Desktop") {
-      task.script = "start -- --app word";
+    } else if (debugScripts[task.label]) {
+      task.script = debugScripts[task.label];
       task.dependsOn = ["Check OS", "Install"];
     }
   });
@@ -377,111 +371,53 @@ async function updateSrcFolderForJSONManifestWXPO() {
   const srcFolder = `./src/taskpane`;
   const files = ["excel.ts", "word.ts", "outlook.ts", "powerpoint.ts"];
 
-  let content = "";
-  content += `
+  let content = `
   Office.onReady((info) => {
-    if (info.host === Office.HostType.Outlook) {
+    const runFunctions = {
+      [Office.HostType.Outlook]: runOutlook,
+      [Office.HostType.Word]: runWord,
+      [Office.HostType.Excel]: runExcel,
+      [Office.HostType.PowerPoint]: runPowerPoint,
+    };
+
+    if (runFunctions[info.host]) {
       document.getElementById("sideload-msg").style.display = "none";
       document.getElementById("app-body").style.display = "flex";
-      document.getElementById("run").onclick = runOutlook;
+      document.getElementById("run").onclick = runFunctions[info.host];
     }
   });
-  if(info.host === Office.HostType.Word){
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = runWord;
-  }
-  if (info.host === Office.HostType.Excel) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = runExcel;
-  }
-  if (info.host === Office.HostType.PowerPoint) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = runPowerPoint;
+  `;
+
+  const generateContent = (appName, runCode) => `
+  export async function run${appName}() {
+    try {
+      await ${appName}.run(async (context) => {
+        /**
+         * Insert your ${appName} code here
+         */
+        ${runCode}
+        await context.sync();
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
   `;
 
-  files.forEach((file) => {
-    // const filePath = path.join(srcFolder, file);
-    // content += fs.readFileSync(filePath, "utf8");
+  const appCodes = {
+    "outlook.ts":
+      'const item = context.mailbox.item; item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text }); item.subject.set("Hello, world!"); item.saveAsync();',
+    "word.ts":
+      'const range = context.document.getSelection(); range.insertText("Hello, world!", Word.InsertLocation.end); range.font.color = "red";',
+    "excel.ts":
+      'const range = context.workbook.getSelectedRange(); range.values = [["Hello, world!"]]; range.format.fill.color = "yellow";',
+    "powerpoint.ts": 'const slide = context.presentation.slides.getFirst(); slide.insertText("Hello World!", "End");',
+  };
 
-    if (file === "outlook.ts") {
-      content += `
-      export async function runOutlook() {
-        try {
-          await Outlook.run(async (context) => {
-            /**
-             * Insert your Outlook code here
-             */
-            const item = context.mailbox.item;
-            item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text });
-            item.subject.set("Hello, world!");
-            item.saveAsync();
-            await context.sync();
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      `;
-    }
-    if (file === "word.ts") {
-      content += `
-      export async function runWord() {
-        try {
-          await Word.run(async (context) => {
-            /**
-             * Insert your Word code here
-             */
-            const range = context.document.getSelection();
-            range.insertText("Hello, world!", Word.InsertLocation.end);
-            range.font.color = "red";
-            await context.sync();
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      `;
-    }
-    if (file === "excel.ts") {
-      content += `
-      export async function runExcel() {
-        try {
-          await Excel.run(async (context) => {
-            /**
-             * Insert your Excel code here
-             */
-            const range = context.workbook.getSelectedRange();
-            range.values = [["Hello, world!"]];
-            range.format.fill.color = "yellow";
-            await context.sync();
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      `;
-    }
-    if (file === "powerpoint.ts") {
-      content += `
-      export async function runPowerPoint() {
-        try {
-          await PowerPoint.run(async (context) => {
-            /**
-             * Insert your PowerPoint code here
-             */
-            const slide = context.presentation.slides.getFirst();
-            slide.insertText("Hello World!", "End");
-            await context.sync();
-          });
-        } catch (error) {
-          console.error(error);
-        }
-      }
-      `;
+  files.forEach((file) => {
+    if (appCodes[file]) {
+      const appName = file.split(".")[0].charAt(0).toUpperCase() + file.split(".")[0].slice(1);
+      content += generateContent(appName, appCodes[file]);
     }
   });
 
