@@ -142,6 +142,9 @@ async function deleteSupportFiles() {
   await unlinkFileAsync("./convertToSingleHost.js");
   await unlinkFileAsync(".npmrc");
   await unlinkFileAsync("package-lock.json");
+  if (manifestType === "json") {
+    await unlinkFileAsync("./node_modules");
+  }
 }
 
 async function deleteJSONManifestRelatedFiles() {
