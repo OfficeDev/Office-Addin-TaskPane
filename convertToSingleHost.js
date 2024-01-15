@@ -467,8 +467,8 @@ async function updateCommandsFileForJSONManifestWXPO() {
   }
 
   content = content.replace(
-    "async function action(event: Office.AddinCommands.Event) {",
-    `async function action(event: Office.AddinCommands.Event) {\n${codeToInsert}`
+    "function action(event: Office.AddinCommands.Event) {",
+    `function action(event: Office.AddinCommands.Event) {\n${codeToInsert}`
   );
   fs.writeFileSync(commandsFile, content);
 }
