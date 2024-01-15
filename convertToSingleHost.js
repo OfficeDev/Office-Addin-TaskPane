@@ -445,15 +445,15 @@ async function updateCommandsFileForJSONManifestWXPO() {
 
   const officeApps = {
     Excel: `const range = context.workbook.getSelectedRange();
-    range.format.fill.color = "yellow";`,
+      range.format.fill.color = "yellow";`,
     Word: `const range = context.document.getSelection();
-    range.font.color = "red";`,
+      range.font.color = "red";`,
     Outlook: `const item = context.mailbox.item;
-    item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text });
-    item.subject.set("Hello, world!");
-    item.saveAsync();`,
+      item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text });
+      item.subject.set("Hello, world!");
+      item.saveAsync();`,
     PowerPoint: `const slide = context.presentation.slides.getFirst();
-    slide.shapes.getFirst().text = "Hello, world!";`,
+      slide.shapes.getFirst().text = "Hello, world!";`,
   };
 
   let codeToInsert = "";
