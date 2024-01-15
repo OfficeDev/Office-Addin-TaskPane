@@ -248,6 +248,7 @@ async function modifyProjectForJSONManifestWXPO() {
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifestWXPO();
   await updateSrcFolderForJSONManifestWXPO();
+  await updateCommandsFileForJSONManifestWXPO();
   await deleteXMLManifestRelatedFilesWXPO();
 }
 
@@ -435,4 +436,36 @@ async function deleteXMLManifestRelatedFilesWXPO() {
     await unlinkFileAsync(`manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
   }
+}
+
+async function updateCommandsFileForJSONManifestWXPO() {
+  const fs = require("fs");
+  const commandsFile = `./src/commands/commands.ts`;
+  let content = await readFileAsync(commandsFile, "utf8");
+
+  const officeApps = {
+    Excel: `const range = context.workbook.getSelectedRange();
+            range.format.fill.color = "yellow";`,
+    Word: `const range = context.document.getSelection();
+           range.font.color = "red";`,
+    Outlook: `const item = context.mailbox.item;
+              item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text });
+              item.subject.set("Hello, world!");
+              item.saveAsync();`,
+    PowerPoint: `const slide = context.presentation.slides.getFirst();
+                 slide.shapes.getFirst().text = "Hello, world!";`
+  };
+
+  let codeToInsert = "";
+  for (const [app, code] of Object.entries(officeApps)) {
+    codeToInsert += `
+    await ${app}.run(async (context) => {
+      ${code}
+      await context.sync();
+    });
+    `;
+  }
+
+  content = content.replace("event.completed()", `${codeToInsert}\nevent.completed()`);
+  fs.writeFileSync(commandsFile, content);
 }
