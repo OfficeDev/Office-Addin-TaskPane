@@ -31,6 +31,7 @@ async function modifyProjectForSingleHost(host) {
     throw new Error(`'${host}' is not a supported host.`);
   }
   if (host === "wxpo") {
+    console.log("WXPO is not supported yet.");
     return;
   }
   await convertProjectToSingleHost(host);
