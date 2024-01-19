@@ -307,12 +307,6 @@ if (host !== "outlook" || manifestType !== "json") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
-  // } else if (manifestType === "json" && projectName === "TeamsFx") {
-  //   manifestPath = "manifest.json";
-  //   modifyProjectForJSONManifestWXPO().catch((err) => {
-  //     console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
-  //     process.exitCode = 1;
-  //   });
 } else {
   manifestPath = "manifest.json";
   modifyProjectForJSONManifest().catch((err) => {
@@ -513,7 +507,7 @@ async function updateSrcFolderForJSONManifestWXPO() {
 
 async function deleteXMLManifestRelatedFilesWXPO() {
   await unlinkFileAsync("manifest.xml");
-  hosts = ["outlook", "excel", "word", "powerpoint"];
+  let hosts = ["outlook", "excel", "word", "powerpoint"];
   for (const host of hosts) {
     await unlinkFileAsync(`manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
