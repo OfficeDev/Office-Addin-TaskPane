@@ -371,7 +371,7 @@ if (projectName) {
 }
 
 modifyProjectForMultiHostsWXPO(host).catch((err) => {
-  console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
+  console.error(`Error modify Project For Multi Hosts WXPO: ${err instanceof Error ? err.message : err}`);
   process.exitCode = 1;
 });
 
@@ -382,7 +382,7 @@ if (manifestType !== "json") {
 } else if (host === "wxpo" && manifestType === "json") {
   manifestPath = "manifest.json";
   modifyProjectForJSONManifestWXPO().catch((err) => {
-    console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
+    console.error(`Error modify Project For JSON Manifest WXPO: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
   });
 }
