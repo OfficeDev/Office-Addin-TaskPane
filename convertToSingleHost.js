@@ -9,7 +9,7 @@ const host = process.argv[2];
 const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
-let hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -30,8 +30,17 @@ async function modifyProjectForSingleHost(host) {
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
+  if (host === "wxpo") {
+    return;
+  }
   await convertProjectToSingleHost(host);
   await updatePackageJsonForSingleHost(host);
+  await updateLaunchJsonFile();
+}
+
+async function modifyProjectForMultiHostsWXPO(host) {
+  await convertProjectToMultiHostsWXPO(host);
+  await updatePackageJsonForMultiHostsWXPO(host);
   await updateLaunchJsonFile();
 }
 
@@ -40,16 +49,48 @@ async function convertProjectToSingleHost(host) {
   const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
   await writeFileAsync(`./manifest.xml`, manifestContent);
 
-  if (typeof manifestType == "undefined" || manifestType != "json") {
-    // Copy over host-specific taskpane code to taskpane.ts
-    const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-    await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
-  }
+  // Copy over host-specific taskpane code to taskpane.ts
+  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
 
-  // Special handling for json manifest
-  if (typeof manifestType !== "undefined" && manifestType == "json") {
-    hosts = ["project", "onenote"];
-  }
+  // // Special handling for json manifest
+  // if (typeof manifestType !== "undefined" && manifestType == "json") {
+  //   hosts = ["project", "onenote"];
+  // }
+
+  // Delete all host-specific files
+  hosts.forEach(async function (host) {
+    await unlinkFileAsync(`./manifest.${host}.xml`);
+    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  });
+
+  // Delete test folder
+  deleteFolder(path.resolve(`./test`));
+
+  // Delete the .github folder
+  deleteFolder(path.resolve(`./.github`));
+
+  // Delete CI/CD pipeline files
+  deleteFolder(path.resolve(`./.azure-devops`));
+
+  // Delete repo support files
+  await deleteSupportFiles();
+}
+
+async function convertProjectToMultiHostsWXPO(host) {
+  // Copy host-specific manifest over manifest.xml
+  const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
+  await writeFileAsync(`./manifest.xml`, manifestContent);
+
+  // Copy over host-specific taskpane code to taskpane.ts
+  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+
+  // // Special handling for json manifest
+  // if (typeof manifestType !== "undefined" && manifestType == "json") {
+  //   hosts = ["project", "onenote"];
+  // }
+
   // Delete all host-specific files
   hosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
@@ -154,7 +195,6 @@ async function deleteJSONManifestRelatedFiles() {
 }
 
 async function deleteXMLManifestRelatedFiles() {
-  await unlinkFileAsync("webpack.config.js");
   await unlinkFileAsync("manifest.xml");
 }
 
@@ -263,20 +303,53 @@ modifyProjectForSingleHost(host).catch((err) => {
 
 let manifestPath = "manifest.xml";
 
-if (manifestType !== "json") {
+if (host !== "outlook" || manifestType !== "json") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
-} else if (manifestType === "json" && projectName === "TeamsFx") {
-  manifestPath = "manifest.json";
-  modifyProjectForJSONManifestWXPO().catch((err) => {
-    console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
-    process.exitCode = 1;
-  });
+  // } else if (manifestType === "json" && projectName === "TeamsFx") {
+  //   manifestPath = "manifest.json";
+  //   modifyProjectForJSONManifestWXPO().catch((err) => {
+  //     console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
+  //     process.exitCode = 1;
+  //   });
 } else {
   manifestPath = "manifest.json";
   modifyProjectForJSONManifest().catch((err) => {
     console.error(`Error modifying for JSON manifest: ${err instanceof Error ? err.message : err}`);
+    process.exitCode = 1;
+  });
+}
+
+if (projectName) {
+  if (!appId) {
+    appId = "random";
+  }
+
+  // Modify the manifest to include the name and id of the project
+  const cmdLine = `npx office-addin-manifest modify ${manifestPath} -g ${appId} -d ${projectName}`;
+  childProcess.exec(cmdLine, (error, stdout) => {
+    if (error) {
+      Promise.reject(stdout);
+    } else {
+      Promise.resolve();
+    }
+  });
+}
+
+modifyProjectForMultiHostsWXPO(host).catch((err) => {
+  console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
+  process.exitCode = 1;
+});
+
+if (manifestType !== "json") {
+  // Remove things that are only relevant to JSON manifest
+  deleteJSONManifestRelatedFiles();
+  updatePackageJsonForXMLManifest();
+} else if (host === "wxpo" && manifestType === "json") {
+  manifestPath = "manifest.json";
+  modifyProjectForJSONManifestWXPO().catch((err) => {
+    console.error(`Error modifying for WXPO JSON manifest: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
   });
 }
