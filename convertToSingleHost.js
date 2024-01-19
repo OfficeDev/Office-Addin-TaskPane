@@ -78,18 +78,20 @@ async function convertProjectToSingleHost(host) {
 }
 
 async function convertProjectToMultiHostsWXPO(host) {
-  // Copy host-specific manifest over manifest.xml
-  const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
-  await writeFileAsync(`./manifest.xml`, manifestContent);
+  let wxpoHosts = ["excel", "outlook", "powerpoint", "word"];
+  wxpoHosts.forEach(async function (wxpoHost) {
+    if (wxpoHost !== host) {
+      await unlinkFileAsync(`./manifest.${wxpoHost}.xml`);
+      await unlinkFileAsync(`./src/taskpane/${wxpoHost}.ts`);
+    }
+    // Copy host-specific manifest over manifest.xml
+    const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
+    await writeFileAsync(`./manifest.xml`, manifestContent);
 
-  // Copy over host-specific taskpane code to taskpane.ts
-  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
-
-  // // Special handling for json manifest
-  // if (typeof manifestType !== "undefined" && manifestType == "json") {
-  //   hosts = ["project", "onenote"];
-  // }
+    // Copy over host-specific taskpane code to taskpane.ts
+    const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+    await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+  });
 
   // Delete all host-specific files
   hosts.forEach(async function (host) {
@@ -111,6 +113,43 @@ async function convertProjectToMultiHostsWXPO(host) {
 }
 
 async function updatePackageJsonForSingleHost(host) {
+  // Update package.json to reflect selected host
+  const packageJson = `./package.json`;
+  const data = await readFileAsync(packageJson, "utf8");
+  let content = JSON.parse(data);
+
+  // Update 'config' section in package.json to use selected host
+  content.config["app_to_debug"] = host;
+
+  // Remove 'engines' section
+  delete content.engines;
+
+  // Remove scripts that are unrelated to the selected host
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key === "convert-to-single-host" || key === "start:desktop:outlook") {
+      delete content.scripts[key];
+    }
+  });
+
+  // Remove test-related scripts
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.includes("test")) {
+      delete content.scripts[key];
+    }
+  });
+
+  // Remove test-related packages
+  Object.keys(content.devDependencies).forEach(function (key) {
+    if (testPackages.includes(key)) {
+      delete content.devDependencies[key];
+    }
+  });
+
+  // Write updated JSON to file
+  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
+}
+
+async function updatePackageJsonForMultiHostsWXPO(host) {
   // Update package.json to reflect selected host
   const packageJson = `./package.json`;
   const data = await readFileAsync(packageJson, "utf8");
