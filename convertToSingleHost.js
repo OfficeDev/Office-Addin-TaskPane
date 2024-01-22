@@ -528,6 +528,9 @@ async function updateSrcFolderForJSONManifestWXPO() {
 async function deleteXMLManifestRelatedFilesWXPO() {
   await unlinkFileAsync("manifest.xml");
   for (const host of hosts) {
+    if (host === "wxpo") {
+      continue;
+    }
     await unlinkFileAsync(`manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
   }
