@@ -247,7 +247,7 @@ async function modifyProjectForMultiHostsWXPO(host) {
   // await updatePackageJsonForMultiHostsWXPO(host);
   await updatePackageJsonForJSONManifest();
   await updateLaunchJsonFile();
-  await deleteXMLManifestRelatedFiles();
+  // await deleteXMLManifestRelatedFiles();
 }
 
 async function modifyProjectForJSONManifest() {
