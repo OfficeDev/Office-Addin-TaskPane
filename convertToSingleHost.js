@@ -243,9 +243,11 @@ modifyProjectForMultiHostsWXPO(host).catch((err) => {
 });
 
 async function modifyProjectForMultiHostsWXPO(host) {
-  await convertProjectToMultiHostsWXPO();
-  await updatePackageJsonForMultiHostsWXPO(host);
+  // await convertProjectToMultiHostsWXPO();
+  // await updatePackageJsonForMultiHostsWXPO(host);
+  await updatePackageJsonForJSONManifest();
   await updateLaunchJsonFile();
+  await deleteXMLManifestRelatedFiles();
 }
 
 async function modifyProjectForJSONManifest() {
@@ -525,7 +527,6 @@ async function updateSrcFolderForJSONManifestWXPO() {
 
 async function deleteXMLManifestRelatedFilesWXPO() {
   await unlinkFileAsync("manifest.xml");
-  let hosts = ["outlook", "excel", "word", "powerpoint"];
   for (const host of hosts) {
     await unlinkFileAsync(`manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
