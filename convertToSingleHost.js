@@ -144,9 +144,6 @@ async function deleteSupportFiles() {
   await unlinkFileAsync("./convertToSingleHost.js");
   await unlinkFileAsync(".npmrc");
   await unlinkFileAsync("package-lock.json");
-  if (manifestType === "json") {
-    deleteFolder(path.resolve(`./node_modules`));
-  }
 }
 
 async function deleteJSONManifestRelatedFiles() {
@@ -237,10 +234,10 @@ async function updateWebpackConfigForJSONManifest() {
   await writeFileAsync(webPack, updatedContent);
 }
 
-modifyProjectForMultiHostsWXPO(host).catch((err) => {
-  console.error(`Error modify Project For Multi Hosts WXPO: ${err instanceof Error ? err.message : err}`);
-  process.exitCode = 1;
-});
+// modifyProjectForMultiHostsWXPO(host).catch((err) => {
+//   console.error(`Error modify Project For Multi Hosts WXPO: ${err instanceof Error ? err.message : err}`);
+//   process.exitCode = 1;
+// });
 
 async function modifyProjectForMultiHostsWXPO(host) {
   // await convertProjectToMultiHostsWXPO();
@@ -382,6 +379,17 @@ async function modifyProjectForJSONManifestWXPO() {
   await updateSrcFolderForJSONManifestWXPO();
   await updateCommandsFileForJSONManifestWXPO();
   await deleteXMLManifestRelatedFilesWXPO();
+  // Delete test folder
+  deleteFolder(path.resolve(`./test`));
+
+  // Delete the .github folder
+  deleteFolder(path.resolve(`./.github`));
+
+  // Delete CI/CD pipeline files
+  deleteFolder(path.resolve(`./.azure-devops`));
+
+  // Delete repo support files
+  await deleteSupportFiles();
 }
 
 async function updatePackageJsonForJSONManifestWXPO() {
