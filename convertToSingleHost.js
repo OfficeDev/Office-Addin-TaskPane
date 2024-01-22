@@ -31,17 +31,10 @@ async function modifyProjectForSingleHost(host) {
     throw new Error(`'${host}' is not a supported host.`);
   }
   if (host === "wxpo") {
-    console.log("WXPO is not supported yet.");
     return;
   }
   await convertProjectToSingleHost(host);
   await updatePackageJsonForSingleHost(host);
-  await updateLaunchJsonFile();
-}
-
-async function modifyProjectForMultiHostsWXPO(host) {
-  await convertProjectToMultiHostsWXPO(host);
-  await updatePackageJsonForMultiHostsWXPO(host);
   await updateLaunchJsonFile();
 }
 
@@ -78,79 +71,7 @@ async function convertProjectToSingleHost(host) {
   await deleteSupportFiles();
 }
 
-async function convertProjectToMultiHostsWXPO(host) {
-  let wxpoHosts = ["excel", "outlook", "powerpoint", "word"];
-  wxpoHosts.forEach(async function (wxpoHost) {
-    if (wxpoHost !== host) {
-      await unlinkFileAsync(`./manifest.${wxpoHost}.xml`);
-      await unlinkFileAsync(`./src/taskpane/${wxpoHost}.ts`);
-    }
-    // Copy host-specific manifest over manifest.xml
-    const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
-    await writeFileAsync(`./manifest.xml`, manifestContent);
-
-    // Copy over host-specific taskpane code to taskpane.ts
-    const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-    await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
-  });
-
-  // Delete all host-specific files
-  hosts.forEach(async function (host) {
-    await unlinkFileAsync(`./manifest.${host}.xml`);
-    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
-  });
-
-  // Delete test folder
-  deleteFolder(path.resolve(`./test`));
-
-  // Delete the .github folder
-  deleteFolder(path.resolve(`./.github`));
-
-  // Delete CI/CD pipeline files
-  deleteFolder(path.resolve(`./.azure-devops`));
-
-  // Delete repo support files
-  await deleteSupportFiles();
-}
-
 async function updatePackageJsonForSingleHost(host) {
-  // Update package.json to reflect selected host
-  const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
-  let content = JSON.parse(data);
-
-  // Update 'config' section in package.json to use selected host
-  content.config["app_to_debug"] = host;
-
-  // Remove 'engines' section
-  delete content.engines;
-
-  // Remove scripts that are unrelated to the selected host
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key === "convert-to-single-host" || key === "start:desktop:outlook") {
-      delete content.scripts[key];
-    }
-  });
-
-  // Remove test-related scripts
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key.includes("test")) {
-      delete content.scripts[key];
-    }
-  });
-
-  // Remove test-related packages
-  Object.keys(content.devDependencies).forEach(function (key) {
-    if (testPackages.includes(key)) {
-      delete content.devDependencies[key];
-    }
-  });
-
-  // Write updated JSON to file
-  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
-}
-
-async function updatePackageJsonForMultiHostsWXPO(host) {
   // Update package.json to reflect selected host
   const packageJson = `./package.json`;
   const data = await readFileAsync(packageJson, "utf8");
@@ -316,6 +237,17 @@ async function updateWebpackConfigForJSONManifest() {
   await writeFileAsync(webPack, updatedContent);
 }
 
+modifyProjectForMultiHostsWXPO(host).catch((err) => {
+  console.error(`Error modify Project For Multi Hosts WXPO: ${err instanceof Error ? err.message : err}`);
+  process.exitCode = 1;
+});
+
+async function modifyProjectForMultiHostsWXPO(host) {
+  await convertProjectToMultiHostsWXPO();
+  await updatePackageJsonForMultiHostsWXPO(host);
+  await updateLaunchJsonFile();
+}
+
 async function modifyProjectForJSONManifest() {
   await updatePackageJsonForJSONManifest();
   await updateWebpackConfigForJSONManifest();
@@ -323,13 +255,77 @@ async function modifyProjectForJSONManifest() {
   await deleteXMLManifestRelatedFiles();
 }
 
-async function modifyProjectForJSONManifestWXPO() {
-  await updatePackageJsonForJSONManifestWXPO();
-  await updateWebpackConfigForJSONManifest();
-  await updateTasksJsonFileForJSONManifestWXPO();
-  await updateSrcFolderForJSONManifestWXPO();
-  await updateCommandsFileForJSONManifestWXPO();
-  await deleteXMLManifestRelatedFilesWXPO();
+async function convertProjectToMultiHostsWXPO() {
+  let wxpoHosts = ["excel", "outlook", "powerpoint", "word"];
+  wxpoHosts.forEach(async function (host) {
+    if (!hosts.includes(host)) {
+      await unlinkFileAsync(`./manifest.${host}.xml`);
+      await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+    }
+  });
+
+  // // Copy host-specific manifest over manifest.xml
+  // const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
+  // await writeFileAsync(`./manifest.xml`, manifestContent);
+
+  // // Copy over host-specific taskpane code to taskpane.ts
+  // const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+  // await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+
+  // // Delete all host-specific files
+  // wxpoHosts.forEach(async function (host) {
+  //   await unlinkFileAsync(`./manifest.${host}.xml`);
+  //   await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  // });
+
+  // Delete test folder
+  deleteFolder(path.resolve(`./test`));
+
+  // Delete the .github folder
+  deleteFolder(path.resolve(`./.github`));
+
+  // Delete CI/CD pipeline files
+  deleteFolder(path.resolve(`./.azure-devops`));
+
+  // Delete repo support files
+  await deleteSupportFiles();
+}
+
+async function updatePackageJsonForMultiHostsWXPO(host) {
+  // Update package.json to reflect selected host
+  const packageJson = `./package.json`;
+  const data = await readFileAsync(packageJson, "utf8");
+  let content = JSON.parse(data);
+
+  // Update 'config' section in package.json to use selected host
+  content.config["app_to_debug"] = host;
+
+  // Remove 'engines' section
+  delete content.engines;
+
+  // Remove scripts that are unrelated to the selected host
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key === "convert-to-single-host" || key === "start:desktop:outlook") {
+      delete content.scripts[key];
+    }
+  });
+
+  // Remove test-related scripts
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.includes("test")) {
+      delete content.scripts[key];
+    }
+  });
+
+  // Remove test-related packages
+  Object.keys(content.devDependencies).forEach(function (key) {
+    if (testPackages.includes(key)) {
+      delete content.devDependencies[key];
+    }
+  });
+
+  // Write updated JSON to file
+  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
 /**
@@ -377,10 +373,14 @@ if (projectName) {
   });
 }
 
-modifyProjectForMultiHostsWXPO(host).catch((err) => {
-  console.error(`Error modify Project For Multi Hosts WXPO: ${err instanceof Error ? err.message : err}`);
-  process.exitCode = 1;
-});
+async function modifyProjectForJSONManifestWXPO() {
+  await updatePackageJsonForJSONManifestWXPO();
+  await updateWebpackConfigForJSONManifest();
+  await updateTasksJsonFileForJSONManifestWXPO();
+  await updateSrcFolderForJSONManifestWXPO();
+  await updateCommandsFileForJSONManifestWXPO();
+  await deleteXMLManifestRelatedFilesWXPO();
+}
 
 async function updatePackageJsonForJSONManifestWXPO() {
   const packageJson = `./package.json`;
