@@ -181,12 +181,18 @@ async function deleteSupportFiles() {
 
 async function deleteJSONManifestRelatedFiles() {
   await unlinkFileAsync("manifest.json");
+  jsonHosts.forEach(async (host) => {
+    await unlinkFileAsync(`manifest.${host}.json`);
+  });
   await unlinkFileAsync("assets/color.png");
   await unlinkFileAsync("assets/outline.png");
 }
 
 async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
+  hosts.forEach(async (host) => {
+    await unlinkFileAsync(`manifest.${host}.xml`);
+  });
 }
 
 async function updatePackageJsonForXMLManifest() {
@@ -394,92 +400,18 @@ async function updateTaskpaneForJSONManifest() {
 
   const srcFolder = `./src/taskpane`;
 
-  // delete all host files in taskpane folder
-  jsonHosts.forEach((host) => {
-    const filePath = path.join(srcFolder, `${host}.ts`);
-    fs.unlinkSync(filePath);
+  // Delete all host files in taskpane folder
+  hosts.forEach(async function (host) {
+    if (host === "wxpo") {
+      return;
+    }
+    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
   });
-  fs.unlinkSync(path.join(srcFolder, "taskpane.ts"));
-
+  await unlinkFileAsync(`./src/taskpane/taskpane.ts`);
   const oldFilePath = path.join(srcFolder, "taskpane.ts");
   const newFilePath = path.join(srcFolder, "jsonManifestTaskpane.ts");
 
   fs.renameSync(newFilePath, oldFilePath);
-}
-
-async function updateSrcFolderForJSONManifestWXPO() {
-  const fs = require("fs");
-  const path = require("path");
-
-  const srcFolder = `./src/taskpane`;
-  const files = ["excel.ts", "word.ts", "outlook.ts", "powerpoint.ts"];
-
-  let content = `
-  Office.onReady((info) => {
-    const runFunctions = {
-      [Office.HostType.Outlook]: runOutlook,
-      [Office.HostType.Word]: runWord,
-      [Office.HostType.Excel]: runExcel,
-      [Office.HostType.PowerPoint]: runPowerPoint,
-    };
-
-    if (runFunctions[info.host]) {
-      document.getElementById("sideload-msg").style.display = "none";
-      document.getElementById("app-body").style.display = "flex";
-      document.getElementById("run").onclick = runFunctions[info.host];
-    }
-  });
-  `;
-
-  const generateContent = (appName, runCode) => `
-  export async function run${appName}() {
-    try {
-      await ${appName}.run(async (context) => {
-        /**
-         * Insert your ${appName} code here
-         */
-        ${runCode}
-        await context.sync();
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  `;
-
-  const appCodes = {
-    "outlook.ts":
-      'const item = context.mailbox.item; item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text }); item.subject.set("Hello, world!"); item.saveAsync();',
-    "word.ts":
-      'const range = context.document.getSelection(); range.insertText("Hello, world!", Word.InsertLocation.end); range.font.color = "red";',
-    "excel.ts":
-      'const range = context.workbook.getSelectedRange(); range.values = [["Hello, world!"]]; range.format.fill.color = "yellow";',
-    "powerpoint.ts": 'const slide = context.presentation.slides.getFirst(); slide.insertText("Hello World!", "End");',
-  };
-
-  files.forEach((file) => {
-    if (appCodes[file]) {
-      let appName = file.split(".")[0].charAt(0).toUpperCase() + file.split(".")[0].slice(1);
-      if (appName === "Powerpoint") {
-        appName = "PowerPoint";
-      }
-      content += generateContent(appName, appCodes[file]);
-    }
-  });
-
-  const taskpanePath = path.join(srcFolder, "taskpane.ts");
-  fs.writeFileSync(taskpanePath, content);
-}
-
-async function deleteXMLManifestRelatedFilesWXPO() {
-  await unlinkFileAsync("manifest.xml");
-  for (const host of hosts) {
-    if (host === "wxpo") {
-      continue;
-    }
-    await unlinkFileAsync(`manifest.${host}.xml`);
-    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
-  }
 }
 
 async function updateCommandsFileForJSONManifest() {
@@ -498,4 +430,9 @@ async function updateCommandsFileForJSONManifest() {
   });
 
   fs.writeFileSync(commandsFile, content);
+
+  // Delete all host-specific files
+  jsonHosts.forEach(async (host) => {
+    await unlinkFileAsync(`./src/commands/${host}.ts`);
+  });
 }
