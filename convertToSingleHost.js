@@ -32,11 +32,11 @@ async function modifyProjectForSingleHost(host) {
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
-  if (manifestType === "json") {
-    await convertProjectToSingleHostForJsonManifest(host);
-  } else {
-    await convertProjectToSingleHostForXMLManifest(host);
-  }
+  // if (manifestType === "json") {
+  //   await convertProjectToSingleHostForJsonManifest(host);
+  // } else {
+  await convertProjectToSingleHostForXMLManifest(host);
+  //}
 
   await updatePackageJsonForSingleHost(host);
   await updateLaunchJsonFile();
@@ -46,6 +46,9 @@ async function convertProjectToSingleHostForXMLManifest(host) {
   // Copy host-specific manifest over manifest.xml
   const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
   await writeFileAsync(`./manifest.xml`, manifestContent);
+  // Copy host-specific manifest over manifest.json
+  const manifestJsonContent = await readFileAsync(`./manifest.${host}.json`, "utf8");
+  await writeFileAsync(`./manifest.json`, manifestJsonContent);
 
   // Copy over host-specific taskpane code to taskpane.ts
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
@@ -55,6 +58,9 @@ async function convertProjectToSingleHostForXMLManifest(host) {
   hosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  });
+  jsonHosts.forEach(async function (host) {
+    await unlinkFileAsync(`./manifest.${host}.json`);
   });
 
   deleteFoldersAndSupportFiles();
