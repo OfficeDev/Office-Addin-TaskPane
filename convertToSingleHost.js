@@ -47,11 +47,6 @@ async function convertProjectToSingleHost(host) {
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
   await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
 
-  // // Special handling for json manifest
-  // if (typeof manifestType !== "undefined" && manifestType == "json") {
-  //   hosts = ["project", "onenote"];
-  // }
-
   // Delete all host-specific files
   hosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
@@ -209,13 +204,13 @@ async function updateTasksJsonFileForJSONManifest() {
     label: "Check OS",
     type: "shell",
     windows: {
-      command: "echo 'Sideloading in Outlook on Windows is supported'",
+      command: "echo 'Sideloading on Windows is supported'",
     },
     linux: {
       command: "echo 'Sideloading on Linux is not supported' && exit 1",
     },
     osx: {
-      command: "echo 'Sideloading in Outlook on Mac is not supported' && exit 1",
+      command: "echo 'Sideloading on Mac is not supported' && exit 1",
     },
     presentation: {
       clear: true,
@@ -238,6 +233,8 @@ async function modifyProjectForJSONManifest() {
   await updatePackageJsonForJSONManifest();
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
+  await updateTaskpaneForJSONManifest();
+  await updateCommandsFileForJSONManifest();
   await deleteXMLManifestRelatedFiles();
 }
 
@@ -383,6 +380,28 @@ async function updateTasksJsonFileForJSONManifestWXPO() {
   await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
 }
 
+async function updateTaskpaneForJSONManifest() {
+  const fs = require("fs");
+  const path = require("path");
+
+  const srcFolder = `./src/taskpane`;
+
+  // delete all host files in taskpane folder
+  hosts.forEach((host) => {
+    if (host === "wxpo") {
+      return;
+    }
+    const filePath = path.join(srcFolder, `${host}.ts`);
+    fs.unlinkSync(filePath);
+  });
+  fs.unlinkSync(path.join(srcFolder, "taskpane.ts"));
+
+  const oldFilePath = path.join(srcFolder, "taskpane.ts");
+  const newFilePath = path.join(srcFolder, "jsonManifestTaskpane.ts");
+
+  fs.renameSync(newFilePath, oldFilePath);
+}
+
 async function updateSrcFolderForJSONManifestWXPO() {
   const fs = require("fs");
   const path = require("path");
@@ -458,37 +477,23 @@ async function deleteXMLManifestRelatedFilesWXPO() {
   }
 }
 
-async function updateCommandsFileForJSONManifestWXPO() {
+async function updateCommandsFileForJSONManifest() {
   const fs = require("fs");
   const commandsFile = `./src/commands/commands.ts`;
   let content = await readFileAsync(commandsFile, "utf8");
 
-  const officeApps = {
-    Excel: `const range = context.workbook.getSelectedRange();
-      range.format.fill.color = "yellow";`,
-    Word: `const range = context.document.getSelection();
-      range.font.color = "red";`,
-    Outlook: `const item = context.mailbox.item;
-      item.body.set("Hello, world!", { coercionType: Office.CoercionType.Text });
-      item.subject.set("Hello, world!");
-      item.saveAsync();`,
-    PowerPoint: `const slide = context.presentation.slides.getFirst();
-      slide.shapes.getFirst().text = "Hello, world!";`,
-  };
+  hosts.forEach(async (host) => {
+    if (host === "wxpo") {
+      return;
+    }
+    // Copy over host-specific command code to commands.ts
+    const srcContent = await readFileAsync(`./src/commands/${host}.ts`, "utf8");
+    // await writeFileAsync(`./src/commands/commands.ts`, srcContent);
+    content = content.replace(
+      "function action(event: Office.AddinCommands.Event) {",
+      `function action(event: Office.AddinCommands.Event) {\n${srcContent}`
+    );
+  });
 
-  let codeToInsert = "";
-  for (const [app, code] of Object.entries(officeApps)) {
-    codeToInsert += `
-    await ${app}.run(async (context) => {
-      ${code}
-      await context.sync();
-    });
-    `;
-  }
-
-  content = content.replace(
-    "function action(event: Office.AddinCommands.Event) {",
-    `function action(event: Office.AddinCommands.Event) {\n${codeToInsert}`
-  );
   fs.writeFileSync(commandsFile, content);
 }
