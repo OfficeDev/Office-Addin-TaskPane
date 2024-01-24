@@ -238,8 +238,8 @@ async function updateTasksJsonFileForJSONManifest() {
   await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
 }
 
-async function modifyProjectForJSONManifest() {
-  await updatePackageJsonForJSONManifest();
+async function modifyProjectForJSONManifest(host) {
+  await updatePackageJsonForJSONManifest(host);
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
   await deleteXMLManifestRelatedFiles();
@@ -262,7 +262,7 @@ if (host !== "wxpo" || manifestType !== "json") {
   updatePackageJsonForXMLManifest();
 } else {
   manifestPath = "manifest.json";
-  modifyProjectForJSONManifest().catch((err) => {
+  modifyProjectForJSONManifest(host).catch((err) => {
     console.error(`Error modifying for JSON manifest: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
   });
