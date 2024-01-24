@@ -79,9 +79,6 @@ async function updatePackageJsonForSingleHost(host) {
 
   // Update 'config' section in package.json to use selected host
   content.config["app_to_debug"] = host;
-  if (host === "wxpo") {
-    delete content.config["app_to_debug"];
-  }
 
   // Remove 'engines' section
   delete content.engines;
@@ -177,16 +174,14 @@ async function updatePackageJsonForJSONManifest() {
   const data = await readFileAsync(packageJson, "utf8");
   let content = JSON.parse(data);
 
+  if (host === "wxpo") {
+    // not need to read config["app_to_debug"]
+    delete content.config["app_to_debug"];
+  }
+
   // Remove special start scripts
   Object.keys(content.scripts).forEach(function (key) {
     if (key.includes("start:")) {
-      delete content.scripts[key];
-    }
-  });
-
-  // Remove special test scripts
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key.includes("test:")) {
       delete content.scripts[key];
     }
   });
