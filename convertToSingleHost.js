@@ -191,6 +191,9 @@ async function deleteJSONManifestRelatedFiles() {
 async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
   hosts.forEach(async (host) => {
+    if (host === "wxpo") {
+      return;
+    }
     await unlinkFileAsync(`manifest.${host}.xml`);
   });
 }
