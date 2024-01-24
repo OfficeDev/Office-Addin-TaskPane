@@ -31,20 +31,20 @@ async function modifyProjectForSingleHost(host) {
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
-  await convertProjectToSingleHost(host);
+  if (manifestType === "json") {
+    await convertProjectToSingleHostForJsonManifest(host);
+  } else {
+    await convertProjectToSingleHostForXMLManifest(host);
+  }
+
   await updatePackageJsonForSingleHost(host);
   await updateLaunchJsonFile();
 }
 
-async function convertProjectToSingleHost(host) {
+async function convertProjectToSingleHostForXMLManifest(host) {
   // Copy host-specific manifest over manifest.xml
   const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
   await writeFileAsync(`./manifest.xml`, manifestContent);
-  await unlinkFileAsync(`./manifest.xml`);
-
-  // Copy host-specific manifest over manifest.json
-  const manifestJsonContent = await readFileAsync(`./manifest.${host}.json`, "utf8");
-  await writeFileAsync(`./manifest.json`, manifestJsonContent);
 
   // Copy over host-specific taskpane code to taskpane.ts
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
@@ -55,21 +55,29 @@ async function convertProjectToSingleHost(host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
   });
+
+  deleteFoldersAndSupportFiles();
+}
+
+async function convertProjectToSingleHostForJsonManifest(host) {
+  // Copy host-specific manifest over manifest.json
+  const manifestJsonContent = await readFileAsync(`./manifest.${host}.json`, "utf8");
+  await writeFileAsync(`./manifest.json`, manifestJsonContent);
+
+  // Copy over host-specific taskpane code to taskpane.ts
+  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+
+  // Delete all host-specific files
   jsonHosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.json`);
   });
+  hosts.forEach(async function (host) {
+    await unlinkFileAsync(`./manifest.${host}.xml`);
+    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  });
 
-  // Delete test folder
-  deleteFolder(path.resolve(`./test`));
-
-  // Delete the .github folder
-  deleteFolder(path.resolve(`./.github`));
-
-  // Delete CI/CD pipeline files
-  deleteFolder(path.resolve(`./.azure-devops`));
-
-  // Delete repo support files
-  await deleteSupportFiles();
+  deleteFoldersAndSupportFiles();
 }
 
 async function updatePackageJsonForSingleHost(host) {
@@ -122,6 +130,20 @@ async function updateLaunchJsonFile() {
   await writeFileAsync(launchJson, updatedContent);
 }
 
+async function deleteFoldersAndSupportFiles() {
+  // Delete test folder
+  deleteFolder(path.resolve(`./test`));
+
+  // Delete the .github folder
+  deleteFolder(path.resolve(`./.github`));
+
+  // Delete CI/CD pipeline files
+  deleteFolder(path.resolve(`./.azure-devops`));
+
+  // Delete repo support files
+  await deleteSupportFiles();
+}
+
 function deleteFolder(folder) {
   try {
     if (fs.existsSync(folder)) {
@@ -158,7 +180,7 @@ async function deleteJSONManifestRelatedFiles() {
 }
 
 async function deleteXMLManifestRelatedFiles() {
-  await unlinkFileAsync(`./manifest.${""}.xml`);
+  await unlinkFileAsync(`./manifest.xml`);
 }
 
 async function updatePackageJsonForXMLManifest() {
@@ -244,11 +266,10 @@ async function updateTasksJsonFileForJSONManifest() {
 }
 
 async function modifyProjectForJSONManifest(host) {
-  await deleteXMLManifestRelatedFiles();
   await updatePackageJsonForJSONManifest(host);
-  await unlinkFileAsync(`./manifest.${""}xml`);
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
+  await deleteXMLManifestRelatedFiles();
 }
 
 /**
