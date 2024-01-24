@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
+const { error } = require("console");
 
 const host = process.argv[2];
 const manifestType = process.argv[3];
@@ -33,6 +34,7 @@ async function modifyProjectForSingleHost(host) {
   }
   if (manifestType === "json") {
     await convertProjectToSingleHostForJsonManifest(host);
+    throw new error("JSON manifest is not supported yet.");
   } else {
     await convertProjectToSingleHostForXMLManifest(host);
   }
