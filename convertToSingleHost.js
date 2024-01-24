@@ -34,7 +34,6 @@ async function modifyProjectForSingleHost(host) {
   }
   if (manifestType === "json") {
     await convertProjectToSingleHostForJsonManifest(host);
-    throw new error("JSON manifest is not supported yet.");
   } else {
     await convertProjectToSingleHostForXMLManifest(host);
   }
