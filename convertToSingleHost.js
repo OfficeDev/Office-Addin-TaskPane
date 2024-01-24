@@ -245,6 +245,7 @@ async function updateTasksJsonFileForJSONManifest() {
 async function modifyProjectForJSONManifest(host) {
   await deleteXMLManifestRelatedFiles();
   await updatePackageJsonForJSONManifest(host);
+  await unlinkFileAsync(`./manifest.${""}xml`);
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
 }
