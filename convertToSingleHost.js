@@ -223,6 +223,16 @@ async function updatePackageJsonForJSONManifest() {
     }
   });
 
+  // Remove special test scripts
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.includes("test:")) {
+      delete content.scripts[key];
+    }
+  });
+
+  // Change test script
+  content.scripts.test = 'echo "No tests."';
+
   // Change manifest file name extension
   content.scripts.start = "office-addin-debugging start manifest.json";
   content.scripts.stop = "office-addin-debugging stop manifest.json";
@@ -287,7 +297,13 @@ async function modifyProjectForJSONManifest() {
   } else {
     await convertProjectToSingleHostForJsonManifest(host);
   }
+
   await deleteXMLManifestRelatedFiles();
+
+  // delete manifest host files
+  jsonHosts.forEach(async (host) => {
+    await unlinkFileAsync(`manifest.${host}.json`);
+  });
 }
 
 let manifestPath = "manifest.xml";
@@ -318,83 +334,6 @@ if (projectName) {
       Promise.resolve();
     }
   });
-}
-
-async function updatePackageJsonForJSONManifestWXPO() {
-  const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
-  let content = JSON.parse(data);
-
-  // Remove 'app_to_debug' section
-  delete content.config["app_to_debug"];
-
-  // Remove special start scripts
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key.includes("start:")) {
-      delete content.scripts[key];
-    }
-  });
-
-  // Remove special test scripts
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key.includes("test:")) {
-      delete content.scripts[key];
-    }
-  });
-
-  // Change test script
-  content.scripts.test = 'echo "No tests."';
-
-  // Change manifest file name extension
-  content.scripts.start = "office-addin-debugging start manifest.json";
-  content.scripts.stop = "office-addin-debugging stop manifest.json";
-  content.scripts.validate = "office-addin-manifest validate manifest.json";
-
-  // Write updated JSON to file
-  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
-}
-
-async function updateTasksJsonFileForJSONManifestWXPO() {
-  const tasksJson = `.vscode/tasks.json`;
-  const data = await readFileAsync(tasksJson, "utf8");
-  let content = JSON.parse(data);
-
-  content.tasks.forEach(function (task) {
-    const debugScripts = {
-      "Debug: Excel Desktop": "start -- --app excel",
-      "Debug: Outlook Desktop": "start -- --app outlook",
-      "Debug: PowerPoint Desktop": "start -- --app powerpoint",
-      "Debug: Word Desktop": "start -- --app word",
-    };
-
-    if (task.label.startsWith("Build")) {
-      task.dependsOn = ["Install"];
-    } else if (debugScripts[task.label]) {
-      task.script = debugScripts[task.label];
-      task.dependsOn = ["Check OS", "Install"];
-    }
-  });
-
-  const checkOSTask = {
-    label: "Check OS",
-    type: "shell",
-    windows: {
-      command: "echo 'Sideloading on Windows is supported'",
-    },
-    linux: {
-      command: "echo 'Sideloading on Linux is not supported' && exit 1",
-    },
-    osx: {
-      command: "echo 'Sideloading on Mac is not supported' && exit 1",
-    },
-    presentation: {
-      clear: true,
-      panel: "dedicated",
-    },
-  };
-
-  content.tasks.push(checkOSTask);
-  await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
 }
 
 async function updateTaskpaneForJSONManifest() {
