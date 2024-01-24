@@ -79,6 +79,10 @@ async function updatePackageJsonForSingleHost(host) {
 
   // Update 'config' section in package.json to use selected host
   content.config["app_to_debug"] = host;
+  if (host === "wxpo") {
+    // not need to read config["app_to_debug"]
+    delete content.config["app_to_debug"];
+  }
 
   // Remove 'engines' section
   delete content.engines;
