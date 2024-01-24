@@ -156,8 +156,8 @@ async function deleteJSONManifestRelatedFiles() {
   await unlinkFileAsync("assets/outline.png");
 }
 
-async function deleteXMLManifestRelatedFiles() {
-  await unlinkFileAsync("manifest.xml");
+function deleteXMLManifestRelatedFiles() {
+  fs.unlinkSync("manifest.xml");
 }
 
 async function updatePackageJsonForXMLManifest() {
@@ -246,7 +246,7 @@ async function modifyProjectForJSONManifest(host) {
   await updatePackageJsonForJSONManifest(host);
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
-  await deleteXMLManifestRelatedFiles();
+  deleteXMLManifestRelatedFiles();
 }
 
 /**
