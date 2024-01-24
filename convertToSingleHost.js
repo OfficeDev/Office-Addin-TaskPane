@@ -169,7 +169,7 @@ async function updatePackageJsonForXMLManifest() {
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
-async function updatePackageJsonForJSONManifest() {
+async function updatePackageJsonForJSONManifest(host) {
   const packageJson = `./package.json`;
   const data = await readFileAsync(packageJson, "utf8");
   let content = JSON.parse(data);
