@@ -54,9 +54,9 @@ async function convertProjectToSingleHost(host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
   });
-  // jsonHosts.forEach(async function (host) {
-  //   //await unlinkFileAsync(`./manifest.${host}.json`);
-  // });
+  jsonHosts.forEach(async function (host) {
+    await unlinkFileAsync(`./manifest.${host}.json`);
+  });
 
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
@@ -157,7 +157,7 @@ async function deleteJSONManifestRelatedFiles() {
 }
 
 async function deleteXMLManifestRelatedFiles() {
-  await unlinkFileAsync("./manifest.xml");
+  await unlinkFileAsync(`./manifest.xml`);
 }
 
 async function updatePackageJsonForXMLManifest() {
