@@ -10,7 +10,7 @@ const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
-const jsonHosts = ["excel", "outlook", "powerpoint", "word"];
+const jsonHosts = ["excel", "outlook", "powerpoint", "word", "wxpo"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
