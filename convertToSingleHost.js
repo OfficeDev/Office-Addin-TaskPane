@@ -282,10 +282,9 @@ modifyProjectForSingleHost(host).catch((err) => {
   process.exitCode = 1;
 });
 
-let manifestPath;
+let manifestPath = "manifest.xml";
 
-if (host !== "wxpo" || manifestType !== "json") {
-  manifestPath = "manifest.xml";
+if (manifestType !== "json") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
