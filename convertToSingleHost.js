@@ -24,15 +24,6 @@ const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
 
-/**
- * Modify the project so that it only supports a single host.
- * @param host The host to support.
- */
-modifyProjectForSingleHost(host).catch((err) => {
-  console.error(`Error modifying for single host: ${err instanceof Error ? err.message : err}`);
-  process.exitCode = 1;
-});
-
 async function modifyProjectForSingleHost(host) {
   if (!host) {
     throw new Error("The host was not provided.");
@@ -232,10 +223,6 @@ async function updateTasksJsonFileForJSONManifest() {
     if (task.label.startsWith("Build")) {
       task.dependsOn = ["Install"];
     }
-    if (task.label === "Debug: Outlook Desktop") {
-      task.script = "start";
-      task.dependsOn = ["Check OS", "Install"];
-    }
   });
 
   const checkOSTask = {
@@ -266,6 +253,15 @@ async function modifyProjectForJSONManifest() {
   await updateTasksJsonFileForJSONManifest();
   await deleteXMLManifestRelatedFiles();
 }
+
+/**
+ * Modify the project so that it only supports a single host.
+ * @param host The host to support.
+ */
+modifyProjectForSingleHost(host).catch((err) => {
+  console.error(`Error modifying for single host: ${err instanceof Error ? err.message : err}`);
+  process.exitCode = 1;
+});
 
 let manifestPath = "manifest.xml";
 

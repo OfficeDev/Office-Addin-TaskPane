@@ -29,42 +29,58 @@
     {
       "label": "Debug: Excel Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app excel",
+      "script": "start -- --app excel",
       "presentation": {
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ]
     },
     {
       "label": "Debug: Outlook Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app outlook",
+      "script": "start -- --app outlook",
       "presentation": {
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ]
     },
     {
       "label": "Debug: PowerPoint Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app powerpoint",
+      "script": "start -- --app powerpoint",
       "presentation": {
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ]
     },
     {
       "label": "Debug: Word Desktop",
       "type": "npm",
-      "script": "start:desktop -- --app word",
+      "script": "start -- --app word",
       "presentation": {
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ]
     },
     {
       "label": "Dev Server",
