@@ -157,8 +157,7 @@ async function deleteJSONManifestRelatedFiles() {
 }
 
 async function deleteXMLManifestRelatedFiles() {
-  console.log("Deleting XML manifest related files");
-  await unlinkFileAsync("manifest.xml");
+  await unlinkFileAsync("./manifest.xml");
 }
 
 async function updatePackageJsonForXMLManifest() {
