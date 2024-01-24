@@ -40,9 +40,9 @@ async function modifyProjectForSingleHost(host) {
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
-  if (host === "wxpo" || manifestType === "json") {
-    return;
-  }
+  // if (host === "wxpo" || manifestType === "json") {
+  //   return;
+  // }
   await convertProjectToSingleHost(host);
   await updatePackageJsonForSingleHost(host);
   await updateLaunchJsonFile();
@@ -53,6 +53,10 @@ async function convertProjectToSingleHost(host) {
   const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
   await writeFileAsync(`./manifest.xml`, manifestContent);
 
+  // Copy host-specific manifest over manifest.json
+  const manifestJsonContent = await readFileAsync(`./manifest.${host}.json`, "utf8");
+  await writeFileAsync(`./manifest.json`, manifestJsonContent);
+
   // Copy over host-specific taskpane code to taskpane.ts
   const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
   await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
@@ -60,6 +64,7 @@ async function convertProjectToSingleHost(host) {
   // Delete all host-specific files
   hosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
+    await unlinkFileAsync(`./manifest.${host}.json`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
   });
 
@@ -131,9 +136,9 @@ async function convertProjectToSingleHostForJsonManifest(host) {
   const manifestContent = await readFileAsync(`./manifest.${host}.json`, "utf8");
   await writeFileAsync(`./manifest.json`, manifestContent);
 
-  // Copy over host-specific taskpane code to taskpane.ts
-  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+  // // Copy over host-specific taskpane code to taskpane.ts
+  // const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+  // await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
 
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
@@ -179,21 +184,12 @@ async function deleteSupportFiles() {
 
 async function deleteJSONManifestRelatedFiles() {
   await unlinkFileAsync("manifest.json");
-  jsonHosts.forEach(async (host) => {
-    await unlinkFileAsync(`manifest.${host}.json`);
-  });
   await unlinkFileAsync("assets/color.png");
   await unlinkFileAsync("assets/outline.png");
 }
 
 async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
-  hosts.forEach(async (host) => {
-    if (host === "wxpo") {
-      return;
-    }
-    await unlinkFileAsync(`manifest.${host}.xml`);
-  });
 }
 
 async function updatePackageJsonForXMLManifest() {
@@ -289,18 +285,6 @@ async function modifyProjectForJSONManifest() {
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
   await deleteXMLManifestRelatedFiles();
-  if (host === "wxpo" && manifestType === "json") {
-    await updateTaskpaneForJSONManifest();
-    await updateCommandsFileForJSONManifest();
-  } else {
-    await convertProjectToSingleHostForJsonManifest(host);
-  }
-  // delete manifest host json files
-  jsonHosts.forEach(async (host) => {
-    await unlinkFileAsync(`manifest.${host}.json`);
-  });
-
-  deleteFoldersAndSupportFiles();
 }
 
 let manifestPath = "manifest.xml";
@@ -330,51 +314,5 @@ if (projectName) {
     } else {
       Promise.resolve();
     }
-  });
-}
-
-async function updateTaskpaneForJSONManifest() {
-  const fs = require("fs");
-  const path = require("path");
-
-  const srcFolder = `./src/taskpane`;
-
-  // Delete all host files in taskpane folder
-  hosts.forEach(async function (host) {
-    if (host === "wxpo") {
-      return;
-    }
-    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
-  });
-  await unlinkFileAsync(`./src/taskpane/taskpane.ts`);
-  const oldFilePath = path.join(srcFolder, "taskpane.ts");
-  const newFilePath = path.join(srcFolder, "jsonManifestTaskpane.ts");
-
-  fs.renameSync(newFilePath, oldFilePath);
-}
-
-async function updateCommandsFileForJSONManifest() {
-  const commandsFile = `./src/commands/commands.ts`;
-
-  jsonHosts.forEach(async (host) => {
-    // Read the current content of the file
-    let content = await readFileAsync(commandsFile, "utf8");
-
-    // Copy over host-specific command code to commands.ts
-    const srcContent = await readFileAsync(`./src/commands/${host}.ts`, "utf8");
-
-    // Replace the function action in the content
-    content = content.replace(
-      "function action(event: Office.AddinCommands.Event) {",
-      `function action(event: Office.AddinCommands.Event) {\n${srcContent}`
-    );
-
-    // Write the updated content back to the file
-    await writeFileAsync(commandsFile, content);
-  });
-
-  // Delete all host-specific files
-  jsonHosts.forEach(async (host) => {
-    await unlinkFileAsync(`./src/commands/${host}.ts`);
   });
 }
