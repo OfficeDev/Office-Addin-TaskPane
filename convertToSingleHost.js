@@ -10,6 +10,7 @@ const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
+const jsonHosts = ["excel", "outlook", "powerpoint", "word"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -60,8 +61,10 @@ async function convertProjectToSingleHost(host) {
   // Delete all host-specific files
   hosts.forEach(async function (host) {
     await unlinkFileAsync(`./manifest.${host}.xml`);
-    await unlinkFileAsync(`./manifest.${host}.json`);
     await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  });
+  jsonHosts.forEach(async function (host) {
+    await unlinkFileAsync(`./manifest.${host}.json`);
   });
 
   deleteFoldersAndSupportFiles();
