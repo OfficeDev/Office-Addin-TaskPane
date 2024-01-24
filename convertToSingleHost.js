@@ -10,6 +10,7 @@ const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
+const jsonHosts = ["excel", "outlook", "powerpoint", "word"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -22,6 +23,15 @@ const testPackages = [
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
+
+/**
+ * Modify the project so that it only supports a single host.
+ * @param host The host to support.
+ */
+modifyProjectForSingleHost(host).catch((err) => {
+  console.error(`Error modifying for single host: ${err instanceof Error ? err.message : err}`);
+  process.exitCode = 1;
+});
 
 async function modifyProjectForSingleHost(host) {
   if (!host) {
@@ -112,6 +122,34 @@ async function updateLaunchJsonFile() {
   await writeFileAsync(launchJson, updatedContent);
 }
 
+async function convertProjectToSingleHostForJsonManifest(host) {
+  // Copy host-specific manifest over manifest.json
+  const manifestContent = await readFileAsync(`./manifest.${host}.json`, "utf8");
+  await writeFileAsync(`./manifest.json`, manifestContent);
+
+  // Copy over host-specific taskpane code to taskpane.ts
+  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+
+  // // Delete all host-specific files
+  // jsonHosts.forEach(async function (host) {
+  //   await unlinkFileAsync(`./manifest.${host}.json`);
+  //   await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  // });
+
+  // Delete test folder
+  deleteFolder(path.resolve(`./test`));
+
+  // Delete the .github folder
+  deleteFolder(path.resolve(`./.github`));
+
+  // Delete CI/CD pipeline files
+  deleteFolder(path.resolve(`./.azure-devops`));
+
+  // Delete repo support files
+  await deleteSupportFiles();
+}
+
 function deleteFolder(folder) {
   try {
     if (fs.existsSync(folder)) {
@@ -185,6 +223,13 @@ async function updatePackageJsonForJSONManifest() {
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
+async function updateWebpackConfigForJSONManifest() {
+  const webPack = `webpack.config.js`;
+  const webPackContent = await readFileAsync(webPack, "utf8");
+  const updatedContent = webPackContent.replace(".xml", ".json");
+  await writeFileAsync(webPack, updatedContent);
+}
+
 async function updateTasksJsonFileForJSONManifest() {
   const tasksJson = `.vscode/tasks.json`;
   const data = await readFileAsync(tasksJson, "utf8");
@@ -222,50 +267,19 @@ async function updateTasksJsonFileForJSONManifest() {
   await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
 }
 
-async function updateWebpackConfigForJSONManifest() {
-  const webPack = `webpack.config.js`;
-  const webPackContent = await readFileAsync(webPack, "utf8");
-  const updatedContent = webPackContent.replace(".xml", ".json");
-  await writeFileAsync(webPack, updatedContent);
-}
-
 async function modifyProjectForJSONManifest() {
   await updatePackageJsonForJSONManifest();
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
-  await updateTaskpaneForJSONManifest();
-  await updateCommandsFileForJSONManifest();
+
+  if (host === "wxpo" && manifestType === "json") {
+    await updateTaskpaneForJSONManifest();
+    await updateCommandsFileForJSONManifest();
+  } else {
+    await convertProjectToSingleHostForJsonManifest(host);
+  }
   await deleteXMLManifestRelatedFiles();
 }
-
-async function modifyProjectForJSONManifestWXPO() {
-  await updatePackageJsonForJSONManifestWXPO();
-  await updateWebpackConfigForJSONManifest();
-  await updateTasksJsonFileForJSONManifestWXPO();
-  await updateSrcFolderForJSONManifestWXPO();
-  await updateCommandsFileForJSONManifestWXPO();
-  await deleteXMLManifestRelatedFilesWXPO();
-  // Delete test folder
-  deleteFolder(path.resolve(`./test`));
-
-  // Delete the .github folder
-  deleteFolder(path.resolve(`./.github`));
-
-  // Delete CI/CD pipeline files
-  deleteFolder(path.resolve(`./.azure-devops`));
-
-  // Delete repo support files
-  await deleteSupportFiles();
-}
-
-/**
- * Modify the project so that it only supports a single host.
- * @param host The host to support.
- */
-modifyProjectForSingleHost(host).catch((err) => {
-  console.error(`Error modifying for single host: ${err instanceof Error ? err.message : err}`);
-  process.exitCode = 1;
-});
 
 let manifestPath = "manifest.xml";
 
@@ -273,12 +287,6 @@ if (host !== "wxpo" || manifestType !== "json") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
   updatePackageJsonForXMLManifest();
-  // } else if (host === "wxpo" && manifestType === "json") {
-  //   manifestPath = "manifest.json";
-  //   modifyProjectForJSONManifestWXPO().catch((err) => {
-  //     console.error(`Error modify Project For JSON Manifest WXPO: ${err instanceof Error ? err.message : err}`);
-  //     process.exitCode = 1;
-  //   });
 } else {
   manifestPath = "manifest.json";
   modifyProjectForJSONManifest().catch((err) => {
@@ -387,10 +395,7 @@ async function updateTaskpaneForJSONManifest() {
   const srcFolder = `./src/taskpane`;
 
   // delete all host files in taskpane folder
-  hosts.forEach((host) => {
-    if (host === "wxpo") {
-      return;
-    }
+  jsonHosts.forEach((host) => {
     const filePath = path.join(srcFolder, `${host}.ts`);
     fs.unlinkSync(filePath);
   });
@@ -482,10 +487,7 @@ async function updateCommandsFileForJSONManifest() {
   const commandsFile = `./src/commands/commands.ts`;
   let content = await readFileAsync(commandsFile, "utf8");
 
-  hosts.forEach(async (host) => {
-    if (host === "wxpo") {
-      return;
-    }
+  jsonHosts.forEach(async (host) => {
     // Copy over host-specific command code to commands.ts
     const srcContent = await readFileAsync(`./src/commands/${host}.ts`, "utf8");
     // await writeFileAsync(`./src/commands/commands.ts`, srcContent);
