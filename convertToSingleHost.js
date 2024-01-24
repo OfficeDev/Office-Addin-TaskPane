@@ -10,7 +10,6 @@ const manifestType = process.argv[3];
 const projectName = process.argv[4];
 let appId = process.argv[5];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
-const jsonHosts = ["excel", "outlook", "powerpoint", "word"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -40,9 +39,6 @@ async function modifyProjectForSingleHost(host) {
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
-  // if (host === "wxpo" || manifestType === "json") {
-  //   return;
-  // }
   await convertProjectToSingleHost(host);
   await updatePackageJsonForSingleHost(host);
   await updateLaunchJsonFile();
@@ -79,6 +75,9 @@ async function updatePackageJsonForSingleHost(host) {
 
   // Update 'config' section in package.json to use selected host
   content.config["app_to_debug"] = host;
+  if (host === "wxpo") {
+    delete content.config["app_to_debug"];
+  }
 
   // Remove 'engines' section
   delete content.engines;
@@ -118,28 +117,6 @@ async function updateLaunchJsonFile() {
 }
 
 async function deleteFoldersAndSupportFiles() {
-  // Delete test folder
-  deleteFolder(path.resolve(`./test`));
-
-  // Delete the .github folder
-  deleteFolder(path.resolve(`./.github`));
-
-  // Delete CI/CD pipeline files
-  deleteFolder(path.resolve(`./.azure-devops`));
-
-  // Delete repo support files
-  await deleteSupportFiles();
-}
-
-async function convertProjectToSingleHostForJsonManifest(host) {
-  // Copy host-specific manifest over manifest.json
-  const manifestContent = await readFileAsync(`./manifest.${host}.json`, "utf8");
-  await writeFileAsync(`./manifest.json`, manifestContent);
-
-  // // Copy over host-specific taskpane code to taskpane.ts
-  // const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-  // await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
-
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
 
