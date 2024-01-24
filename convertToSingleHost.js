@@ -157,7 +157,7 @@ async function deleteJSONManifestRelatedFiles() {
 }
 
 async function deleteXMLManifestRelatedFiles() {
-  await unlinkFileAsync(`./manifest.xml`);
+  await unlinkFileAsync(`./manifest.${""}.xml`);
 }
 
 async function updatePackageJsonForXMLManifest() {
@@ -243,10 +243,10 @@ async function updateTasksJsonFileForJSONManifest() {
 }
 
 async function modifyProjectForJSONManifest(host) {
+  await deleteXMLManifestRelatedFiles();
   await updatePackageJsonForJSONManifest(host);
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
-  await deleteXMLManifestRelatedFiles();
 }
 
 /**
