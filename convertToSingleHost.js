@@ -58,7 +58,17 @@ async function convertProjectToSingleHost(host) {
     await unlinkFileAsync(`./manifest.${host}.json`);
   });
 
-  deleteFoldersAndSupportFiles();
+  // Delete test folder
+  deleteFolder(path.resolve(`./test`));
+
+  // Delete the .github folder
+  deleteFolder(path.resolve(`./.github`));
+
+  // Delete CI/CD pipeline files
+  deleteFolder(path.resolve(`./.azure-devops`));
+
+  // Delete repo support files
+  await deleteSupportFiles();
 }
 
 async function updatePackageJsonForSingleHost(host) {
@@ -108,20 +118,6 @@ async function updateLaunchJsonFile() {
   const regex = /(.+{\r?\n.*"name": "Debug (?:UI|Unit) Tests",\r?\n(?:.*\r?\n)*?.*},.*\r?\n)/gm;
   const updatedContent = launchJsonContent.replace(regex, "");
   await writeFileAsync(launchJson, updatedContent);
-}
-
-async function deleteFoldersAndSupportFiles() {
-  // Delete test folder
-  deleteFolder(path.resolve(`./test`));
-
-  // Delete the .github folder
-  deleteFolder(path.resolve(`./.github`));
-
-  // Delete CI/CD pipeline files
-  deleteFolder(path.resolve(`./.azure-devops`));
-
-  // Delete repo support files
-  await deleteSupportFiles();
 }
 
 function deleteFolder(folder) {
