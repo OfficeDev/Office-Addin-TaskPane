@@ -243,6 +243,19 @@ async function updateTasksJsonFileForJSONManifest() {
     }
   });
 
+  const taskScripts = {
+    "Debug: Word Desktop": "start -- --app word",
+    "Debug: Excel Desktop": "start -- --app excel",
+    "Debug: PowerPoint Desktop": "start -- --app powerpoint",
+    "Debug: Outlook Desktop": "start -- --app outlook",
+  };
+
+  content.tasks.forEach(function (task) {
+    if (taskScripts[task.label]) {
+      task.script = taskScripts[task.label];
+    }
+  });
+
   const checkOSTask = {
     label: "Check OS",
     type: "shell",
