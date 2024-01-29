@@ -78,6 +78,10 @@ async function updatePackageJsonForSingleHost(host) {
 
   // Update 'config' section in package.json to use selected host
   content.config["app_to_debug"] = host;
+  if (host === "wxpo") {
+    // Specify a host for json manifest
+    content.config["app_to_debug"] = "excel";
+  }
 
   // Remove 'engines' section
   delete content.engines;
