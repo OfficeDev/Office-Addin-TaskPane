@@ -4,24 +4,18 @@
  */
 
 Office.onReady((info) => {
+  document.getElementById("sideload-msg").style.display = "none";
+  document.getElementById("app-body").style.display = "flex";
   if (info.host === Office.HostType.Outlook) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
     document.getElementById("run").onclick = runOutlook;
   }
   if (info.host === Office.HostType.Excel) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
     document.getElementById("run").onclick = runExcel;
   }
   if (info.host === Office.HostType.Word) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
     document.getElementById("run").onclick = runWord;
   }
   if (info.host === Office.HostType.PowerPoint) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
     document.getElementById("run").onclick = runPowerPoint;
   }
 });

@@ -34,11 +34,7 @@
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": [],
-      "dependsOn": [
-        "Check OS",
-        "Install"
-      ]
+      "problemMatcher": []
     },
     {
       "label": "Debug: Outlook Desktop",
@@ -48,11 +44,7 @@
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": [],
-      "dependsOn": [
-        "Check OS",
-        "Install"
-      ]
+      "problemMatcher": []
     },
     {
       "label": "Debug: PowerPoint Desktop",
@@ -62,11 +54,7 @@
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": [],
-      "dependsOn": [
-        "Check OS",
-        "Install"
-      ]
+      "problemMatcher": []
     },
     {
       "label": "Debug: Word Desktop",
@@ -76,11 +64,7 @@
         "clear": true,
         "panel": "dedicated"
       },
-      "problemMatcher": [],
-      "dependsOn": [
-        "Check OS",
-        "Install"
-      ]
+      "problemMatcher": []
     },
     {
       "label": "Dev Server",
