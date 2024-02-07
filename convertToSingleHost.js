@@ -60,7 +60,7 @@ async function convertProjectToSingleHost(host, manifestType) {
       taskpaneContent += await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
     });
     await writeFileAsync(`./src/taskpane/taskpane.ts`, taskpaneContent);
-  } else if (manifestType === "xml") {
+  } else if (manifestType === "xml" && host !== "wxpo") {
     const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
     await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
   }
