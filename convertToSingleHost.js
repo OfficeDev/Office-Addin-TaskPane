@@ -40,12 +40,10 @@ async function modifyProjectForSingleHost(host) {
 async function convertProjectToSingleHost(host, manifestType) {
   // Copy host-specific manifest over manifest file
   let manifestContent;
-  const manifestExtension = manifestType === "json" ? "json" : "xml";
-  const manifestHost = manifestType === "json" ? manifestHost : host;
-  const manifestPath = `./manifest.${manifestHost}.${manifestExtension}`;
+  const manifestPath = `./manifest.${host}.${manifestType}`;
   if (fs.existsSync(manifestPath)) {
     manifestContent = await readFileAsync(manifestPath, "utf8");
-    await writeFileAsync(`./manifest.${manifestExtension}`, manifestContent);
+    await writeFileAsync(`./manifest.${manifestType}`, manifestContent);
   }
 
   // Copy over host-specific taskpane code to taskpane.ts
