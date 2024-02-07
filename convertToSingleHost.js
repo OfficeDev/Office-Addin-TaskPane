@@ -41,6 +41,7 @@ async function convertProjectToSingleHost(host, manifestType) {
   // Copy host-specific manifest over manifest file
   let manifestContent;
   const manifestPath = `./manifest.${host}.${manifestType}`;
+  const taskpanePath = `./src/taskpane/${host}.ts`;
   if (fs.existsSync(manifestPath)) {
     manifestContent = await readFileAsync(manifestPath, "utf8");
     await writeFileAsync(`./manifest.${manifestType}`, manifestContent);
@@ -63,12 +64,11 @@ async function convertProjectToSingleHost(host, manifestType) {
 
   // Delete all host-specific files
   hosts.forEach(async function (host) {
-    if (manifestType === "xml" && host !== "wxpo") {
-      await unlinkFileAsync(`./manifest.${host}.xml`);
-      await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+    if (fs.existsSync(manifestPath)) {
+      await unlinkFileAsync(`./manifest.${host}.${manifestType}`);
     }
-    if (manifestType === "json" && host !== "onenote" && host !== "project" && host !== "wxpo") {
-      await unlinkFileAsync(`./manifest.${host}.json`);
+    if (fs.existsSync(taskpanePath)) {
+      await unlinkFileAsync(`./src/taskpane/${host}.ts`);
     }
   });
 
