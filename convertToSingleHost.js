@@ -53,9 +53,9 @@ async function convertProjectToSingleHost(host, manifestType) {
       if (host === "onenote" || host === "project" || host === "wxpo") {
         return;
       }
-      taskpaneContent += await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+      taskpaneContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+      await writeFileAsync(`./src/taskpane/taskpane.ts`, taskpaneContent);
     });
-    await writeFileAsync(`./src/taskpane/taskpane.ts`, taskpaneContent);
   } else if (manifestType === "xml" && host !== "wxpo") {
     const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
     await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
@@ -104,6 +104,13 @@ async function updatePackageJsonForSingleHost(host) {
   // Remove scripts that are unrelated to the selected host
   Object.keys(content.scripts).forEach(function (key) {
     if (key === "convert-to-single-host" || key === "start:desktop:outlook") {
+      delete content.scripts[key];
+    }
+  });
+
+  // Remove special start scripts
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key.includes("start:")) {
       delete content.scripts[key];
     }
   });
@@ -177,6 +184,11 @@ async function deleteJSONManifestRelatedFiles() {
 
 async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
+  hosts.forEach(async function (host) {
+    if (fs.existsSync(`./manifest.${host}.xml`)) {
+      await unlinkFileAsync(`manifest.${host}.xml`);
+    }
+  });
 }
 
 async function updateWebpackConfigForJSONManifest() {
