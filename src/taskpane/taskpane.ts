@@ -4,4 +4,3 @@ import "./outlook";
 import "./powerpoint";
 import "./project";
 import "./word";
-import "./wxpo";

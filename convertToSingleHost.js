@@ -30,11 +30,8 @@ async function modifyProjectForSingleHost(host) {
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
-  if (manifestType === "json") {
-    await convertProjectToSingleHost(host, "json");
-  } else {
-    await convertProjectToSingleHost(host, "xml");
-  }
+
+  await convertProjectToSingleHost(host, manifestType);
 
   await updatePackageJsonForSingleHost(host);
   await updateLaunchJsonFile();
@@ -42,17 +39,39 @@ async function modifyProjectForSingleHost(host) {
 
 async function convertProjectToSingleHost(host, manifestType) {
   // Copy host-specific manifest over manifest file
-  const manifestContent = await readFileAsync(`./manifest.${host}.${manifestType}`, "utf8");
-  await writeFileAsync(`./manifest.${manifestType}`, manifestContent);
+  let manifestContent;
+  let manifestHost = host === "wxpo" ? "" : `.${host}`;
+
+  if (manifestType === "json" && host !== "onenote" && host !== "project") {
+    manifestContent = await readFileAsync(`./manifest${manifestHost}.json`, "utf8");
+    await writeFileAsync(`./manifest.json`, manifestContent);
+  } else if (manifestType === "xml" && host !== "wxpo") {
+    manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
+    await writeFileAsync(`./manifest.xml`, manifestContent);
+  }
+
   // Copy over host-specific taskpane code to taskpane.ts
-  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+  if (manifestType === "json" && host === "wxpo") {
+    let taskpaneContent;
+    hosts.forEach(async function (host) {
+      if (host === "onenote" || host === "project") {
+        return;
+      }
+      taskpaneContent += await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+    });
+    await writeFileAsync(`./src/taskpane/taskpane.ts`, taskpaneContent);
+  } else if (manifestType === "xml") {
+    const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
+    await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+  }
 
   // Delete all host-specific files
   hosts.forEach(async function (host) {
-    await unlinkFileAsync(`./manifest.${host}.xml`);
-    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
-    if (manifestType === "json" && host !== "onenote" && host !== "project") {
+    if (manifestType === "xml" && host !== "wxpo") {
+      await unlinkFileAsync(`./manifest.${host}.xml`);
+      await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+    }
+    if (manifestType === "json" && host !== "onenote" && host !== "project" && host !== "wxpo") {
       await unlinkFileAsync(`./manifest.${host}.json`);
     }
   });
@@ -79,7 +98,7 @@ async function updatePackageJsonForSingleHost(host) {
   // Update 'config' section in package.json to use selected host
   content.config["app_to_debug"] = host;
   if (host === "wxpo") {
-    // Specify a host for json manifest
+    // Specify a default debug host for json manifest
     content.config["app_to_debug"] = "excel";
   }
 
@@ -106,6 +125,11 @@ async function updatePackageJsonForSingleHost(host) {
       delete content.devDependencies[key];
     }
   });
+
+  // Change manifest file name extension
+  content.scripts.start = `office-addin-debugging start manifest.${manifestType}`;
+  content.scripts.stop = `office-addin-debugging stop manifest.${manifestType}`;
+  content.scripts.validate = `office-addin-manifest validate manifest.${manifestType}`;
 
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
@@ -159,48 +183,6 @@ async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
 }
 
-async function updatePackageJsonForXMLManifest() {
-  const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
-  let content = JSON.parse(data);
-
-  // Remove scripts that are only used with JSON manifest
-  delete content.scripts["signin"];
-  delete content.scripts["signout"];
-
-  // Write updated JSON to file
-  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
-}
-
-async function updatePackageJsonForJSONManifest(host) {
-  const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
-  let content = JSON.parse(data);
-
-  if (host === "wxpo") {
-    // Specify a host for json manifest
-    content.config["app_to_debug"] = "excel";
-  }
-
-  // Remove special start scripts
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key.includes("start:")) {
-      delete content.scripts[key];
-    }
-  });
-
-  // Change test script
-  content.scripts.test = 'echo "No tests."';
-
-  // Change manifest file name extension
-  content.scripts.start = "office-addin-debugging start manifest.json";
-  content.scripts.stop = "office-addin-debugging stop manifest.json";
-  content.scripts.validate = "office-addin-manifest validate manifest.json";
-
-  // Write updated JSON to file
-  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
-}
-
 async function updateWebpackConfigForJSONManifest() {
   const webPack = `webpack.config.js`;
   const webPackContent = await readFileAsync(webPack, "utf8");
@@ -214,49 +196,15 @@ async function updateTasksJsonFileForJSONManifest() {
   let content = JSON.parse(data);
 
   content.tasks.forEach(function (task) {
-    if (task.label.startsWith("Build")) {
+    if (task.label.startsWith("Build") || task.label.startsWith("Debug:")) {
       task.dependsOn = ["Install"];
     }
   });
 
-  const taskScripts = {
-    "Debug: Word Desktop": "start -- --app word",
-    "Debug: Excel Desktop": "start -- --app excel",
-    "Debug: PowerPoint Desktop": "start -- --app powerpoint",
-    "Debug: Outlook Desktop": "start -- --app outlook",
-  };
-
-  content.tasks.forEach(function (task) {
-    if (taskScripts[task.label]) {
-      task.script = taskScripts[task.label];
-      task.dependsOn = ["Check OS", "Install"];
-    }
-  });
-
-  const checkOSTask = {
-    label: "Check OS",
-    type: "shell",
-    windows: {
-      command: "echo 'Sideloading on Windows is supported'",
-    },
-    linux: {
-      command: "echo 'Sideloading on Linux is not supported' && exit 1",
-    },
-    osx: {
-      command: "echo 'Sideloading on Mac is not supported' && exit 1",
-    },
-    presentation: {
-      clear: true,
-      panel: "dedicated",
-    },
-  };
-
-  content.tasks.push(checkOSTask);
   await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
 }
 
-async function modifyProjectForJSONManifest(host) {
-  await updatePackageJsonForJSONManifest(host);
+async function modifyProjectForJSONManifest() {
   await updateWebpackConfigForJSONManifest();
   await updateTasksJsonFileForJSONManifest();
   await deleteXMLManifestRelatedFiles();
@@ -276,10 +224,9 @@ let manifestPath = "manifest.xml";
 if (manifestType !== "json") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
-  updatePackageJsonForXMLManifest();
 } else {
   manifestPath = "manifest.json";
-  modifyProjectForJSONManifest(host).catch((err) => {
+  modifyProjectForJSONManifest().catch((err) => {
     console.error(`Error modifying for JSON manifest: ${err instanceof Error ? err.message : err}`);
     process.exitCode = 1;
   });
