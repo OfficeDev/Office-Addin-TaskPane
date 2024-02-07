@@ -54,7 +54,7 @@ async function convertProjectToSingleHost(host, manifestType) {
   if (manifestType === "json" && host === "wxpo") {
     let taskpaneContent;
     hosts.forEach(async function (host) {
-      if (host === "onenote" || host === "project") {
+      if (host === "onenote" || host === "project" || host === "wxpo") {
         return;
       }
       taskpaneContent += await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
