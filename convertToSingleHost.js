@@ -199,25 +199,25 @@ async function deleteSupportFiles() {
 
 async function deleteJSONManifestRelatedFiles() {
   await unlinkFileAsync("manifest.json");
-  hosts.forEach(async function (host) {
+  for (const host of hosts) {
+    if (host === "onenote" || host === "project") {
+      continue;
+    }
     if (fs.existsSync(`./manifest.${host}.json`)) {
       await unlinkFileAsync(`manifest.${host}.json`);
     }
-  });
+  }
   await unlinkFileAsync("assets/color.png");
   await unlinkFileAsync("assets/outline.png");
 }
 
 async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
-  for (const host of hosts) {
-    if (host === "onenote" || host === "project") {
-      continue;
-    }
+  hosts.forEach(async function (host) {
     if (fs.existsSync(`./manifest.${host}.xml`)) {
       await unlinkFileAsync(`manifest.${host}.xml`);
     }
-  }
+  });
 }
 
 async function updateWebpackConfigForJSONManifest() {
