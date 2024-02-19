@@ -22,6 +22,11 @@ const testPackages = [
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
+const appendFileAsync = util.promisify(fs.appendFile);
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 async function modifyProjectForSingleHost(host) {
   if (!host) {
@@ -48,14 +53,25 @@ async function convertProjectToSingleHost(host, manifestType) {
 
   // Copy over host-specific taskpane code to taskpane.ts
   if (manifestType === "json" && host === "wxpo") {
-    let taskpaneContent;
-    hosts.forEach(async function (host) {
-      if (host === "onenote" || host === "project" || host === "wxpo") {
-        return;
+    const files = ["word", "excel", "powerpoint", "outlook"];
+    await writeFileAsync(`./src/taskpane/taskpane.ts`, "");
+
+    for (const file of files) {
+      try {
+        let taskpaneContent = await readFileAsync(`./src/taskpane/${file}.ts`, "utf8");
+        const capitalizedFile = capitalizeFirstLetter(file);
+
+        // Replace 'run' with 'run' followed by the host name in the content
+        taskpaneContent = taskpaneContent.replace(/onclick = run;/g, `onclick = run${capitalizedFile};`);
+        taskpaneContent = taskpaneContent.replace(
+          /export async function run\(\)/g,
+          `export async function run${capitalizedFile}()`
+        );
+        await appendFileAsync(`./src/taskpane/taskpane.ts`, taskpaneContent);
+      } catch (error) {
+        console.error(`Error processing file ${file}:`, error);
       }
-      taskpaneContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-      await writeFileAsync(`./src/taskpane/taskpane.ts`, taskpaneContent);
-    });
+    }
   } else if (manifestType === "xml" && host !== "wxpo") {
     const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
     await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
