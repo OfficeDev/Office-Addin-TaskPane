@@ -35,6 +35,12 @@ async function modifyProjectForSingleHost(host) {
   if (!hosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
+  if (
+    (manifestType === "json" && (host === "onenote" || host === "project")) ||
+    (manifestType === "xml" && host === "wxpo")
+  ) {
+    throw new Error(`'${host}' is not supported for ${manifestType} manifest.`);
+  }
 
   await convertProjectToSingleHost(host, manifestType);
 
@@ -72,7 +78,7 @@ async function convertProjectToSingleHost(host, manifestType) {
         console.error(`Error processing file ${file}:`, error);
       }
     }
-  } else if (manifestType === "xml" && host !== "wxpo") {
+  } else {
     const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
     await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
   }
