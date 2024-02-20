@@ -58,7 +58,7 @@ async function convertProjectToSingleHost(host, manifestType) {
   }
 
   // Copy over host-specific taskpane code to taskpane.ts
-  if (manifestType === "json" && host === "wxpo") {
+  if (host === "wxpo") {
     const files = ["word", "excel", "powerpoint", "outlook"];
     await writeFileAsync(`./src/taskpane/taskpane.ts`, "");
 
