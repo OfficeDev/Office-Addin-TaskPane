@@ -22,11 +22,6 @@ const testPackages = [
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
-const appendFileAsync = util.promisify(fs.appendFile);
-
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
 
 async function modifyProjectForSingleHost(host) {
   if (!host) {
@@ -58,38 +53,34 @@ async function convertProjectToSingleHost(host, manifestType) {
   }
 
   // Copy over host-specific taskpane code to taskpane.ts
+  const taskpaneFilePath = "./src/taskpane/taskpane.ts";
+  let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
   if (host === "wxpo") {
-    const files = ["word", "excel", "powerpoint", "outlook"];
-    await writeFileAsync(`./src/taskpane/taskpane.ts`, "");
-
-    for (const file of files) {
-      try {
-        let taskpaneContent = await readFileAsync(`./src/taskpane/${file}.ts`, "utf8");
-        const capitalizedFile = capitalizeFirstLetter(file);
-
-        // Replace 'run' with 'run' followed by the host name in the content
-        taskpaneContent = taskpaneContent.replace(/onclick = run;/g, `onclick = run${capitalizedFile};`);
-        taskpaneContent = taskpaneContent.replace(
-          /export async function run\(\)/g,
-          `export async function run${capitalizedFile}()`
-        );
-        await appendFileAsync(`./src/taskpane/taskpane.ts`, taskpaneContent);
-      } catch (error) {
-        console.error(`Error processing file ${file}:`, error);
-      }
-    }
+    // Remove useless import in taskpane.ts
+    taskpaneContent = taskpaneContent
+      .replace('import "./onenote";', "")
+      .replace('import "./project";', "")
+      .replace(/^\s*[\r\n]/gm, "");
   } else {
-    const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-    await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+    taskpaneContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
   }
+  await writeFileAsync(taskpaneFilePath, taskpaneContent);
 
   // Delete all host-specific files
+  if (host === "wxpo") {
+    await unlinkFileAsync(`./src/taskpane/onenote.ts`);
+    await unlinkFileAsync(`./src/taskpane/project.ts`);
+  } else {
+    hosts.forEach(async function (host) {
+      if (fs.existsSync(`./src/taskpane/${host}.ts`)) {
+        await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+      }
+    });
+  }
+
   hosts.forEach(async function (host) {
     if (fs.existsSync(`./manifest.${host}.${manifestType}`)) {
       await unlinkFileAsync(`./manifest.${host}.${manifestType}`);
-    }
-    if (fs.existsSync(`./src/taskpane/${host}.ts`)) {
-      await unlinkFileAsync(`./src/taskpane/${host}.ts`);
     }
   });
 
@@ -200,9 +191,6 @@ async function deleteSupportFiles() {
 async function deleteJSONManifestRelatedFiles() {
   await unlinkFileAsync("manifest.json");
   for (const host of hosts) {
-    if (host === "onenote" || host === "project") {
-      continue;
-    }
     if (fs.existsSync(`./manifest.${host}.json`)) {
       await unlinkFileAsync(`manifest.${host}.json`);
     }
