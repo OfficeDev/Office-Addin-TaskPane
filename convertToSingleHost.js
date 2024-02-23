@@ -45,44 +45,31 @@ async function modifyProjectForSingleHost(host) {
 
 async function convertProjectToSingleHost(host, manifestType) {
   // Copy host-specific manifest over manifest file
-  let manifestContent;
   const manifestPath = `./manifest.${host}.${manifestType}`;
   if (fs.existsSync(manifestPath)) {
-    manifestContent = await readFileAsync(manifestPath, "utf8");
+    let manifestContent = await readFileAsync(manifestPath, "utf8");
     await writeFileAsync(`./manifest.${manifestType}`, manifestContent);
   }
 
   // Copy over host-specific taskpane code to taskpane.ts
   const taskpaneFilePath = "./src/taskpane/taskpane.ts";
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
-  if (host === "wxpo") {
-    // Remove useless import in taskpane.ts
-    taskpaneContent = taskpaneContent
-      .replace('import "./onenote";', "")
-      .replace('import "./project";', "")
-      .replace(/^\s*[\r\n]/gm, "");
-  } else {
-    taskpaneContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-  }
-  await writeFileAsync(taskpaneFilePath, taskpaneContent);
+  let targetHosts = host === "wxpo" ? ["word", "excel", "powerpoint", "outlook"] : [host];
 
-  // Delete all host-specific files
-  if (host === "wxpo") {
-    await unlinkFileAsync(`./src/taskpane/onenote.ts`);
-    await unlinkFileAsync(`./src/taskpane/project.ts`);
-  } else {
-    hosts.forEach(async function (host) {
+  for (const host of hosts) {
+    if (!targetHosts.includes(host)) {
       if (fs.existsSync(`./src/taskpane/${host}.ts`)) {
         await unlinkFileAsync(`./src/taskpane/${host}.ts`);
       }
-    });
-  }
-
-  hosts.forEach(async function (host) {
+      // remove unneeded imports
+      taskpaneContent = taskpaneContent.replace(`import "./${host}";`, "").replace(/^\s*[\r\n]/gm, "");
+    }
+    // Remove unneeded manifest templates
     if (fs.existsSync(`./manifest.${host}.${manifestType}`)) {
       await unlinkFileAsync(`./manifest.${host}.${manifestType}`);
     }
-  });
+  }
+  await writeFileAsync(taskpaneFilePath, taskpaneContent);
 
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
@@ -104,10 +91,11 @@ async function updatePackageJsonForSingleHost(host) {
   let content = JSON.parse(data);
 
   // Update 'config' section in package.json to use selected host
-  content.config["app_to_debug"] = host;
   if (host === "wxpo") {
     // Specify a default debug host for json manifest
     content.config["app_to_debug"] = "excel";
+  } else {
+    content.config["app_to_debug"] = host;
   }
 
   // Remove 'engines' section
