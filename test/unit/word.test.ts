@@ -38,8 +38,8 @@ describe("Word", function () {
     global.Word = wordMock as any;
     global.Office = new OfficeMockObject(OfficeMockData) as any; // Mocking the common office-js namespace
 
-    const { runWord } = require("../../src/taskpane/word");
-    await runWord();
+    const { run } = require("../../src/taskpane/word");
+    await run();
 
     assert.strictEqual(wordMock.context.document.body.paragraph.font.color, "blue");
   });
