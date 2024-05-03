@@ -10,10 +10,10 @@ if (process.argv.length <= 2) {
   const hostList = hosts.map((host) => `'${host}'`).join(", ");
   console.log("SYNTAX: convertToSingleHost.js <host> <manifestType> <projectName> <appId>");
   console.log();
-  console.log(`  host: Specifies which Office app will host the add-in: ${hostList}`);
-  console.log(`  manifestType: Specify the type of manifest to use: 'xml' or 'json'.`);
-  console.log(`  projectName: The name of the project.`);
-  console.log(`  appId: The id of the project.`);
+  console.log(`  host (required): Specifies which Office app will host the add-in: ${hostList}`);
+  console.log(`  manifestType: Specify the type of manifest to use: 'xml' or 'json'.  Defaults to 'xml'`);
+  console.log(`  projectName: The name of the project. Defaults to 'My Office Add-in'`);
+  console.log(`  appId: The id of the project or 'random' to generate one.  Defaults to 'random'`);
   console.log();
   process.exit(1);
 }
