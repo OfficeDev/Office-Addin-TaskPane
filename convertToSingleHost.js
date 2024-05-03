@@ -12,7 +12,7 @@ if (process.argv.length <= 2) {
   console.log();
   console.log(`  host (required): Specifies which Office app will host the add-in: ${hostList}`);
   console.log(`  manifestType: Specify the type of manifest to use: 'xml' or 'json'.  Defaults to 'xml'`);
-  console.log(`  projectName: The name of the project. Defaults to 'My Office Add-in'`);
+  console.log(`  projectName: The name of the project (use quotes when there are spaces in th name). Defaults to 'My Office Add-in'`);
   console.log(`  appId: The id of the project or 'random' to generate one.  Defaults to 'random'`);
   console.log();
   process.exit(1);
