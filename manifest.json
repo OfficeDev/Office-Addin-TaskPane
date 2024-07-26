@@ -69,9 +69,6 @@
           ]
         },
         {
-          "requirements": {
-            "capabilities": [{ "name": "AddinCommands", "minVersion": "1.1" }]
-          },
           "id": "TaskPaneRuntime",
           "type": "general",
           "code": {
@@ -88,6 +85,9 @@
           ]
         },
         {
+          "requirements": {
+            "capabilities": [{ "name": "AddinCommands", "minVersion": "1.1" }]
+          },
           "id": "CommandsRuntime",
           "type": "general",
           "code": {
@@ -99,7 +99,6 @@
             {
               "id": "action",
               "type": "executeFunction",
-              "displayName": "action"
             }
           ]
         }
