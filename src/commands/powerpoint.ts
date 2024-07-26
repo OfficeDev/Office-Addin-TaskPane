@@ -8,7 +8,7 @@
 Office.onReady((info) => {
   if (info.host === Office.HostType.PowerPoint) {
     // Register the function with Office.
-    Office.actions.associate("action", actionPowerPoint);
+    Office.actions.associate("action", insertTextInPowerPoint);
   }
 });
 
@@ -16,7 +16,7 @@ Office.onReady((info) => {
  * Shows a notification when the add-in command is executed.
  * @param event
  */
-async function actionPowerPoint(event: Office.AddinCommands.Event) {
+async function insertTextInPowerPoint(event: Office.AddinCommands.Event) {
   try {
     await PowerPoint.run(async (context) => {
       const options: Office.SetSelectedDataOptions = { coercionType: Office.CoercionType.Text };

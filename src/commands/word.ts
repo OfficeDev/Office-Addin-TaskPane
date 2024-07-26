@@ -8,15 +8,15 @@
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
     // Register the function with Office.
-    Office.actions.associate("action", actionWord);
+    Office.actions.associate("action", insertBlueParagraphInWord);
   }
 });
 
 /**
- * Shows a notification when the add-in command is executed.
+ * Insert a blue paragraph in word when the add-in command is executed.
  * @param event
  */
-async function actionWord(event: Office.AddinCommands.Event) {
+async function insertBlueParagraphInWord(event: Office.AddinCommands.Event) {
   try {
     await Word.run(async (context) => {
       const paragraph = context.document.body.insertParagraph("Hello World", Word.InsertLocation.end);

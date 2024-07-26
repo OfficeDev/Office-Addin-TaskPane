@@ -8,15 +8,15 @@
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
     // Register the function with Office.
-    Office.actions.associate("action", actionOutlook);
+    Office.actions.associate("action", setNotificationInOutlook);
   }
 });
 
 /**
- * Shows a notification when the add-in command is executed.
+ * Show an outlook notification when the add-in command is executed.
  * @param event
  */
-function actionOutlook(event: Office.AddinCommands.Event) {
+function setNotificationInOutlook(event: Office.AddinCommands.Event) {
   const message: Office.NotificationMessageDetails = {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
     message: "Performed action.",
