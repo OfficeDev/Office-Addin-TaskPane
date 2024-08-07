@@ -53,17 +53,6 @@
       "postDebugTask": "Stop Debug"
     },
     {
-      "name": "Excel Desktop (Edge Legacy)",
-      "type": "msedge",
-      "request": "attach",
-      "url": "https://localhost:3000/taskpane.html?_host_Info=Excel$Win32$16.01$en-US$$$$0",
-      "port": 9222,
-      "timeout": 600000,
-      "webRoot": "${workspaceRoot}",
-      "preLaunchTask": "Debug: Excel Desktop",
-      "postDebugTask": "Stop Debug"
-    },
-    {
       "name": "Outlook Desktop (Edge Chromium)",
       "type": "msedge",
       "request": "attach",
@@ -95,17 +84,6 @@
       "postDebugTask": "Stop Debug"
     },
     {
-      "name": "PowerPoint Desktop (Edge Legacy)",
-      "type": "msedge",
-      "request": "attach",
-      "url": "https://localhost:3000/taskpane.html?_host_Info=PowerPoint$Win32$16.01$en-US$$$$0",
-      "port": 9222,
-      "timeout": 600000,
-      "webRoot": "${workspaceRoot}",
-      "preLaunchTask": "Debug: PowerPoint Desktop",
-      "postDebugTask": "Stop Debug"
-    },
-    {
       "name": "Word Desktop (Edge Chromium)",
       "type": "msedge",
       "request": "attach",
@@ -115,16 +93,5 @@
       "preLaunchTask": "Debug: Word Desktop",
       "postDebugTask": "Stop Debug"
     },
-    {
-      "name": "Word Desktop (Edge Legacy)",
-      "type": "msedge",
-      "request": "attach",
-      "url": "https://localhost:3000/taskpane.html?_host_Info=Word$Win32$16.01$en-US$$$$0",
-      "port": 9222,
-      "timeout": 600000,
-      "webRoot": "${workspaceRoot}",
-      "preLaunchTask": "Debug: Word Desktop",
-      "postDebugTask": "Stop Debug"
-    }
   ]
 }

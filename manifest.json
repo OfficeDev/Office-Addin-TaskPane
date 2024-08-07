@@ -98,7 +98,7 @@
           "actions": [
             {
               "id": "action",
-              "type": "executeFunction",
+              "type": "executeFunction"
             }
           ]
         }
