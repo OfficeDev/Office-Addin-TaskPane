@@ -71,6 +71,8 @@ async function convertProjectToSingleHost(host, manifestType) {
   }
   await writeFileAsync(taskpaneFilePath, taskpaneContent);
 
+  await updateAndDeleteCommandsFile(host);
+
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
 
@@ -215,6 +217,45 @@ async function updateTasksJsonFileForJSONManifest() {
   });
 
   await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
+}
+
+async function updateAndDeleteCommandsFile(host) {
+  if (host == "wxpo") {
+    // no need to update commands file for wxpo
+    return;
+  }
+  const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
+  const importStatements = {
+    word: `import { insertBlueParagraphInWord } from "./word";`,
+    excel: `import { setRangeColorInExcel } from "./excel";`,
+    powerpoint: `import { insertTextInPowerPoint } from "./powerpoint";`,
+    outlook: `import { setNotificationInOutlook } from "./outlook";`,
+  };
+  const associateStatements = {
+    word: `Office.actions.associate("action", insertBlueParagraphInWord);`,
+    excel: `Office.actions.associate("action", setRangeColorInExcel);`,
+    powerpoint: `Office.actions.associate("action", insertTextInPowerPoint);`,
+    outlook: `Office.actions.associate("action", setNotificationInOutlook);`,
+  };
+  if (!supportedHosts.includes(host)) {
+    throw new Error(`'${host}' is not a supported host.`);
+  }
+  // update commands.ts file
+  const commandsFileContent = `${importStatements[host]}
+/* global Office */
+
+// Register the add-in commands with the Office host application.
+Office.onReady(async () => {
+  ${associateStatements[host]}
+});
+`;
+  await writeFileAsync("./src/commands/commands.ts", commandsFileContent);
+  // delete other host commands files
+  for (const uselessHost of supportedHosts) {
+    if (uselessHost !== host && fs.existsSync(`./src/commands/${uselessHost}.ts`)) {
+      await unlinkFileAsync(`./src/commands/${uselessHost}.ts`);
+    }
+  }
 }
 
 async function modifyProjectForJSONManifest() {

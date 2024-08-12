@@ -82,5 +82,13 @@
       "preLaunchTask": "Debug: Word Desktop",
       "postDebugTask": "Stop Debug"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch convertToSingleHost",
+      "program": "${workspaceFolder}/convertToSingleHost.js",
+      "skipFiles": ["<node_internals>/**"],
+      "args": ["excel", "json"]
+    }
   ]
 }
