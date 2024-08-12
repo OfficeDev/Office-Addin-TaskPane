@@ -3,8 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office */
-/* global Word console */
+/* global Office Word console */
 
 /**
  * Insert a blue paragraph in word when the add-in command is executed.

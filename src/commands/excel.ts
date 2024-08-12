@@ -3,8 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office */
-/* global Excel console */
+/* global Office Excel console */
 
 /**
  * Set range color to selected range in excel when the add-in command is executed.

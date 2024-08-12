@@ -3,8 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office */
-/* global PowerPoint console */
+/* global Office PowerPoint console */
 
 /**
  * Shows a notification when the add-in command is executed.
