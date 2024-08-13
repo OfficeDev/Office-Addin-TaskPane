@@ -230,7 +230,7 @@ async function modifyCommandsFile(host) {
   // delete all host commands file
   for (const iter of supportedHosts) {
     // remove needless ${host}.ts
-    if (iter !== host && fs.existsSync(`./src/commands/${iter}.ts`)) {
+    if (host !== "wxpo" && iter !== host && fs.existsSync(`./src/commands/${iter}.ts`)) {
       await unlinkFileAsync(`./src/commands/${iter}.ts`);
     }
     // remove needless commands.${host}.ts
