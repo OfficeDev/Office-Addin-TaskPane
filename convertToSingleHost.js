@@ -71,7 +71,7 @@ async function convertProjectToSingleHost(host, manifestType) {
   }
   await writeFileAsync(taskpaneFilePath, taskpaneContent);
 
-  await updateAndDeleteCommandsFile(host);
+  await modifyCommandsFile(host);
 
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
@@ -219,41 +219,23 @@ async function updateTasksJsonFileForJSONManifest() {
   await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
 }
 
-async function updateAndDeleteCommandsFile(host) {
-  if (host == "wxpo") {
-    // no need to update commands file for wxpo
-    return;
-  }
-  const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
-  const importStatements = {
-    word: `import { insertBlueParagraphInWord } from "./word";`,
-    excel: `import { setRangeColorInExcel } from "./excel";`,
-    powerpoint: `import { insertTextInPowerPoint } from "./powerpoint";`,
-    outlook: `import { setNotificationInOutlook } from "./outlook";`,
-  };
-  const associateStatements = {
-    word: `Office.actions.associate("action", insertBlueParagraphInWord);`,
-    excel: `Office.actions.associate("action", setRangeColorInExcel);`,
-    powerpoint: `Office.actions.associate("action", insertTextInPowerPoint);`,
-    outlook: `Office.actions.associate("action", setNotificationInOutlook);`,
-  };
+async function modifyCommandsFile(host) {
+  const supportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
   if (!supportedHosts.includes(host)) {
     throw new Error(`'${host}' is not a supported host.`);
   }
-  // update commands.ts file
-  const commandsFileContent = `${importStatements[host]}
-/* global Office */
-
-// Register the add-in commands with the Office host application.
-Office.onReady(async () => {
-  ${associateStatements[host]}
-});
-`;
-  await writeFileAsync("./src/commands/commands.ts", commandsFileContent);
-  // delete other host commands files
-  for (const uselessHost of supportedHosts) {
-    if (uselessHost !== host && fs.existsSync(`./src/commands/${uselessHost}.ts`)) {
-      await unlinkFileAsync(`./src/commands/${uselessHost}.ts`);
+  // Write the host command file content to commands.ts
+  const fileContent = await readFileAsync(`./src/commands/commands.${host}.ts`, "utf8");
+  await writeFileAsync("./src/commands/commands.ts", fileContent);
+  // delete all host commands file
+  for (const iter of supportedHosts) {
+    // remove needless ${host}.ts
+    if (iter !== host && fs.existsSync(`./src/commands/${iter}.ts`)) {
+      await unlinkFileAsync(`./src/commands/${iter}.ts`);
+    }
+    // remove needless commands.${host}.ts
+    if (fs.existsSync(`./src/commands/commands.${iter}.ts`)) {
+      await unlinkFileAsync(`./src/commands/commands.${iter}.ts`);
     }
   }
 }
