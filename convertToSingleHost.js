@@ -227,13 +227,12 @@ async function modifyCommandsFile(host) {
   // Write the host command file content to commands.ts
   const fileContent = await readFileAsync(`./src/commands/commands.${host}.ts`, "utf8");
   await writeFileAsync("./src/commands/commands.ts", fileContent);
-  // delete all host commands file
   for (const iter of supportedHosts) {
     // remove needless ${host}.ts
     if (host !== "wxpo" && iter !== host && fs.existsSync(`./src/commands/${iter}.ts`)) {
       await unlinkFileAsync(`./src/commands/${iter}.ts`);
     }
-    // remove needless commands.${host}.ts
+    // remove all commands.${host}.ts
     if (fs.existsSync(`./src/commands/commands.${iter}.ts`)) {
       await unlinkFileAsync(`./src/commands/commands.${iter}.ts`);
     }
