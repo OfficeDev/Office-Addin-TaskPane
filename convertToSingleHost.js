@@ -6,7 +6,7 @@ const util = require("util");
 const childProcess = require("child_process");
 
 const host = process.argv[2];
-const manifestType = process.argv[3];
+const manifestType = process.argv[3] || "xml";
 const projectName = process.argv[4];
 let appId = process.argv[5];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
