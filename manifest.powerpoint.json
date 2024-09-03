@@ -1,5 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
     "id": "f2b103f1-1ab1-4e1b-8f0b-072aa3d4e19d",
     "manifestVersion": "devPreview",
     "version": "1.0.0",

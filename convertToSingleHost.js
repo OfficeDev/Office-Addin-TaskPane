@@ -4,12 +4,25 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
+const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
+
+if (process.argv.length <= 2) {
+  const hostList = hosts.map((host) => `'${host}'`).join(", ");
+  console.log("SYNTAX: convertToSingleHost.js <host> <manifestType> <projectName> <appId>");
+  console.log();
+  console.log(`  host (required): Specifies which Office app will host the add-in: ${hostList}`);
+  console.log(`  manifestType: Specify the type of manifest to use: 'xml' or 'json'.  Defaults to 'xml'`);
+  console.log(`  projectName: The name of the project (use quotes when there are spaces in the name). Defaults to 'My Office Add-in'`);
+  console.log(`  appId: The id of the project or 'random' to generate one.  Defaults to 'random'`);
+  console.log();
+  process.exit(1);
+}
 
 const host = process.argv[2];
 const manifestType = process.argv[3] || "xml";
 const projectName = process.argv[4];
 let appId = process.argv[5];
-const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
+const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -40,7 +53,7 @@ async function modifyProjectForSingleHost(host) {
   await convertProjectToSingleHost(host, manifestType);
 
   await updatePackageJsonForSingleHost(host, manifestType);
-  await updateLaunchJsonFile();
+  await updateLaunchJsonFile(host);
 }
 
 async function convertProjectToSingleHost(host, manifestType) {
@@ -146,13 +159,34 @@ async function updatePackageJsonForSingleHost(host, manifestType) {
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
-async function updateLaunchJsonFile() {
+async function updateLaunchJsonFile(host) {
   // Remove 'Debug Tests' configuration from launch.json
   const launchJson = `.vscode/launch.json`;
   const launchJsonContent = await readFileAsync(launchJson, "utf8");
-  const regex = /(.+{\r?\n.*"name": "Debug (?:UI|Unit) Tests",\r?\n(?:.*\r?\n)*?.*},.*\r?\n)/gm;
-  const updatedContent = launchJsonContent.replace(regex, "");
-  await writeFileAsync(launchJson, updatedContent);
+  let content = JSON.parse(launchJsonContent);
+  content.configurations = content.configurations.filter(function (config) {
+    return config.name.startsWith(getHostName(host));
+  });
+  await writeFileAsync(launchJson, JSON.stringify(content, null, 2));
+}
+
+function getHostName(host) {
+  switch (host) {
+    case "excel":
+      return "Excel";
+    case "onenote":
+      return "OneNote";
+    case "outlook":
+      return "Outlook";
+    case "powerpoint":
+      return "PowerPoint";
+    case "project":
+      return "Project";
+    case "word":
+      return "Word";
+    default:
+      throw new Error(`'${host}' is not a supported host.`);
+  }
 }
 
 function deleteFolder(folder) {
@@ -279,11 +313,14 @@ if (projectName) {
   }
 
   // Modify the manifest to include the name and id of the project
-  const cmdLine = `npx office-addin-manifest modify ${manifestPath} -g ${appId} -d ${projectName}`;
+  const cmdLine = `npx office-addin-manifest modify ${manifestPath} -g ${appId} -d "${projectName}"`;
   childProcess.exec(cmdLine, (error, stdout) => {
     if (error) {
+      console.error(`Error updating the manifest: ${error}`);
+      process.exitCode = 1;
       Promise.reject(stdout);
     } else {
+      console.log(stdout);
       Promise.resolve();
     }
   });
