@@ -5,15 +5,11 @@
 
 /* global Office */
 
-Office.onReady(() => {
-  // If needed, Office.js is ready to be called.
-});
-
 /**
- * Shows a notification when the add-in command is executed.
+ * Show an outlook notification when the add-in command is executed.
  * @param event
  */
-function action(event: Office.AddinCommands.Event) {
+export function setNotificationInOutlook(event: Office.AddinCommands.Event) {
   const message: Office.NotificationMessageDetails = {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
     message: "Performed action.",
@@ -27,6 +23,3 @@ function action(event: Office.AddinCommands.Event) {
   // Be sure to indicate when the add-in command function is complete.
   event.completed();
 }
-
-// Register the function with Office.
-Office.actions.associate("action", action);

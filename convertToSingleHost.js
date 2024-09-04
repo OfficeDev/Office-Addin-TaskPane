@@ -19,7 +19,7 @@ if (process.argv.length <= 2) {
 }
 
 const host = process.argv[2];
-const manifestType = process.argv[3];
+const manifestType = process.argv[3] || "xml";
 const projectName = process.argv[4];
 let appId = process.argv[5];
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
@@ -52,7 +52,7 @@ async function modifyProjectForSingleHost(host) {
 
   await convertProjectToSingleHost(host, manifestType);
 
-  await updatePackageJsonForSingleHost(host);
+  await updatePackageJsonForSingleHost(host, manifestType);
   await updateLaunchJsonFile(host);
 }
 
@@ -84,6 +84,8 @@ async function convertProjectToSingleHost(host, manifestType) {
   }
   await writeFileAsync(taskpaneFilePath, taskpaneContent);
 
+  await modifyCommandsFile(host);
+
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
 
@@ -97,7 +99,7 @@ async function convertProjectToSingleHost(host, manifestType) {
   await deleteSupportFiles();
 }
 
-async function updatePackageJsonForSingleHost(host) {
+async function updatePackageJsonForSingleHost(host, manifestType) {
   // Update package.json to reflect selected host
   const packageJson = `./package.json`;
   const data = await readFileAsync(packageJson, "utf8");
@@ -114,38 +116,44 @@ async function updatePackageJsonForSingleHost(host) {
   // Remove 'engines' section
   delete content.engines;
 
-  // Remove scripts that are unrelated to the selected host
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key === "convert-to-single-host" || key === "start:desktop:outlook") {
-      delete content.scripts[key];
+  if (manifestType === "json") {
+    // Change manifest file name extension
+    for (const key of Object.keys(content.scripts)) {
+      if (content.scripts[key].includes(".xml")) {
+        content.scripts[key] = content.scripts[key].replace(".xml", ".json");
+      }
     }
-  });
+  }
 
-  // Remove special start scripts
-  Object.keys(content.scripts).forEach(function (key) {
-    if (key.includes("start:")) {
+  if (host != "wxpo") {
+    // Remove special start scripts
+    for (const key of Object.keys(content.scripts)) {
+      if (key.includes("start:") && !key.includes(host)) {
+        delete content.scripts[key];
+      }
+    }
+  }
+
+  // Remove scripts that are unrelated to the selected host
+  for (const key of Object.keys(content.scripts)) {
+    if (key === "convert-to-single-host") {
       delete content.scripts[key];
     }
-  });
+  }
 
   // Remove test-related scripts
-  Object.keys(content.scripts).forEach(function (key) {
+  for (const key of Object.keys(content.scripts)) {
     if (key.includes("test")) {
       delete content.scripts[key];
     }
-  });
+  }
 
   // Remove test-related packages
-  Object.keys(content.devDependencies).forEach(function (key) {
+  for (const key of Object.keys(content.devDependencies)) {
     if (testPackages.includes(key)) {
       delete content.devDependencies[key];
     }
-  });
-
-  // Change manifest file name extension
-  content.scripts.start = `office-addin-debugging start manifest.${manifestType}`;
-  content.scripts.stop = `office-addin-debugging stop manifest.${manifestType}`;
-  content.scripts.validate = `office-addin-manifest validate manifest.${manifestType}`;
+  }
 
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
@@ -249,6 +257,26 @@ async function updateTasksJsonFileForJSONManifest() {
   });
 
   await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
+}
+
+async function modifyCommandsFile(host) {
+  const supportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
+  if (!supportedHosts.includes(host)) {
+    throw new Error(`'${host}' is not a supported host.`);
+  }
+  // Write the host command file content to commands.ts
+  const fileContent = await readFileAsync(`./src/commands/commands.${host}.ts`, "utf8");
+  await writeFileAsync("./src/commands/commands.ts", fileContent);
+  for (const iter of supportedHosts) {
+    // remove needless ${host}.ts
+    if (host !== "wxpo" && iter !== host && fs.existsSync(`./src/commands/${iter}.ts`)) {
+      await unlinkFileAsync(`./src/commands/${iter}.ts`);
+    }
+    // remove all commands.${host}.ts
+    if (fs.existsSync(`./src/commands/commands.${iter}.ts`)) {
+      await unlinkFileAsync(`./src/commands/commands.${iter}.ts`);
+    }
+  }
 }
 
 async function modifyProjectForJSONManifest() {

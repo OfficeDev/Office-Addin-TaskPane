@@ -44,11 +44,7 @@
   "extensions": [
     {
       "requirements": {
-        "scopes": ["mail", "workbook", "document", "presentation"],
-        "capabilities": [
-          { "name": "Mailbox", "minVersion": "1.3" }, 
-          { "name": "AddinCommands", "minVersion": "1.1" }
-        ]
+        "scopes": ["mail", "workbook", "document", "presentation"]
       },
       "runtimes": [
         {
@@ -73,9 +69,6 @@
           ]
         },
         {
-          "requirements": {
-            "capabilities": [{ "name": "AddinCommands", "minVersion": "1.1" }]
-          },
           "id": "TaskPaneRuntime",
           "type": "general",
           "code": {
@@ -92,6 +85,9 @@
           ]
         },
         {
+          "requirements": {
+            "capabilities": [{ "name": "AddinCommands", "minVersion": "1.1" }]
+          },
           "id": "CommandsRuntime",
           "type": "general",
           "code": {
@@ -102,8 +98,7 @@
           "actions": [
             {
               "id": "action",
-              "type": "executeFunction",
-              "displayName": "action"
+              "type": "executeFunction"
             }
           ]
         }
