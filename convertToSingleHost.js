@@ -164,7 +164,7 @@ async function updateLaunchJsonFile(host) {
   const launchJsonContent = await readFileAsync(launchJson, "utf8");
   let content = JSON.parse(launchJsonContent);
   content.configurations = content.configurations.filter(function (config) {
-    return config.name.startsWith(getHostName(host));
+    return host == "wxpo" ? true : config.name.startsWith(getHostName(host));
   });
   await writeFileAsync(launchJson, JSON.stringify(content, null, 2));
 }
