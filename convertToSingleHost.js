@@ -163,8 +163,7 @@ async function updateLaunchJsonFile(host) {
   const launchJson = `.vscode/launch.json`;
   const launchJsonContent = await readFileAsync(launchJson, "utf8");
   let content = JSON.parse(launchJsonContent);
-  let targetHosts = getTargetHosts(host);
-  let targetConfigurations = targetHosts.flatMap(function (host) {
+  const targetConfigurations = getTargetHosts(host).flatMap(function (host) {
     return content.configurations.filter(function (config) {
       return config.name.startsWith(getHostName(host));
     });
