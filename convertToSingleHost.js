@@ -22,7 +22,6 @@ const host = process.argv[2];
 const manifestType = process.argv[3] || "xml";
 const projectName = process.argv[4];
 let appId = process.argv[5];
-const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -67,7 +66,7 @@ async function convertProjectToSingleHost(host, manifestType) {
   // Copy over host-specific taskpane code to taskpane.ts
   const taskpaneFilePath = "./src/taskpane/taskpane.ts";
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
-  let targetHosts = host === "wxpo" ? ["word", "excel", "powerpoint", "outlook"] : [host];
+  let targetHosts = getTargetHosts(host);
 
   for (const host of hosts) {
     if (!targetHosts.includes(host)) {
@@ -164,9 +163,12 @@ async function updateLaunchJsonFile(host) {
   const launchJson = `.vscode/launch.json`;
   const launchJsonContent = await readFileAsync(launchJson, "utf8");
   let content = JSON.parse(launchJsonContent);
-  content.configurations = content.configurations.filter(function (config) {
-    return config.name.startsWith(getHostName(host));
+  const targetConfigurations = getTargetHosts(host).flatMap(function (host) {
+    return content.configurations.filter(function (config) {
+      return config.name.startsWith(getHostName(host));
+    });
   });
+  content.configurations = targetConfigurations;
   await writeFileAsync(launchJson, JSON.stringify(content, null, 2));
 }
 
@@ -187,6 +189,10 @@ function getHostName(host) {
     default:
       throw new Error(`'${host}' is not a supported host.`);
   }
+}
+
+function getTargetHosts(host) {
+  return host == "wxpo" ? ["word", "excel", "powerpoint", "outlook"] : [host];
 }
 
 function deleteFolder(folder) {
