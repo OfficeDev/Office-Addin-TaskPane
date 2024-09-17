@@ -5,10 +5,19 @@
 
 import { runOutlook } from "../shared/outlook";
 
-/* global document Office */
+/* global Office */
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
-    document.getElementById("run").onclick = runOutlook;
+    Office.actions.associate("action", runOutlookCommand);
   }
 });
+
+function runOutlookCommand(event: Office.AddinCommands.Event) {
+  runOutlook();
+
+  // Be sure to indicate when the add-in command function is complete.
+  if (event) {
+    event.completed();
+  }
+}

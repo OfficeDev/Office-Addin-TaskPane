@@ -5,10 +5,19 @@
 
 import { runWord } from "../shared/word";
 
-/* global document Office */
+/* global Office */
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
-    document.getElementById("run").onclick = runWord;
+    Office.actions.associate("action", runWordCommand);
   }
 });
+
+function runWordCommand(event: Office.AddinCommands.Event) {
+  runWord();
+
+  // Be sure to indicate when the add-in command function is complete.
+  if (event) {
+    event.completed();
+  }
+}

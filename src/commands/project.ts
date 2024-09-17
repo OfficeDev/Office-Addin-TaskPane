@@ -5,10 +5,19 @@
 
 import { runProject } from "../shared/project";
 
-/* global document Office */
+/* global Office */
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Project) {
-    document.getElementById("run").onclick = runProject;
+    Office.actions.associate("action", runProjectCommand);
   }
 });
+
+function runProjectCommand(event: Office.AddinCommands.Event) {
+  runProject();
+
+  // Be sure to indicate when the add-in command function is complete.
+  if (event) {
+    event.completed();
+  }
+}

@@ -5,10 +5,19 @@
 
 import { runExcel } from "../shared/excel";
 
-/* global document Office */
+/* global Office */
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
-    document.getElementById("run").onclick = runExcel;
+    Office.actions.associate("action", runExcelCommand);
   }
 });
+
+function runExcelCommand(event: Office.AddinCommands.Event) {
+  runExcel();
+
+  // Be sure to indicate when the add-in command function is complete.
+  if (event) {
+    event.completed();
+  }
+}

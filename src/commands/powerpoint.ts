@@ -5,10 +5,19 @@
 
 import { runPowerPoint } from "../shared/powerpoint";
 
-/* global document Office */
+/* global Office */
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.PowerPoint) {
-    document.getElementById("run").onclick = runPowerPoint;
+    Office.actions.associate("action", runPowerPointCommand);
   }
 });
+
+function runPowerPointCommand(event: Office.AddinCommands.Event) {
+  runPowerPoint();
+
+  // Be sure to indicate when the add-in command function is complete.
+  if (event) {
+    event.completed();
+  }
+}

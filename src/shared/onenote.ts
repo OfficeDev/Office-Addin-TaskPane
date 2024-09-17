@@ -3,9 +3,8 @@
  * See LICENSE in the project root for license information.
  */
 
-import "./excel";
-import "./onenote";
-import "./outlook";
-import "./powerpoint";
-import "./project";
-import "./word";
+export async function runOneNote() {
+  /**
+   * Insert your OneNote code here
+   */
+}

@@ -5,10 +5,19 @@
 
 import { runOneNote } from "../shared/onenote";
 
-/* global document Office */
+/* global Office */
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.OneNote) {
-    document.getElementById("run").onclick = runOneNote;
+    Office.actions.associate("action", runOneNoteCommand);
   }
 });
+
+function runOneNoteCommand(event: Office.AddinCommands.Event) {
+  runOneNote();
+
+  // Be sure to indicate when the add-in command function is complete.
+  if (event) {
+    event.completed();
+  }
+}
