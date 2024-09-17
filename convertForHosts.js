@@ -5,7 +5,7 @@ const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
 
-const supportedHosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
 const supporterHostsString = supportedHosts.join(", ");
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
