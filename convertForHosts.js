@@ -74,18 +74,32 @@ async function convertProject() {
 }
 
 async function updateSourceFiles() {
-  // Remove unused source files
+  // Delete unused source files
   const taskpaneFilePath = `./src/taskpane/taskpane.ts`;
+  const commandsFilePath = `./src/commands/commands.ts`;
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
+  let commandsContent = await readFileAsync(commandsFilePath, "utf8");
 
   supportedHosts.forEach(function (host) {
     if (!hosts.includes(host)) {
+      deleteFileAsync(`./src/shared/${host}.ts`);
+      deleteFileAsync(`./src/commands/${host}.ts`);
       deleteFileAsync(`./src/taskpane/${host}.ts`);
       taskpaneContent = taskpaneContent.replace(`import "./${host}";`, "").replace(/^\s*[\r\n]/gm, "");
+      commandsContent = commandsContent.replace(`import "./${host}";`, "").replace(/^\s*[\r\n]/gm, "");
     }
   });
 
   await writeFileAsync(taskpaneFilePath, taskpaneContent + "\n");
+  await writeFileAsync(commandsFilePath, commandsContent + "\n");
+
+  // Delete unused host specific features
+  if (!hosts.includes("outlook")) {
+    deleteFolder(path.resolve("./src/launchevents"));
+  }
+  if (!hosts.includes("excel")) {
+    deleteFolder(path.resolve("./src/functions"));
+  }
 }
 
 async function updateWebpackConfig() {
