@@ -5,11 +5,14 @@ const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
 
-const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
-const supporterHostsString = supportedHosts.join(", ");
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
+
+const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
+const supporterHostsString = supportedHosts.join(", ");
+const supportedFeatures = ["commands", "functions", "events", "taskpane"];
+const supportedFeatureString = supportedFeatures.join(", ");
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -21,45 +24,64 @@ const testPackages = [
 ];
 
 // Help Text
-if (process.argv.length <= 2) {
-  console.log("SYNTAX: convertForHosts.js <hosts> <manifestType> <projectName> <appId>");
+if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
+  console.log("SYNTAX: convertForHosts.js <hosts> <features> <manifestType> <projectName> <appId>");
   console.log();
+  console.log(`  hosts \tSpecifies which Office apps (comma seperated) will host the add-in: ${supporterHostsString}`);
   console.log(
-    `  hosts (required): Specifies which Office apps (comma seperated) will host the add-in: ${supporterHostsString}`
+    `  features \tSpecifies which features (comma seperated) to include in the add-in: ${supportedFeatureString}`
   );
-  console.log(`  manifestType: Specify the type of manifest to use: 'xml' or 'json'.  Defaults to 'xml'`);
+  console.log(`  manifestType \tSpecify the type of manifest to use: 'xml' or 'json'.  Defaults to 'xml'`);
   console.log(
-    `  projectName: The name of the project (use quotes when there are spaces in the name). Defaults to 'My Office Add-in'`
+    `  projectName \tThe name of the project (use quotes when there are spaces in the name). Defaults to 'My Office Add-in'`
   );
-  console.log(`  appId: The id of the project or 'random' to generate one.  Defaults to 'random'`);
+  console.log(`  appId \tThe id of the project or 'random' to generate one.  Defaults to 'random'`);
   console.log();
   process.exit(1);
 }
 
 // Get arguments
-let hosts = process.argv[2];
-const manifestType = process.argv[3] ? process.argv[3].toLowerCase() : "xml";
-const projectName = process.argv[4];
-let appId = process.argv[5];
+let hosts = process.argv[2] || "excel,outlook,powerpoint,word";
+let features = process.argv[3] || "commands,functions,events,taskpane";
+let manifestType = process.argv[4] || "xml";
+const projectName = process.argv[5] || "My Office Add-in";
+let appId = process.argv[6] || "random";
 
 // Define functions
 
 async function convertProject() {
   // Validate arguments
-  if (!hosts) {
-    throw new Error("Need to specify at least one host to support.");
-  } else {
-    hosts = process.argv[2].split(",");
-    if (!hosts.every((host) => supportedHosts.includes(host))) {
-      throw new Error(`One or more specified hosts are not supported.  Supported hosts are ${supporterHostsString}`);
-    }
+  hosts = hosts.toLowerCase().split(",");
+  if (!hosts.every((host) => supportedHosts.includes(host))) {
+    throw new Error(`One or more specified hosts are not supported.  Supported hosts are ${supporterHostsString}`);
   }
+
+  features = features.toLowerCase().split(",");
+  if (!features.every((feature) => supportedFeatures.includes(feature))) {
+    throw new Error(
+      `One or more specified features are not supported.  Supported features are ${supportedFeatureString}`
+    );
+  }
+
+  manifestType = manifestType.toLowerCase();
+  if (manifestType !== "xml" && manifestType !== "json") {
+    throw new Error(`Invalid manifest type.  Must be 'xml' or 'json'.`);
+  }
+
+  console.log(`Converting project for the following arguments:`);
+  console.log(`  Hosts: ${hosts}`);
+  console.log(`  Features: ${features}`);
+  console.log(`  Manifest Type: ${manifestType}`);
+  console.log(`  Project Name: ${projectName}`);
+  console.log(`  App Id: ${appId}`);
+  console.log();
 
   // Copy host-specific manifest over manifest.xml
   //const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
   //await writeFileAsync(`./manifest.xml`, manifestContent);
 
   await updateSourceFiles();
+  await updateFeatureFiles();
   await updateWebpackConfig();
   await updatePackageJson();
   await updateLaunchJsonFile();
@@ -85,17 +107,26 @@ async function updateSourceFiles() {
       deleteFileAsync(`./src/shared/${host}.ts`);
       deleteFileAsync(`./src/commands/${host}.ts`);
       deleteFileAsync(`./src/taskpane/${host}.ts`);
-      taskpaneContent = taskpaneContent.replace(`import "./${host}";`, "").replace(/^\s*[\r\n]/gm, "");
-      commandsContent = commandsContent.replace(`import "./${host}";`, "").replace(/^\s*[\r\n]/gm, "");
+      taskpaneContent = taskpaneContent.replace(new RegExp(`import "\\./${host}";\r?\n`, "gm"), "");
+      commandsContent = commandsContent.replace(new RegExp(`import "\\./${host}";\r?\n`, "gm"), "");
     }
   });
 
-  await writeFileAsync(taskpaneFilePath, taskpaneContent + "\n");
-  await writeFileAsync(commandsFilePath, commandsContent + "\n");
+  await writeFileAsync(taskpaneFilePath, taskpaneContent);
+  await writeFileAsync(commandsFilePath, commandsContent);
+}
+
+async function updateFeatureFiles() {
+  // Delete unused features
+  supportedFeatures.forEach(function (feature) {
+    if (!features.includes(feature)) {
+      deleteFolder(path.resolve(`./src/${feature}`));
+    }
+  });
 
   // Delete unused host specific features
   if (!hosts.includes("outlook")) {
-    deleteFolder(path.resolve("./src/launchevents"));
+    deleteFolder(path.resolve("./src/events"));
   }
   if (!hosts.includes("excel")) {
     deleteFolder(path.resolve("./src/functions"));
@@ -234,19 +265,13 @@ convertProject().catch((err) => {
   process.exitCode = 1;
 });
 
-if (projectName) {
-  if (!appId) {
-    appId = "random";
+// Modify the manifest to include the name and id of the project
+const cmdLine = `npx office-addin-manifest modify manifest.${manifestType} -g ${appId} -d "${projectName}"`;
+childProcess.exec(cmdLine, (error, stdout) => {
+  if (error) {
+    console.error(`Error updating the manifest: ${error}`);
+    process.exitCode = 1;
+  } else {
+    console.log(stdout);
   }
-
-  // Modify the manifest to include the name and id of the project
-  const cmdLine = `npx office-addin-manifest modify manifest.${manifestType} -g ${appId} -d "${projectName}"`;
-  childProcess.exec(cmdLine, (error, stdout) => {
-    if (error) {
-      console.error(`Error updating the manifest: ${error}`);
-      process.exitCode = 1;
-    } else {
-      console.log(stdout);
-    }
-  });
-}
+});

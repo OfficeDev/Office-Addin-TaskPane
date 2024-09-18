@@ -5,14 +5,14 @@
 
 /* global Office */
 
-export async function runOutlook() {
+export async function runOutlook(text) {
   /**
    * Insert your Outlook code here
    */
 
   const message: Office.NotificationMessageDetails = {
     type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
-    message: "Performed action.",
+    message: `Performed action: ${text}`,
     icon: "Icon.80x80",
     persistent: true,
   };
