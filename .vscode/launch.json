@@ -78,6 +78,16 @@
       "webRoot": "${workspaceRoot}",
       "preLaunchTask": "Debug: Word Desktop",
       "postDebugTask": "Stop Debug"
+    },
+    {
+      "name": "Outlook Launch Events",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "timeout": 600000,
+      "outFiles": [ "${workspaceFolder}/dist/**/*.js"],
+      "resolveSourceMapLocations": null,
+      "trace": true
     }
   ]
 }
