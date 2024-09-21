@@ -11,6 +11,7 @@ const writeFileAsync = util.promisify(fs.writeFile);
 
 const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
 const supporterHostsString = supportedHosts.join(", ");
+const xmlHostTypes = { excel: "Workbook", outlook: "Mailbox", powerpoint: "Presentation", word: "Document" };
 const supportedFeatures = ["commands", "functions", "events", "taskpane"];
 const supportedFeatureString = supportedFeatures.join(", ");
 const testPackages = [
@@ -76,10 +77,6 @@ async function convertProject() {
   console.log(`  App Id: ${appId}`);
   console.log();
 
-  // Copy host-specific manifest over manifest.xml
-  //const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
-  //await writeFileAsync(`./manifest.xml`, manifestContent);
-
   await updateSourceFiles();
   await updateFeatureFiles();
   await updateWebpackConfig();
@@ -107,8 +104,8 @@ async function updateSourceFiles() {
       deleteFileAsync(`./src/shared/${host}.ts`);
       deleteFileAsync(`./src/commands/${host}.ts`);
       deleteFileAsync(`./src/taskpane/${host}.ts`);
-      taskpaneContent = taskpaneContent.replace(new RegExp(`import "\\./${host}";\r?\n`, "gm"), "");
-      commandsContent = commandsContent.replace(new RegExp(`import "\\./${host}";\r?\n`, "gm"), "");
+      taskpaneContent = taskpaneContent.replace(new RegExp(`import "\\./${host}";\r?\n?`, "gm"), "");
+      commandsContent = commandsContent.replace(new RegExp(`import "\\./${host}";\r?\n?`, "gm"), "");
     }
   });
 
@@ -213,10 +210,30 @@ async function modifyProjectForXMLManifest() {
   await deleteFileAsync("assets/color.png");
   await deleteFileAsync("assets/outline.png");
 
-  // Remove host specific XML manifests
-  supportedHosts.forEach(async function (host) {
-    await deleteFileAsync(`manifest.${host}.xml`);
-  });
+  if (hosts.length === 1 && hosts[0] === "outlook") {
+    // If only outlook is selected, use the outlook specific XML manifest
+    const outlookManifestContent = await readFileAsync(`./manifest.outlook.xml`, "utf8");
+    await writeFileAsync(`./manifest.xml`, outlookManifestContent);
+    await deleteFileAsync(`manifest.outlook.xml`);
+  } else {
+    // Update based on selected hosts
+    const manifestFilePath = `./manifest.xml`;
+    let manifestContent = await readFileAsync(manifestFilePath, "utf8");
+    supportedHosts.forEach(function (host) {
+      if (host != "outlook" && !hosts.includes(host)) {
+        let xmlHostType = xmlHostTypes[host];
+        manifestContent = manifestContent
+          .replace(new RegExp(`^\\s*<Host Name="${xmlHostType}"[^\\/]*\\/>\r?\n?`, "gm"), "")
+          .replace(new RegExp(`^\\s*<Host xsi:type="${xmlHostType}"[^>]*>[\\s\\S]*?</Host>\r?\n?`, "gm"), "");
+      }
+    });
+    await writeFileAsync(manifestFilePath, manifestContent);
+
+    // Remove outlook specific XML manifest
+    if (!hosts.includes("outlook")) {
+      await deleteFileAsync(`manifest.outlook.xml`);
+    }
+  }
 }
 
 async function modifyProjectForJsonManifest() {
