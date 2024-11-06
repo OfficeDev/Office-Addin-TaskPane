@@ -105,6 +105,9 @@
       ],
       "ribbons": [
         {
+          "requirements": {
+            "capabilities": [{ "name": "Mailbox", "minVersion": "1.3" }]
+          },
           "contexts": [
             "mailRead"
           ],
