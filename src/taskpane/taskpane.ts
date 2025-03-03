@@ -8,7 +8,7 @@ import "./outlook";
 import "./powerpoint";
 import "./word";
 
-/* global Office, document */
+/* global Office document */
 
 Office.onReady(async () => {
   document.getElementById("sideload-msg").style.display = "none";

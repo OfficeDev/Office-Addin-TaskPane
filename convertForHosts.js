@@ -1,4 +1,4 @@
-/* global require, process, console */
+/* global require process console */
 
 const fs = require("fs");
 const path = require("path");
@@ -166,7 +166,7 @@ async function updatePackageJson() {
   content.scripts.start = `office-addin-debugging start manifest.${manifestType}`;
   content.scripts.stop = `office-addin-debugging stop manifest.${manifestType}`;
   content.scripts.validate = `office-addin-manifest validate manifest.${manifestType}`;
-  
+
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }

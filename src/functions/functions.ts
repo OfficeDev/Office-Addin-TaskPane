@@ -3,7 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global clearInterval, console, CustomFunctions, setInterval */
+/* global clearInterval console CustomFunctions setInterval */
 
 /**
  * Adds two numbers.

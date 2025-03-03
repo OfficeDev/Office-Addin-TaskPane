@@ -1,8 +1,8 @@
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
-import { runWord } from "../../../src/taskpane/word";
+import { runWord } from "../../../src/shared/word";
 import * as testHelpers from "./test-helpers";
 
-/* global Office, Word */
+/* global Office Word */
 
 const port: number = 4201;
 let testValues: any = [];

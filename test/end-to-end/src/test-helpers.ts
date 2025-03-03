@@ -1,6 +1,6 @@
 import * as childProcess from "child_process";
 
-/* global Excel, process, Promise, setTimeout */
+/* global Excel process Promise setTimeout */
 
 export async function closeDesktopApplication(application: string): Promise<boolean> {
   let processName: string = "";

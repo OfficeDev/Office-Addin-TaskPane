@@ -2,7 +2,7 @@ import * as assert from "assert";
 import "mocha";
 import { OfficeMockObject } from "office-addin-mock";
 
-/* global describe, global, it, require, Word */
+/* global describe global it require Word */
 
 const WordMockData = {
   context: {

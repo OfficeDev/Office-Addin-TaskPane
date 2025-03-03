@@ -7,7 +7,7 @@ import * as officeAddinTestServer from "office-addin-test-server";
 import * as path from "path";
 import * as testHelpers from "./src/test-helpers";
 
-/* global process, describe, before, it, after */
+/* global process describe before it after */
 
 const hosts = ["Excel", "PowerPoint", "Word"];
 const manifestPath = path.resolve(`${process.cwd()}/test/end-to-end/test-manifest.xml`);
