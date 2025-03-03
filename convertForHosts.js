@@ -166,8 +166,7 @@ async function updatePackageJson() {
   content.scripts.start = `office-addin-debugging start manifest.${manifestType}`;
   content.scripts.stop = `office-addin-debugging stop manifest.${manifestType}`;
   content.scripts.validate = `office-addin-manifest validate manifest.${manifestType}`;
-  content.scripts["start:web"] = `office-addin-debugging start manifest.${manifestType} web`;
-
+  
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
