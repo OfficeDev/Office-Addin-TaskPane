@@ -9,8 +9,11 @@ import { runOutlook } from "../shared/outlook";
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
-    document.getElementById("run").onclick = () => {
-      runOutlook("Clicked the taskpane button");
-    };
+    const runButton = document.getElementById("run");
+    if (runButton) {
+      runButton.onclick = () => {
+        runOutlook("Clicked the taskpane button");
+      };
+    }
   }
 });

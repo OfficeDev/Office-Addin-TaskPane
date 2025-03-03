@@ -13,7 +13,7 @@ Office.onReady((info) => {
   }
 });
 
-function runWordCommand(event: Office.AddinCommands.Event) {
+function runWordCommand(event: Office.AddinCommands.Event): void {
   runWord();
 
   // Be sure to indicate when the add-in command function is complete.

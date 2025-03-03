@@ -11,6 +11,13 @@ import "./word";
 /* global Office document */
 
 Office.onReady(async () => {
-  document.getElementById("sideload-msg").style.display = "none";
-  document.getElementById("app-body").style.display = "flex";
+  const sideloadMsg = document.getElementById("sideload-msg");
+  if (sideloadMsg) {
+    sideloadMsg.style.display = "none";
+  }
+  
+  const appBody = document.getElementById("app-body");
+  if (appBody) {
+    appBody.style.display = "flex";
+  }
 });

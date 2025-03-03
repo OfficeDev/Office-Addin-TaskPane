@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",                                  // Set the JavaScript language version for emitted JavaScript.
+    "module": "ESNext",                                // Specify what module code is generated.
+    "outDir": "./dist",                                  // Specify the output directory for the compiled JavaScript files.
+    "rootDir": "./src",                                  // Specify the root directory of your TypeScript files.
+    "strict": true,                                      // Enable all strict type-checking options.
+    "forceConsistentCasingInFileNames": true,            // Disallow inconsistently-cased references to the same file.
+    "preserveConstEnums": true,                          // Preserve const enum declarations.
+    "removeComments": false,                             // Keep comments in the output files.
+    "pretty": true,                                      // Format the output files nicely.
+    "esModuleInterop": true,                             // Enable interoperability between CommonJS and ES Modules.
+    "skipLibCheck": true,                                // Skip type checking of declaration files.
+    "noImplicitAny": false                               // Allow implicit 'any' types.
+  },
+  "include": ["src/**/*"],                               // Include all TypeScript files in the src directory.
+  "exclude": ["node_modules", "dist"]                    // Exclude node_modules and dist directories.
+}

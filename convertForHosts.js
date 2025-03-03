@@ -246,6 +246,8 @@ async function modifyProjectForJsonManifest() {
   supportedHosts.forEach(async function (host) {
     await deleteFileAsync(`manifest.${host}.json`);
   });
+
+  // TODO: update the manifest.json file to use only the selected hosts
 }
 
 function deleteFolder(folder) {

@@ -13,7 +13,7 @@ Office.onReady((info) => {
   }
 });
 
-function runOutlookCommand(event: Office.AddinCommands.Event) {
+function runOutlookCommand(event: Office.AddinCommands.Event): void {
   runOutlook("Clicked command button");
 
   // Be sure to indicate when the add-in command function is complete.

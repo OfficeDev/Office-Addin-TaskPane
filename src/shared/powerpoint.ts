@@ -5,7 +5,7 @@
 
 /* global Office */
 
-export async function runPowerPoint() {
+export async function runPowerPoint(): Promise<void> {
   /**
    * Insert your PowerPoint code here
    */

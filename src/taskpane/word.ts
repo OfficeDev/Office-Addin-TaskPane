@@ -9,6 +9,9 @@ import { runWord } from "../shared/word";
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
-    document.getElementById("run").onclick = runWord;
+    const runButton = document.getElementById("run");
+    if (runButton) {
+      runButton.onclick = runWord;
+    }
   }
 });

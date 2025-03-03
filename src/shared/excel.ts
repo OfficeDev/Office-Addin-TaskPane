@@ -5,13 +5,13 @@
 
 /* global console Excel */
 
-export async function runExcel() {
-  await Excel.run(async (context) => {
+export async function runExcel(): Promise<void> {
+  await Excel.run(async (context: Excel.RequestContext) => {
     /**
      * Insert your Excel code here
      */
 
-    const range = context.workbook.getSelectedRange();
+    const range: Excel.Range = context.workbook.getSelectedRange();
     range.load("address");
     range.format.fill.color = "yellow";
     await context.sync();

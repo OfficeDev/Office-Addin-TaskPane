@@ -9,6 +9,9 @@ import { runExcel } from "../shared/excel";
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
-    document.getElementById("run").onclick = runExcel;
+    const runButton = document.getElementById("run");
+    if (runButton) {
+      runButton.onclick = runExcel;
+    }
   }
 });

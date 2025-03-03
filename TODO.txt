@@ -1,0 +1,7 @@
+- Modify json manifest on convert
+- Convert source typscript to javascript
+- Provide react option
+- Provide auth options
+- Provide shared runtime option
+- Update readme
+- Hook up to generator-office

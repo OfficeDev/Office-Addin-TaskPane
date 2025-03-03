@@ -1,4 +1,4 @@
-import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
+import { pingTestServer, sendTestResults, TestServerResponse } from "office-addin-test-helpers";
 import { runPowerPoint } from "../../../src/shared/powerpoint";
 import * as testHelpers from "./test-helpers";
 
@@ -9,7 +9,7 @@ let testValues: any = [];
 
 Office.onReady(async (info) => {
   if (info.host === Office.HostType.PowerPoint) {
-    const testServerResponse: object = await pingTestServer(port);
+    const testServerResponse: TestServerResponse = await pingTestServer(port);
     if (testServerResponse["status"] == 200) {
       runTest();
     }

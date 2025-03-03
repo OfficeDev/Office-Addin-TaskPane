@@ -5,7 +5,7 @@
 
 /* global Office */
 
-export async function runOutlook(text) {
+export async function runOutlook(text: string): Promise<void> {
   /**
    * Insert your Outlook code here
    */
@@ -18,5 +18,5 @@ export async function runOutlook(text) {
   };
 
   // Show a notification message.
-  Office.context.mailbox.item.notificationMessages.replaceAsync("ActionPerformanceNotification", message);
+  Office.context.mailbox.item?.notificationMessages.replaceAsync("ActionPerformanceNotification", message);
 }
