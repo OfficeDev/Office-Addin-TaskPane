@@ -17,7 +17,5 @@ function runPowerPointCommand(event: Office.AddinCommands.Event): void {
   runPowerPoint();
 
   // Be sure to indicate when the add-in command function is complete.
-  if (event) {
-    event.completed();
-  }
+  event.completed();
 }

@@ -17,7 +17,5 @@ function runExcelCommand(event: Office.AddinCommands.Event): void {
   runExcel();
 
   // Be sure to indicate when the add-in command function is complete.
-  if (event) {
-    event.completed();
-  }
+  event.completed();
 }

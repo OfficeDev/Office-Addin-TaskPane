@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
+const recast = require("recast");
 
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
@@ -45,8 +46,9 @@ if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
 let hosts = process.argv[2] || "excel,outlook,powerpoint,word";
 let features = process.argv[3] || "commands,functions,events,taskpane";
 let manifestType = process.argv[4] || "xml";
-const projectName = process.argv[5] || "My Office Add-in";
-let appId = process.argv[6] || "random";
+const codeLanguage = process.argv[5] || "typescript";
+const projectName = process.argv[6] || "My Office Add-in";
+let appId = process.argv[7] || "random";
 
 // Define functions
 
@@ -73,6 +75,7 @@ async function convertProject() {
   console.log(`  Hosts: ${hosts}`);
   console.log(`  Features: ${features}`);
   console.log(`  Manifest Type: ${manifestType}`);
+  console.log(`  Code Language: ${codeLanguage}`);
   console.log(`  Project Name: ${projectName}`);
   console.log(`  App Id: ${appId}`);
   console.log();
@@ -83,6 +86,10 @@ async function convertProject() {
   await updatePackageJson();
   await updateLaunchJsonFile();
   await deleteSupportFiles();
+
+  if (codeLanguage === "js" || codeLanguage === "javascript") {
+    await convertProjectToJavascript();
+  }
 
   // Make manifest type specific changes
   if (manifestType === "xml") {
@@ -250,6 +257,12 @@ async function modifyProjectForJsonManifest() {
   // TODO: update the manifest.json file to use only the selected hosts
 }
 
+async function convertProjectToJavascript() {
+  // Convert TypeScript files to JavaScript
+  await convertTsFilesInDirectory("src");
+}
+
+// Helper functions
 function deleteFolder(folder) {
   try {
     if (fs.existsSync(folder)) {
@@ -270,9 +283,84 @@ function deleteFolder(folder) {
 }
 
 async function deleteFileAsync(file) {
+
   if (fs.existsSync(file)) {
     await unlinkFileAsync(file);
   }
+}
+
+async function convertTsFilesInDirectory(directory) {
+  const files = fs.readdirSync(directory);
+
+  files.forEach(async (file) => {
+    const inputFilePath = path.join(directory, file);
+
+    if (fs.lstatSync(inputFilePath).isDirectory()) {
+      await convertTsFilesInDirectory(inputFilePath);
+    } else if (inputFilePath.endsWith(".ts")) {
+      const outputFilePath = path.join(directory, file.replace(/\.ts$/, ".js"));
+      await convertTsFileToJs(inputFilePath, outputFilePath);
+      await deleteFileAsync(inputFilePath);
+    }
+  });
+}
+
+async function convertTsFileToJs(inputFilePath, outputFilePath) {
+  // Read the input file
+  const inputCode = fs.readFileSync(inputFilePath, "utf8");
+
+  // Parse the input code
+  const ast = recast.parse(inputCode, {
+    parser: require("recast/parsers/typescript"),
+  });
+
+  // Modify the AST to remove type annotations
+  recast.visit(ast, {
+    visitFunctionDeclaration(path) {
+      path.node.params.forEach((param) => {
+        param.typeAnnotation = null; // Remove parameter type annotations
+      });
+      path.node.returnType = null; // Remove return type annotations
+      this.traverse(path);
+    },
+    visitFunctionExpression(path) {
+      path.node.params.forEach((param) => {
+        param.typeAnnotation = null; // Remove parameter type annotations
+      });
+      path.node.returnType = null; // Remove return type annotations
+      this.traverse(path);
+    },
+    visitArrowFunctionExpression(path) {
+      path.node.params.forEach((param) => {
+        param.typeAnnotation = null; // Remove parameter type annotations
+      });
+      path.node.returnType = null; // Remove return type annotations
+      this.traverse(path);
+    },
+    visitVariableDeclaration(path) {
+      path.node.declarations.forEach((declaration) => {
+        if (declaration.id.typeAnnotation) {
+          declaration.id.typeAnnotation = null; // Remove variable type annotations
+        }
+      });
+      this.traverse(path);
+    },
+    visitClassProperty(path) {
+      path.node.typeAnnotation = null; // Remove class property type annotations
+      this.traverse(path);
+    },
+  });
+
+  // Convert the modified AST back to code
+  const outputCode = recast.print(ast).code;
+
+  // Ensure the output directory exists
+  fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
+
+  // Write the modified code to a new file
+  fs.writeFileSync(outputFilePath, outputCode);
+
+  console.log(`Converted ${inputFilePath} -> ${outputFilePath}`);
 }
 
 /**

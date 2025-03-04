@@ -17,7 +17,5 @@ function runOutlookCommand(event: Office.AddinCommands.Event): void {
   runOutlook("Clicked command button");
 
   // Be sure to indicate when the add-in command function is complete.
-  if (event) {
-    event.completed();
-  }
+  event.completed();
 }
