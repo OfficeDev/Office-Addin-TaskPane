@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
+const { web } = require("webpack");
 
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
@@ -164,10 +165,41 @@ async function updateFeatureFiles() {
 }
 
 async function updateWebpackConfig() {
-  const webPack = `webpack.config.js`;
-  const webPackContent = await readFileAsync(webPack, "utf8");
-  const updatedContent = webPackContent.replace(".xml", `.${manifestType}`);
-  await writeFileAsync(webPack, updatedContent);
+  // Helper functions
+  function removeFeature(content, feature) {
+    return content.replace(new RegExp(`^\\s*["']?${feature}["']?:\\s*(?:{[^}]*}|\\[[^\\]]*\\]|["'][^"']*["']),?\\s*$`, "gm"), "")
+      .replace(new RegExp(`^\\s*new HtmlWebpackPlugin\\(\\s*{\\s*filename:\\s*["']${feature}\\.html["'][^}]*}\\s*\\),?\\s*$`, "gm"), "");
+  }
+
+  function removeExtention(content, extension) {
+   return content.replace(new RegExp(`^\\s*{\\s*test:\\s*\\/\\\\.${extension}\\??\\$\\/[^{}]*(?:{[^{}]*}[^{}]*)*},?\\s*$`, "gm"), "")
+    .replace(new RegExp(`,?\\s*["']\\.${extension}["']`, "g"), "");
+  }
+
+  // Update webpack.config.js
+  const webpack = `webpack.config.js`;
+  let webpackContent = await readFileAsync(webpack, "utf8");
+
+  // Remove unused entries
+  supportedFeatures.forEach(function (feature) {
+    if (!features.includes(feature)) {
+      webpackContent = removeFeature(webpackContent, feature);
+    }
+  });
+  
+  // Remove react information if not using react
+  if (!extras.includes("react") || !features.includes("taskpane")) {
+    webpackContent = removeFeature(webpackContent, "react");
+    webpackContent = removeExtention(webpackContent, "tsx");
+  }
+
+  // Remove ts information if using js
+  if (codeLanguage === "js" || codeLanguage === "javascript") {
+    webpackContent = removeExtention(webpackContent, "ts");
+  }
+
+  webpackContent = webpackContent.replace(".xml", `.${manifestType}`);
+  await writeFileAsync(webpack, webpackContent);
 }
 
 async function updatePackageJson() {
@@ -222,7 +254,7 @@ async function updatePackageJson() {
   }
 
   // Remove React related packages if not using React
-  if (!extras.includes("react")) {
+  if (!extras.includes("react") || !features.includes("taskpane")) {
     reactDependencies.forEach(function (dep) {
       delete content.dependencies[dep];
     });
