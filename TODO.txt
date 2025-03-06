@@ -1,11 +1,19 @@
 - Modify json manifest on convert
-- Provide react option
-- Provide auth options
+- Make react option work
+- Make the auth option used
+- Add functional outlook event
 - Provide shared runtime option
-- update webpack
 - Update readme
 - Hook up to generator-office
+- update tests
+- manually test combinations
 
+
+- update webpack
+  - remove entry points
+  - Update HTMLWebPackPlugin chunks
+  - remove static endpoint?
+  - remove certain extension support?
 
 - Convert to js files
 package.json =>     "recast": "^0.23.11",

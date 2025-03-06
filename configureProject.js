@@ -12,13 +12,13 @@ const renameAsync = util.promisify(fs.rename);
 
 const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
 const xmlHostTypes = { excel: "Workbook", outlook: "Mailbox", powerpoint: "Presentation", word: "Document" };
-const supportedFeatures = ["commands", "functions", "events", "taskpane", "sharedRuntime"];
+const supportedFeatures = ["commands", "functions", "events", "taskpane", "sharedruntime"];
 const supportedExtras = ["react", "auth"];
 
 const typescriptDevDependencies = ["typescript", "ts-node"];
 const reactDependencies = ["@fluentui/react-components", "@fluentui/react-icons", "react", "react-dom"];
 const reactDevDependencies = ["@types/react", "@types/react-dom", "eslint-plugin-react"];
-const customFunctionsDevDependencies = ["@types/custom-functions-runtime"];
+const customFunctionsDevDependencies = ["@types/custom-functions-runtime", "custom-functions-metadata-plugin"];
 const authDependencies = ["@azure/msal-browser"];
 const testPackages = [
   "@types/mocha",
@@ -27,6 +27,7 @@ const testPackages = [
   "office-addin-mock",
   "office-addin-test-helpers",
   "office-addin-test-server",
+  "request",
   "ts-node",
 ];
 
@@ -36,7 +37,7 @@ if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
   console.log();
   console.log(`  hosts \tSpecifies which Office apps (comma seperated) will host the add-in: ${supporterHosts.join(", ")}`);
   console.log(
-    `  features \tSpecifies which features (comma seperated) to include in the add-in: ${supportedFeature.join(", ")}`
+    `  features \tSpecifies which features (comma seperated) to include in the add-in: ${supportedFeatures.join(", ")}`
   );
   console.log(`  codeLanguage \tSpecifies the language to use for the project: 'ts' or 'js'.  Defaults to 'ts'`);
   console.log(`  manifestType \tSpecify the type of manifest to use: 'xml' or 'json'.  Defaults to 'xml'`);
@@ -68,7 +69,7 @@ async function convertProject() {
 
   if (!features.every((feature) => supportedFeatures.includes(feature))) {
     throw new Error(
-      `One or more specified features (${features}) are not supported.  Supported features are ${supportedFeature.join(", ")}`
+      `One or more specified features (${features}) are not supported.  Supported features are ${supportedFeatures.join(", ")}`
     );
   }
 
@@ -95,7 +96,7 @@ async function convertProject() {
   await updateWebpackConfig();
   await updatePackageJson();
   await updateLaunchJsonFile();
-  await deleteSupportFiles();
+  await updateSupportFiles();
 
   // Make manifest type specific changes
   if (manifestType === "xml") {
@@ -187,9 +188,14 @@ async function updatePackageJson() {
     }
   }
 
-  // Remove scripts that are unrelated to the selected host
+  // Remove scripts that are unrelated to the selected hosts or features
   Object.keys(content.scripts).forEach(function (key) {
     if (key === "configure-project") {
+      delete content.scripts[key];
+    }
+    
+    // Remove prestart script if not needed
+    if (key === "prestart" && !features.includes("functions") && !features.includes("events")) {
       delete content.scripts[key];
     }
   });
@@ -256,7 +262,7 @@ async function updateLaunchJsonFile() {
   await writeFileAsync(launchJson, JSON.stringify(content, null, 2) + "\n");
 }
 
-async function deleteSupportFiles() {
+async function updateSupportFiles() {
   deleteFolder(path.resolve(`./test`));
   deleteFolder(path.resolve(`./.github`));
   deleteFolder(path.resolve(`./.azure-devops`));
@@ -269,6 +275,14 @@ async function deleteSupportFiles() {
   await deleteFileAsync("tsconfig.convert.json");
   await deleteFileAsync(".npmrc");
   await deleteFileAsync("package-lock.json");
+
+  // Update .gitignore if react
+  if (extras.includes("react")) {
+    const gitIgnore = ".gitignore";
+    const gitIgnoreContent = await readFileAsync(gitIgnore, "utf8");
+    const updatedContent = gitIgnoreContent.replace("office-addins/recommended", "office-addins/react");
+    await writeFileAsync(gitIgnore, updatedContent);
+  }
 }
 
 async function modifyProjectForXMLManifest() {
@@ -302,10 +316,16 @@ async function modifyXmlManifest() {
       }
     });
 
-    // Remove unneeded shared runtime
-    if (!features.includes("sharedRuntime")) {
+    // Update shared runtime entries
+    if (!features.includes("sharedruntime")) {
       manifestContent = manifestContent.replace(/^\s*<Runtimes[\s\S]*?<\/Runtimes>\s*$/gm, "");
-      manifestContent = manifestContent.replace(/^\s*<Requirements[\s\S]*?<\/Requirements>\s*$/gm, "");
+      if (features.includes("functions")) {
+        manifestContent = manifestContent
+          .replace(/(<Set\s+Name=\")SharedRuntime(\"[^/]*\/>)/gm, "$1CustomFunctionsRuntime$2")
+          .replace(/(https:\/\/localhost:3000)(\/functions.js\")/g, "$1/public$2");
+    } else {
+        manifestContent = manifestContent.replace(/^\s*<Requirements[\s\S]*?<\/Requirements>\s*$/gm, "");
+      }
     }
 
     // Update custom functions entries
@@ -314,13 +334,30 @@ async function modifyXmlManifest() {
         .replace(/^\s*<AllFormFactors[\s\S]*?<\/AllFormFactors>\s*$/gm, "")
         .replace(/^\s*<bt:Url\s+id=\"Functions\.[^.]+\.Url\".*\/>\s*$/gm, "")
         .replace(/^\s*<bt:String\s+id=\"Functions\.Namespace\".*\/>\s*$/gm, "");
-    } else if (!features.includes("sharedRuntime")) {
+        if (features.includes("commands")) {
+          manifestContent = manifestContent.replace(
+            /(<Host\s+xsi:type=\"Workbook\"[\s\S]*<FunctionFile\s+resid=\")Taskpane\.Url(\"\s*\/>)/gm, 
+            "$1Commands.Url$2"
+          );
+        } else {
+          manifestContent = manifestContent.replace(
+            /(<Host\s+xsi:type=\"Workbook\"[\s\S]*)^\s*<FunctionFile\s+resid=\"Taskpane\.Url\"\s*\/>\*$/gm, 
+            "$1"
+          );
+        }
+    } else if (!features.includes("sharedruntime")) {
+      // js runtime functions
       manifestContent = manifestContent
         .replace(
           /(<Page>\s*<SourceLocation\s+resid=\")Taskpane\.Url(\"\s*\/>\s*<\/Page>)/gm, 
           "$1Functions.Page.Url$2"
+        )
+        .replace(
+          /(<Host\s+xsi:type=\"Workbook\"[\s\S]*<FunctionFile\s+resid=\")Taskpane\.Url(\"\s*\/>)/gm, 
+          "$1Commands.Url$2"
         );
     } else {
+      // shared runtime functions
       manifestContent = manifestContent
         .replace(/^\s*<bt:Url\s+id=\"Functions\.Page\.Url\".*\/>\s*$/gm, "");
     }

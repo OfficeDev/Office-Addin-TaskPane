@@ -12,7 +12,7 @@ Office.onReady((info: any) => {
     const runButton = document.getElementById("run");
     if (runButton) {
       runButton.onclick = () => {
-        runOutlook("Clicked the taskpane button");
+        runOutlook("Clicked the Task Pane button");
       };
     }
   }
