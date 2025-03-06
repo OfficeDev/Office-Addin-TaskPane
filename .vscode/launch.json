@@ -2,6 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch configureProject.js",
+      "program": "${workspaceFolder}/configureProject.js",
+      "args": ["excel", "taskpane,commands", "ts", "xml"],
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
       "name": "Debug UI Tests",
       "type": "node",
       "request": "launch",

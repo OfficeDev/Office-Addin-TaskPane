@@ -7,7 +7,7 @@ import { runPowerPoint } from "../shared/powerpoint";
 
 /* global Office */
 
-Office.onReady((info) => {
+Office.onReady((info: any) => {
   if (info.host === Office.HostType.PowerPoint) {
     Office.actions.associate("action", runPowerPointCommand);
   }

@@ -7,7 +7,7 @@ import { runExcel } from "../shared/excel";
 
 /* global document Office */
 
-Office.onReady((info) => {
+Office.onReady((info: any) => {
   if (info.host === Office.HostType.Excel) {
     const runButton = document.getElementById("run");
     if (runButton) {

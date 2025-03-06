@@ -48,25 +48,6 @@
       },
       "runtimes": [
         {
-          "requirements": {
-            "capabilities": [{ "name": "Mailbox", "minVersion": "1.3" }]
-          },
-          "id": "TaskPaneRuntimeMail",
-          "type": "general",
-          "code": {
-            "page": "https://localhost:3000/taskpane.html"
-          },
-          "lifetime": "short",
-          "actions": [
-            {
-              "id": "TaskPaneRuntimeShowMail",
-              "type": "openPage",
-              "pinnable": false,
-              "view": "dashboard"
-            }
-          ]
-        },
-        {
           "id": "TaskPaneRuntime",
           "type": "general",
           "code": {
@@ -103,13 +84,17 @@
       ],
       "ribbons": [
         {
-          "contexts": ["mailRead"],
+          "contexts": [
+            "mailRead",
+            "mailCompose",
+            "default"
+          ],
           "tabs": [
             {
               "builtInTabId": "TabDefault",
               "groups": [
                 {
-                  "id": "msgReadGroup",
+                  "id": "contosoGroup",
                   "label": "Contoso Add-in",
                   "icons": [
                     { "size": 16, "url": "https://localhost:3000/assets/icon-16.png" },
@@ -118,82 +103,13 @@
                   ],
                   "controls": [
                     {
-                      "id": "msgReadOpenPaneButton",
+                      "id": "openTaskPaneButton",
                       "type": "button",
                       "label": "Show Taskpane",
                       "icons": [
                         { "size": 16, "url": "https://localhost:3000/assets/icon-16.png" },
                         { "size": 32, "url": "https://localhost:3000/assets/icon-32.png" },
                         { "size": 80, "url": "https://localhost:3000/assets/icon-80.png" }
-                      ],
-                      "supertip": {
-                        "title": "Show Taskpane",
-                        "description": "Opens a pane displaying all available properties."
-                      },
-                      "actionId": "TaskPaneRuntimeShowMail"
-                    },
-                    {
-                      "id": "ActionButton",
-                      "type": "button",
-                      "label": "Perform an action",
-                      "icons": [
-                        { "size": 16, "url": "https://localhost:3000/assets/icon-16.png" },
-                        { "size": 32, "url": "https://localhost:3000/assets/icon-32.png" },
-                        { "size": 80, "url": "https://localhost:3000/assets/icon-80.png" }
-                      ],
-                      "supertip": {
-                        "title": "Perform an action",
-                        "description": "Perform an action when clicked."
-                      },
-                      "actionId": "action"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "contexts": ["default"],
-          "tabs": [
-            {
-              "builtInTabId": "TabHome",
-              "groups": [
-                {
-                  "id": "msgReadGroup",
-                  "label": "Contoso Add-in",
-                  "icons": [
-                    {
-                      "size": 16,
-                      "url": "https://localhost:3000/assets/icon-16.png"
-                    },
-                    {
-                      "size": 32,
-                      "url": "https://localhost:3000/assets/icon-32.png"
-                    },
-                    {
-                      "size": 80,
-                      "url": "https://localhost:3000/assets/icon-80.png"
-                    }
-                  ],
-                  "controls": [
-                    {
-                      "id": "msgReadOpenPaneButton",
-                      "type": "button",
-                      "label": "Show Taskpane",
-                      "icons": [
-                        {
-                          "size": 16,
-                          "url": "https://localhost:3000/assets/icon-16.png"
-                        },
-                        {
-                          "size": 32,
-                          "url": "https://localhost:3000/assets/icon-32.png"
-                        },
-                        {
-                          "size": 80,
-                          "url": "https://localhost:3000/assets/icon-80.png"
-                        }
                       ],
                       "supertip": {
                         "title": "Show Taskpane",
@@ -206,18 +122,9 @@
                       "type": "button",
                       "label": "Perform an action",
                       "icons": [
-                        {
-                          "size": 16,
-                          "url": "https://localhost:3000/assets/icon-16.png"
-                        },
-                        {
-                          "size": 32,
-                          "url": "https://localhost:3000/assets/icon-32.png"
-                        },
-                        {
-                          "size": 80,
-                          "url": "https://localhost:3000/assets/icon-80.png"
-                        }
+                        { "size": 16, "url": "https://localhost:3000/assets/icon-16.png" },
+                        { "size": 32, "url": "https://localhost:3000/assets/icon-32.png" },
+                        { "size": 80, "url": "https://localhost:3000/assets/icon-80.png" }
                       ],
                       "supertip": {
                         "title": "Perform an action",

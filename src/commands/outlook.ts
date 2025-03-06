@@ -7,7 +7,7 @@ import { runOutlook } from "../shared/outlook";
 
 /* global Office */
 
-Office.onReady((info) => {
+Office.onReady((info: any) => {
   if (info.host === Office.HostType.Outlook) {
     Office.actions.associate("action", runOutlookCommand);
   }

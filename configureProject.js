@@ -4,17 +4,22 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
-const recast = require("recast");
 
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
+const renameAsync = util.promisify(fs.rename);
 
 const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
-const supporterHostsString = supportedHosts.join(", ");
 const xmlHostTypes = { excel: "Workbook", outlook: "Mailbox", powerpoint: "Presentation", word: "Document" };
-const supportedFeatures = ["commands", "functions", "events", "taskpane"];
-const supportedFeatureString = supportedFeatures.join(", ");
+const supportedFeatures = ["commands", "functions", "events", "taskpane", "sharedRuntime"];
+const supportedExtras = ["react", "auth"];
+
+const typescriptDevDependencies = ["typescript", "ts-node"];
+const reactDependencies = ["@fluentui/react-components", "@fluentui/react-icons", "react", "react-dom"];
+const reactDevDependencies = ["@types/react", "@types/react-dom", "eslint-plugin-react"];
+const customFunctionsDevDependencies = ["@types/custom-functions-runtime"];
+const authDependencies = ["@azure/msal-browser"];
 const testPackages = [
   "@types/mocha",
   "@types/node",
@@ -27,13 +32,15 @@ const testPackages = [
 
 // Help Text
 if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
-  console.log("SYNTAX: convertForHosts.js <hosts> <features> <manifestType> <projectName> <appId>");
+  console.log("SYNTAX: configureProject.js <hosts> <features> <codeLanguage> <manifestType> <extras> <projectName> <appId>");
   console.log();
-  console.log(`  hosts \tSpecifies which Office apps (comma seperated) will host the add-in: ${supporterHostsString}`);
+  console.log(`  hosts \tSpecifies which Office apps (comma seperated) will host the add-in: ${supporterHosts.join(", ")}`);
   console.log(
-    `  features \tSpecifies which features (comma seperated) to include in the add-in: ${supportedFeatureString}`
+    `  features \tSpecifies which features (comma seperated) to include in the add-in: ${supportedFeature.join(", ")}`
   );
+  console.log(`  codeLanguage \tSpecifies the language to use for the project: 'ts' or 'js'.  Defaults to 'ts'`);
   console.log(`  manifestType \tSpecify the type of manifest to use: 'xml' or 'json'.  Defaults to 'xml'`);
+  console.log(`  extras \tSpecify any additional features to include in the project: ${supportedExtras.join(", ")}`);
   console.log(
     `  projectName \tThe name of the project (use quotes when there are spaces in the name). Defaults to 'My Office Add-in'`
   );
@@ -43,39 +50,42 @@ if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
 }
 
 // Get arguments
-let hosts = process.argv[2] || "excel,outlook,powerpoint,word";
-let features = process.argv[3] || "commands,functions,events,taskpane";
-let manifestType = process.argv[4] || "xml";
-const codeLanguage = process.argv[5] || "typescript";
-const projectName = process.argv[6] || "My Office Add-in";
-let appId = process.argv[7] || "random";
+const hosts = (process.argv[2]?.toLowerCase() || "excel,outlook,powerpoint,word").split(",");
+const features = (process.argv[3]?.toLowerCase() || "commands,functions,events,taskpane").split(",");
+const codeLanguage = process.argv[4]?.toLowerCase() || "typescript";
+const manifestType = process.argv[5]?.toLowerCase() || "xml";
+const extras = (process.argv[6]?.toLowerCase() || "").split(",");
+const projectName = process.argv[7] || "My Office Add-in";
+let appId = process.argv[8] || "random";
 
 // Define functions
 
 async function convertProject() {
   // Validate arguments
-  hosts = hosts.toLowerCase().split(",");
   if (!hosts.every((host) => supportedHosts.includes(host))) {
-    throw new Error(`One or more specified hosts are not supported.  Supported hosts are ${supporterHostsString}`);
+    throw new Error(`One or more specified hosts (${hosts}) are not supported.  Supported hosts are ${supporterHosts.join(", ")}`);
   }
 
-  features = features.toLowerCase().split(",");
   if (!features.every((feature) => supportedFeatures.includes(feature))) {
     throw new Error(
-      `One or more specified features are not supported.  Supported features are ${supportedFeatureString}`
+      `One or more specified features (${features}) are not supported.  Supported features are ${supportedFeature.join(", ")}`
     );
   }
 
-  manifestType = manifestType.toLowerCase();
+  if (codeLanguage !== "ts" && codeLanguage !== "typescript" && codeLanguage !== "js" && codeLanguage !== "javascript") {
+    throw new Error(`Invalid code language "${codeLanguage}".  Must be 'ts', 'typescript', 'js', or 'javascript'.`);
+  }
+
   if (manifestType !== "xml" && manifestType !== "json") {
-    throw new Error(`Invalid manifest type.  Must be 'xml' or 'json'.`);
+    throw new Error(`Invalid manifest type "${manifestType}".  Must be 'xml' or 'json'.`);
   }
 
   console.log(`Converting project for the following arguments:`);
   console.log(`  Hosts: ${hosts}`);
   console.log(`  Features: ${features}`);
-  console.log(`  Manifest Type: ${manifestType}`);
   console.log(`  Code Language: ${codeLanguage}`);
+  console.log(`  Manifest Type: ${manifestType}`);
+  console.log(`  Extras: ${extras}`);
   console.log(`  Project Name: ${projectName}`);
   console.log(`  App Id: ${appId}`);
   console.log();
@@ -86,10 +96,6 @@ async function convertProject() {
   await updatePackageJson();
   await updateLaunchJsonFile();
   await deleteSupportFiles();
-
-  if (codeLanguage === "js" || codeLanguage === "javascript") {
-    await convertProjectToJavascript();
-  }
 
   // Make manifest type specific changes
   if (manifestType === "xml") {
@@ -125,6 +131,9 @@ async function updateFeatureFiles() {
   supportedFeatures.forEach(function (feature) {
     if (!features.includes(feature)) {
       deleteFolder(path.resolve(`./src/${feature}`));
+      if(feature === "taskpane" && extras.includes("react")) {
+        deleteFolder(path.resolve(`./src/reactTaskpane`));
+      }
     }
   });
 
@@ -134,6 +143,22 @@ async function updateFeatureFiles() {
   }
   if (!hosts.includes("excel")) {
     deleteFolder(path.resolve("./src/functions"));
+  }
+
+  // Update React files
+  if (features.includes("taskpane")) {
+    if (extras.includes("react")) {
+      deleteFolder(path.resolve("./src/taskpane"));
+      await renameFolder(path.resolve("./src/reactTaskpane"), path.resolve("./src/taskpane"));
+    } else {
+      deleteFolder(path.resolve("./src/reactTaskpane"));
+    }
+  }
+
+  // Update Auth files
+  if (!extras.includes("auth")) {
+    await deleteFileAsync(path.resolve("./src/shared/naa.ts"));
+    await deleteFileAsync(path.resolve("./src/shared/graph.ts"));
   }
 }
 
@@ -156,18 +181,56 @@ async function updatePackageJson() {
   delete content.engines;
 
   // Remove test-related scripts
-  Object.keys(content.scripts).forEach(function (key) {
+  for (const key in content.scripts) {
     if (key.includes("test")) {
+      delete content.scripts[key];
+    }
+  }
+
+  // Remove scripts that are unrelated to the selected host
+  Object.keys(content.scripts).forEach(function (key) {
+    if (key === "configure-project") {
       delete content.scripts[key];
     }
   });
 
   // Remove test-related packages
-  Object.keys(content.devDependencies).forEach(function (key) {
+  for (const key in content.devDependencies) {
     if (testPackages.includes(key)) {
       delete content.devDependencies[key];
     }
-  });
+  }
+
+  // Remove TypeScript related packages if converting to JavaScript
+  if (codeLanguage === "js" || codeLanguage === "javascript") {
+    typescriptDevDependencies.forEach(function (dep) {
+      delete content.devDependencies[dep];
+    });
+  }
+
+  // Remove custom functions related packages if not using custom functions
+  if (!features.includes("functions")) {
+    customFunctionsDevDependencies.forEach(function (dep) {
+      delete content.devDependencies[dep];
+    });
+  }
+
+  // Remove React related packages if not using React
+  if (!extras.includes("react")) {
+    reactDependencies.forEach(function (dep) {
+      delete content.dependencies[dep];
+    });
+    reactDevDependencies.forEach(function (dep) {
+      delete content.devDependencies[dep];
+    });
+  }
+
+  // Remove Auth related packages if not using Auth
+  if (!extras.includes("auth")) {
+    authDependencies.forEach(function (dep) {
+      delete content.dependencies[dep];
+    });
+  }
 
   // Change manifest file name extension
   content.scripts.start = `office-addin-debugging start manifest.${manifestType}`;
@@ -202,7 +265,8 @@ async function deleteSupportFiles() {
   await deleteFileAsync("LICENSE");
   await deleteFileAsync("README.md");
   await deleteFileAsync("SECURITY.md");
-  await deleteFileAsync("./convertForHosts.js");
+  await deleteFileAsync("./configureProject.js");
+  await deleteFileAsync("tsconfig.convert.json");
   await deleteFileAsync(".npmrc");
   await deleteFileAsync("package-lock.json");
 }
@@ -216,6 +280,10 @@ async function modifyProjectForXMLManifest() {
   await deleteFileAsync("assets/color.png");
   await deleteFileAsync("assets/outline.png");
 
+  await modifyXmlManifest();
+}
+
+async function modifyXmlManifest() {
   if (hosts.length === 1 && hosts[0] === "outlook") {
     // If only outlook is selected, use the outlook specific XML manifest
     const outlookManifestContent = await readFileAsync(`./manifest.outlook.xml`, "utf8");
@@ -233,6 +301,30 @@ async function modifyProjectForXMLManifest() {
           .replace(new RegExp(`^\\s*<Host xsi:type="${xmlHostType}"[^>]*>[\\s\\S]*?</Host>\r?\n?`, "gm"), "");
       }
     });
+
+    // Remove unneeded shared runtime
+    if (!features.includes("sharedRuntime")) {
+      manifestContent = manifestContent.replace(/^\s*<Runtimes[\s\S]*?<\/Runtimes>\s*$/gm, "");
+      manifestContent = manifestContent.replace(/^\s*<Requirements[\s\S]*?<\/Requirements>\s*$/gm, "");
+    }
+
+    // Update custom functions entries
+    if (!features.includes("functions")) {
+      manifestContent = manifestContent
+        .replace(/^\s*<AllFormFactors[\s\S]*?<\/AllFormFactors>\s*$/gm, "")
+        .replace(/^\s*<bt:Url\s+id=\"Functions\.[^.]+\.Url\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"Functions\.Namespace\".*\/>\s*$/gm, "");
+    } else if (!features.includes("sharedRuntime")) {
+      manifestContent = manifestContent
+        .replace(
+          /(<Page>\s*<SourceLocation\s+resid=\")Taskpane\.Url(\"\s*\/>\s*<\/Page>)/gm, 
+          "$1Functions.Page.Url$2"
+        );
+    } else {
+      manifestContent = manifestContent
+        .replace(/^\s*<bt:Url\s+id=\"Functions\.Page\.Url\".*\/>\s*$/gm, "");
+    }
+
     await writeFileAsync(manifestFilePath, manifestContent);
 
     // Remove outlook specific XML manifest
@@ -254,12 +346,24 @@ async function modifyProjectForJsonManifest() {
     await deleteFileAsync(`manifest.${host}.json`);
   });
 
-  // TODO: update the manifest.json file to use only the selected hosts
+  await modifyJsonManifest();
 }
 
-async function convertProjectToJavascript() {
-  // Convert TypeScript files to JavaScript
-  await convertTsFilesInDirectory("src");
+async function modifyJsonManifest() {
+  const manifestFilePath = `./manifest.json`;
+  let manifestContent = await readFileAsync(manifestFilePath, "utf8");
+  const manifest = JSON.parse(manifestContent);
+
+  // Remove unneeded authorizations
+
+  // Remove unneeded requirements
+
+  // Remove unneeded runtimes
+
+  // Remove unneeded ribbons
+
+  // Wriet the updated manifest back to the file
+  await writeFileAsync(manifestFilePath, manifestContent);
 }
 
 // Helper functions
@@ -282,85 +386,17 @@ function deleteFolder(folder) {
   }
 }
 
+async function renameFolder(oldPath, newPath) {
+  if (fs.existsSync(oldPath)) {
+    await renameAsync(oldPath, newPath);
+  }
+}
+
 async function deleteFileAsync(file) {
 
   if (fs.existsSync(file)) {
     await unlinkFileAsync(file);
   }
-}
-
-async function convertTsFilesInDirectory(directory) {
-  const files = fs.readdirSync(directory);
-
-  files.forEach(async (file) => {
-    const inputFilePath = path.join(directory, file);
-
-    if (fs.lstatSync(inputFilePath).isDirectory()) {
-      await convertTsFilesInDirectory(inputFilePath);
-    } else if (inputFilePath.endsWith(".ts")) {
-      const outputFilePath = path.join(directory, file.replace(/\.ts$/, ".js"));
-      await convertTsFileToJs(inputFilePath, outputFilePath);
-      await deleteFileAsync(inputFilePath);
-    }
-  });
-}
-
-async function convertTsFileToJs(inputFilePath, outputFilePath) {
-  // Read the input file
-  const inputCode = fs.readFileSync(inputFilePath, "utf8");
-
-  // Parse the input code
-  const ast = recast.parse(inputCode, {
-    parser: require("recast/parsers/typescript"),
-  });
-
-  // Modify the AST to remove type annotations
-  recast.visit(ast, {
-    visitFunctionDeclaration(path) {
-      path.node.params.forEach((param) => {
-        param.typeAnnotation = null; // Remove parameter type annotations
-      });
-      path.node.returnType = null; // Remove return type annotations
-      this.traverse(path);
-    },
-    visitFunctionExpression(path) {
-      path.node.params.forEach((param) => {
-        param.typeAnnotation = null; // Remove parameter type annotations
-      });
-      path.node.returnType = null; // Remove return type annotations
-      this.traverse(path);
-    },
-    visitArrowFunctionExpression(path) {
-      path.node.params.forEach((param) => {
-        param.typeAnnotation = null; // Remove parameter type annotations
-      });
-      path.node.returnType = null; // Remove return type annotations
-      this.traverse(path);
-    },
-    visitVariableDeclaration(path) {
-      path.node.declarations.forEach((declaration) => {
-        if (declaration.id.typeAnnotation) {
-          declaration.id.typeAnnotation = null; // Remove variable type annotations
-        }
-      });
-      this.traverse(path);
-    },
-    visitClassProperty(path) {
-      path.node.typeAnnotation = null; // Remove class property type annotations
-      this.traverse(path);
-    },
-  });
-
-  // Convert the modified AST back to code
-  const outputCode = recast.print(ast).code;
-
-  // Ensure the output directory exists
-  fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
-
-  // Write the modified code to a new file
-  fs.writeFileSync(outputFilePath, outputCode);
-
-  console.log(`Converted ${inputFilePath} -> ${outputFilePath}`);
 }
 
 /**
@@ -372,12 +408,12 @@ convertProject().catch((err) => {
 });
 
 // Modify the manifest to include the name and id of the project
-const cmdLine = `npx office-addin-manifest modify manifest.${manifestType} -g ${appId} -d "${projectName}"`;
-childProcess.exec(cmdLine, (error, stdout) => {
-  if (error) {
-    console.error(`Error updating the manifest: ${error}`);
-    process.exitCode = 1;
-  } else {
-    console.log(stdout);
-  }
-});
+// const cmdLine = `npx office-addin-manifest modify manifest.${manifestType} -g ${appId} -d "${projectName}"`;
+// childProcess.exec(cmdLine, (error, stdout) => {
+//   if (error) {
+//     console.error(`Error updating the manifest: ${error}`);
+//     process.exitCode = 1;
+//   } else {
+//     console.log(stdout);
+//   }
+// });

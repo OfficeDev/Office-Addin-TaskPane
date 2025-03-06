@@ -20,21 +20,34 @@ module.exports = async (env, options) => {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
       taskpane: ["./src/taskpane/taskpane.ts", "./src/taskpane/taskpane.html"],
       commands: "./src/commands/commands.ts",
+      events: "./src/events/events.ts",
     },
     output: {
       clean: true,
     },
     resolve: {
-      extensions: [".ts", ".html", ".js"],
+      extensions: [".html", ".js", ".ts", ".tsx"],
     },
     module: {
       rules: [
+        {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: {
+            loader: "babel-loader",
+          },
+        },
         {
           test: /\.ts$/,
           exclude: /node_modules/,
           use: {
             loader: "babel-loader"
           },
+        },
+        {
+          test: /\.tsx?$/,
+          exclude: /node_modules/,
+          use: "ts-loader",
         },
         {
           test: /\.html$/,
@@ -56,6 +69,25 @@ module.exports = async (env, options) => {
         template: "./src/taskpane/taskpane.html",
         chunks: ["polyfill", "taskpane"],
       }),
+      new HtmlWebpackPlugin({
+        filename: "commands.html",
+        template: "./src/commands/commands.html",
+        chunks: ["polyfill", "commands"],
+      }),
+      new HtmlWebpackPlugin({
+        filename: "events.html",
+        template: "./src/events/events.html",
+        chunks: ["events"],
+      }),
+      new HtmlWebpackPlugin({
+        filename: "functions.html",
+        template: "./src/functions/functions.html",
+        chunks: ["polyfill", "functions"],
+      }),
+      new CustomFunctionsMetadataPlugin({
+        output: "functions.json",
+        input: "./src/functions/functions.ts",
+      }),
       new CopyWebpackPlugin({
         patterns: [
           {
@@ -75,13 +107,12 @@ module.exports = async (env, options) => {
           },
         ],
       }),
-      new HtmlWebpackPlugin({
-        filename: "commands.html",
-        template: "./src/commands/commands.html",
-        chunks: ["polyfill", "commands"],
-      }),
     ],
     devServer: {
+      static: {
+        directory: path.join(__dirname, "dist"),
+        publicPath: "/public",
+      },
       headers: {
         "Access-Control-Allow-Origin": "*",
       },

@@ -7,7 +7,7 @@ import { runPowerPoint } from "../shared/powerpoint";
 
 /* global document Office */
 
-Office.onReady((info) => {
+Office.onReady((info: any) => {
   if (info.host === Office.HostType.PowerPoint) {
     const runButton = document.getElementById("run");
     if (runButton) {

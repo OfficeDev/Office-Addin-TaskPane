@@ -7,7 +7,7 @@ import { runWord } from "../shared/word";
 
 /* global document Office */
 
-Office.onReady((info) => {
+Office.onReady((info: any) => {
   if (info.host === Office.HostType.Word) {
     const runButton = document.getElementById("run");
     if (runButton) {

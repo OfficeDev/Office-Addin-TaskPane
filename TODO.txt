@@ -1,7 +1,98 @@
 - Modify json manifest on convert
-- Convert source typscript to javascript
 - Provide react option
 - Provide auth options
 - Provide shared runtime option
+- update webpack
 - Update readme
 - Hook up to generator-office
+
+
+- Convert to js files
+package.json =>     "recast": "^0.23.11",
+
+-- convert script --
+const recast = require("recast");
+
+  // Convert TypeScript to JavaScript if necessary
+  if (codeLanguage === "js" || codeLanguage === "javascript") {
+    await convertProjectToJavascript();
+  }
+
+async function convertProjectToJavascript() {
+  // Convert TypeScript files to JavaScript
+  await convertTsFilesInDirectory("src");
+}
+
+async function convertTsFilesInDirectory(directory) {
+  const files = fs.readdirSync(directory);
+
+  files.forEach(async (file) => {
+    const inputFilePath = path.join(directory, file);
+
+    if (fs.lstatSync(inputFilePath).isDirectory()) {
+      await convertTsFilesInDirectory(inputFilePath);
+    } else if (inputFilePath.endsWith(".ts")) {
+      const outputFilePath = path.join(directory, file.replace(/\.ts$/, ".js"));
+      await convertTsFileToJs(inputFilePath, outputFilePath);
+      await deleteFileAsync(inputFilePath);
+    }
+  });
+}
+
+async function convertTsFileToJs(inputFilePath, outputFilePath) {
+  // Read the input file
+  const inputCode = fs.readFileSync(inputFilePath, "utf8");
+
+  // Parse the input code
+  const ast = recast.parse(inputCode, {
+    parser: require("recast/parsers/typescript"),
+  });
+
+  // Modify the AST to remove type annotations
+  recast.visit(ast, {
+    visitFunctionDeclaration(path) {
+      path.node.params.forEach((param) => {
+        param.typeAnnotation = null; // Remove parameter type annotations
+      });
+      path.node.returnType = null; // Remove return type annotations
+      this.traverse(path);
+    },
+    visitFunctionExpression(path) {
+      path.node.params.forEach((param) => {
+        param.typeAnnotation = null; // Remove parameter type annotations
+      });
+      path.node.returnType = null; // Remove return type annotations
+      this.traverse(path);
+    },
+    visitArrowFunctionExpression(path) {
+      path.node.params.forEach((param) => {
+        param.typeAnnotation = null; // Remove parameter type annotations
+      });
+      path.node.returnType = null; // Remove return type annotations
+      this.traverse(path);
+    },
+    visitVariableDeclaration(path) {
+      path.node.declarations.forEach((declaration) => {
+        if (declaration.id.typeAnnotation) {
+          declaration.id.typeAnnotation = null; // Remove variable type annotations
+        }
+      });
+      this.traverse(path);
+    },
+    visitClassProperty(path) {
+      path.node.typeAnnotation = null; // Remove class property type annotations
+      this.traverse(path);
+    },
+  });
+
+  // Convert the modified AST back to code
+  const outputCode = recast.print(ast).code;
+
+  // Ensure the output directory exists
+  fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
+
+  // Write the modified code to a new file
+  fs.writeFileSync(outputFilePath, outputCode);
+
+  console.log(`Converted ${inputFilePath} -> ${outputFilePath}`);
+}

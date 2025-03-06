@@ -7,7 +7,7 @@ import { runOutlook } from "../shared/outlook";
 
 /* global document Office */
 
-Office.onReady((info) => {
+Office.onReady((info: any) => {
   if (info.host === Office.HostType.Outlook) {
     const runButton = document.getElementById("run");
     if (runButton) {

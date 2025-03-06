@@ -7,7 +7,7 @@ import { runExcel } from "../shared/excel";
 
 /* global Office */
 
-Office.onReady((info) => {
+Office.onReady((info: any) => {
   if (info.host === Office.HostType.Excel) {
     Office.actions.associate("action", runExcelCommand);
   }
