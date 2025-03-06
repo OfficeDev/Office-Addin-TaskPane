@@ -11,8 +11,9 @@ const WordMockData = {
         paragraph: {
           font: {},
           text: "",
+          insertLocation: "",
         },
-        insertParagraph: function (paragraphText: string, insertLocation: Word.InsertLocation): Word.Paragraph {
+        insertParagraph: function (paragraphText: string, insertLocation: Word.InsertLocation): any {
           this.paragraph.text = paragraphText;
           this.paragraph.insertLocation = insertLocation;
           return this.paragraph;
@@ -23,7 +24,7 @@ const WordMockData = {
   InsertLocation: {
     end: "End",
   },
-  run: async function (callback) {
+  run: async function (callback: (arg: any) => void) {
     await callback(this.context);
   },
 };

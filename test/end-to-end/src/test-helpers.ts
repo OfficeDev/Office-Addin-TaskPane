@@ -2,6 +2,12 @@ import * as childProcess from "child_process";
 
 /* global Excel process Promise setTimeout */
 
+interface TestData {
+  expectedValue: any;
+  resultName: string;
+  resultValue: any;
+}
+
 export async function closeDesktopApplication(application: string): Promise<boolean> {
   let processName: string = "";
   switch (application.toLowerCase()) {
@@ -48,10 +54,11 @@ export async function closeWorkbook(): Promise<void> {
 }
 
 export function addTestResult(testValues: any[], resultName: string, resultValue: any, expectedValue: any) {
-  var data = {};
-  data["expectedValue"] = expectedValue;
-  data["resultName"] = resultName;
-  data["resultValue"] = resultValue;
+  var data: TestData = {
+    expectedValue,
+    resultName,
+    resultValue
+  }
   testValues.push(data);
 }
 

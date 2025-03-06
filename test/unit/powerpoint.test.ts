@@ -7,7 +7,9 @@ import { OfficeMockObject } from "office-addin-mock";
 const PowerPointMockData = {
   context: {
     document: {
-      setSelectedDataAsync: function (data: string, options?) {
+      data: "",
+      options: {},
+      setSelectedDataAsync: function (data: string, options?: any) {
         this.data = data;
         this.options = options;
       },

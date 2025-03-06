@@ -18,7 +18,7 @@ const ExcelMockData = {
       },
     },
   },
-  run: async function (callback) {
+  run: async function (callback: (arg: any) => void) {
     await callback(this.context);
   },
 };

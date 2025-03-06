@@ -17,7 +17,7 @@ const supportedExtras = ["react", "auth"];
 
 const typescriptDevDependencies = ["typescript", "ts-node"];
 const reactDependencies = ["@fluentui/react-components", "@fluentui/react-icons", "react", "react-dom"];
-const reactDevDependencies = ["@types/react", "@types/react-dom", "eslint-plugin-react"];
+const reactDevDependencies = ["@types/react", "@types/react-dom", "eslint-plugin-react", "ts-loader"];
 const customFunctionsDevDependencies = ["@types/custom-functions-runtime", "custom-functions-metadata-plugin"];
 const authDependencies = ["@azure/msal-browser"];
 const testPackages = [

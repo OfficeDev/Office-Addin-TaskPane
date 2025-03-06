@@ -19,8 +19,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "lib",
-    "lib-amd"
   ],
   "ts-node": { 
     "files": true 
