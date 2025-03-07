@@ -82,6 +82,10 @@ async function convertProject() {
     throw new Error(`Invalid manifest type "${manifestType}".  Must be 'xml' or 'json'.`);
   }
 
+  if (hosts.includes("outlook") && hosts.length > 1 && manifestType === "xml") {
+    throw new Error("Outlook does not support multiple hosts in the same xml manifest.");
+  }
+
   console.log(`Converting project for the following arguments:`);
   console.log(`  Hosts: ${hosts}`);
   console.log(`  Features: ${features}`);
@@ -332,7 +336,41 @@ async function modifyProjectForXMLManifest() {
 async function modifyXmlManifest() {
   if (hosts.length === 1 && hosts[0] === "outlook") {
     // If only outlook is selected, use the outlook specific XML manifest
-    const outlookManifestContent = await readFileAsync(`./manifest.outlook.xml`, "utf8");
+    let outlookManifestContent = await readFileAsync(`./manifest.outlook.xml`, "utf8");
+
+    // Remove command surface if not used
+    if (!features.includes("commands") && !features.includes("taskpane")) {
+      manifestContent = manifestContent.replace(/^\s*<ExtensionPoint\s+xsi:type="MessageReadCommandSurface">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "");
+    }
+
+    // Remove events if not selected
+    if (!features.includes("events")) {
+      outlookManifestContent = outlookManifestContent
+        .replace(/^\s*<ExtensionPoint\s+xsi:type="LaunchEvent">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<Runtimes[\s\S]*?<\/Runtimes>\s*$/gm, "")
+        .replace(/^\s*<bt:Url\s+id=\"WebViewRuntime\.Url\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:Url\s+id=\"JSRuntime\.Url\".*\/>\s*$/gm, "");
+    }
+
+    // Remove taskpane if not selected
+    if (!features.includes("taskpane")) {
+      outlookManifestContent = outlookManifestContent
+        .replace(/^\s*<Control\s+xsi:type="Button" id="TaskpaneButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<bt:Url\s+id=\"Taskpane\.Url\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Label\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Tooltip\".*\/>\s*$/gm, "");
+    }
+
+    // Remove commands if not selected
+    if (!features.includes("commands")) {
+      outlookManifestContent = outlookManifestContent
+        .replace(/^\s*<Control\s+xsi:type="Button" id="ActionButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<FunctionFile[^/]+\/>\*$/gm, "")
+        .replace(/^\s*<bt:Url\s+id=\"Commands\.Url\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"ActionButton\.Label\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"ActionButton\.Tooltip\".*\/>\s*$/gm, "");
+    }
+
     await writeFileAsync(`./manifest.xml`, outlookManifestContent);
     await deleteFileAsync(`manifest.outlook.xml`);
   } else {
@@ -392,6 +430,30 @@ async function modifyXmlManifest() {
       // shared runtime functions
       manifestContent = manifestContent
         .replace(/^\s*<bt:Url\s+id=\"Functions\.Page\.Url\".*\/>\s*$/gm, "");
+    }
+
+    // Remove command surface if not used
+    if (!features.includes("commands") && !features.includes("taskpane")) {
+      manifestContent = manifestContent.replace(/^\s*<ExtensionPoint\s+xsi:type="PrimaryCommandSurface">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "");
+    }
+
+    // Remove taskpane if not selected
+    if (!features.includes("taskpane")) {
+      manifestContent = manifestContent
+        .replace(/^\s*<Control\s+xsi:type="Button" id="TaskpaneButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<bt:Url\s+id=\"Taskpane\.Url\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Label\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Tooltip\".*\/>\s*$/gm, "");
+    }
+
+    // Remove commands if not selected
+    if (!features.includes("commands")) {
+      manifestContent = manifestContent
+        .replace(/^\s*<Control\s+xsi:type="Button" id="ActionButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<FunctionFile[^/]+\/>\*$/gm, "")
+        .replace(/^\s*<bt:Url\s+id=\"Commands\.Url\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"ActionButton\.Label\".*\/>\s*$/gm, "")
+        .replace(/^\s*<bt:String\s+id=\"ActionButton\.Tooltip\".*\/>\s*$/gm, "");
     }
 
     await writeFileAsync(manifestFilePath, manifestContent);

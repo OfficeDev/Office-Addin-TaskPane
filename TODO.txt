@@ -2,7 +2,7 @@
 - Make react option work
 - Make the auth option used
 - Add functional outlook event
-- Provide shared runtime option
+- Make shared runtime work
 - Update readme
 - Hook up to generator-office
 - update tests

@@ -59,7 +59,7 @@
               <OfficeTab id="TabDefault">
                 <Group id="msgReadGroup">
                   <Label resid="GroupLabel" />
-                  <Control xsi:type="Button" id="msgReadOpenPaneButton">
+                  <Control xsi:type="Button" id="TaskpaneButton">
                     <Label resid="TaskpaneButton.Label" />
                     <Supertip>
                       <Title resid="TaskpaneButton.Label" />
@@ -94,6 +94,7 @@
             </ExtensionPoint>
             <ExtensionPoint xsi:type="LaunchEvent">
               <LaunchEvents>
+                <LaunchEvent Type="OnMessageCompose" FunctionName="onMessageComposeHandler" />
                 
                 <!-- Other available events -->
                 <!--
@@ -108,7 +109,6 @@
                 <LaunchEvent Type="OnAppointmentRecurrenceChanged" FunctionName="onAppointmentRecurrenceChangedHandler" />
                 <LaunchEvent Type="OnInfoBarDismissClicked" FunctionName="onInfobarDismissClickedHandler" />
                 <LaunchEvent Type="OnAppointmentSend" FunctionName="onAppointmentSendHandler" SendMode="PromptUser" />
-                <LaunchEvent Type="OnMessageCompose" FunctionName="onMessageComposeHandler" />
                 <LaunchEvent Type="OnAppointmentOrganizer" FunctionName="onAppointmentOrganizerHandler" />
                 -->
               </LaunchEvents>
