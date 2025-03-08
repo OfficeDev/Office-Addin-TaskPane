@@ -55,7 +55,7 @@ if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
 // Get arguments
 const hosts = (process.argv[2]?.toLowerCase() || "excel,outlook,powerpoint,word").split(",");
 const features = (process.argv[3]?.toLowerCase() || "commands,functions,events,taskpane").split(",");
-const codeLanguage = process.argv[4]?.toLowerCase() || "typescript";
+let codeLanguage = process.argv[4]?.toLowerCase() || "typescript";
 const manifestType = process.argv[5]?.toLowerCase() || "xml";
 const extras = (process.argv[6]?.toLowerCase() || "").split(",");
 const projectName = process.argv[7] || "My Office Add-in";
@@ -77,6 +77,8 @@ async function convertProject() {
 
   if (codeLanguage !== "ts" && codeLanguage !== "typescript" && codeLanguage !== "js" && codeLanguage !== "javascript") {
     throw new Error(`Invalid code language "${codeLanguage}".  Must be 'ts', 'typescript', 'js', or 'javascript'.`);
+  } else {
+    codeLanguage = codeLanguage === "ts" || codeLanguage === "typescript" ? "ts" : "js";
   }
 
   if (manifestType !== "xml" && manifestType !== "json") {
@@ -109,6 +111,11 @@ async function convertProject() {
     modifyProjectForXMLManifest();
   } else {
     modifyProjectForJsonManifest();
+  }
+
+  // Convert TypeScript to JavaScript if necessary
+  if (codeLanguage === "js") {
+    await convertProjectToJavascript();
   }
 }
 
@@ -216,8 +223,9 @@ async function updateWebpackConfig() {
   }
 
   // Remove ts information if using js
-  if (codeLanguage === "js" || codeLanguage === "javascript") {
+  if (codeLanguage === "js") {
     webpackContent = removeExtention(webpackContent, "ts");
+    webpackContent = webpackContent.replace(/\.ts/gm, ".js");
   }
 
   webpackContent = webpackContent.replace(".xml", `.${manifestType}`);
@@ -262,7 +270,7 @@ async function updatePackageJson() {
   }
 
   // Remove TypeScript related packages if converting to JavaScript
-  if (codeLanguage === "js" || codeLanguage === "javascript") {
+  if (codeLanguage === "js") {
     typescriptDevDependencies.forEach(function (dep) {
       delete content.devDependencies[dep];
     });
@@ -515,6 +523,12 @@ async function modifyJsonManifest() {
   await writeFileAsync(manifestFilePath, manifestContent);
 }
 
+async function convertProjectToJavascript() {
+  // Convert TypeScript files to JavaScript
+  await convertTsFilesInDirectory("src");
+  deleteFileAsync("tsconfig.json");
+}
+
 // Helper functions
 function deleteFolder(folder) {
   try {
@@ -548,8 +562,46 @@ async function deleteFileAsync(file) {
   }
 }
 
+async function convertTsFilesInDirectory(directory) {
+  const files = fs.readdirSync(directory);
+
+  files.forEach(async (file) => {
+    const inputFilePath = path.join(directory, file);
+
+    if (fs.lstatSync(inputFilePath).isDirectory()) {
+      await convertTsFilesInDirectory(inputFilePath);
+    } else if (inputFilePath.endsWith(".ts")) {
+      const outputFilePath = path.join(directory, file.replace(/\.ts$/, ".js"));
+      await convertTsFileToJs(inputFilePath, outputFilePath);
+      await deleteFileAsync(inputFilePath);
+    }
+  });
+}
+
+async function convertTsFileToJs(inputFilePath, outputFilePath) {
+  // Read the input file
+  let content = fs.readFileSync(inputFilePath, "utf8");
+
+  content = content
+    .replace(/:\s*[\w\[\]\<\>\|\.]+/g, '')          // Remove type annotations (e.g., ": string", ": number")
+    .replace(/interface\s+\w+\s*{[^}]*}/g, '')    // Remove interface declarations
+    .replace(/type\s+\w+\s*=\s*[^;]+;/g, '')      // Remove type declarations (e.g., "type MyType = ...")
+    .replace(/enum\s+\w+\s*{[^}]*}/g, '')         // Remove enum declarations
+    .replace(/\s+as\s+\w+/g, '')                  // Remove "as" type assertions (e.g., "value as string")
+    .replace(/import\s+.*\s+from\s+['"].*['"];?/g, (match) => {
+        return match.includes('{') ? match : ''; // Keep non-type imports
+      })                                          // Remove import/export type-only statements
+    .replace(/export\s+type\s+.*;/g, '');         // Remove export type declarations
+
+  // Ensure the output directory exists
+  fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
+
+  // Write the modified code to a new file
+  fs.writeFileSync(outputFilePath, content);
+}
+
 /**
- * Modify the project so that it only supports indicated hosts.
+ * Modify the project so that it only supports indicated configuration.
  */
 convertProject().catch((err) => {
   console.error(`Error modifying for hosts: ${err instanceof Error ? err.message : err}`);

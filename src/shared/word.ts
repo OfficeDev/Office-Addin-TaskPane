@@ -17,11 +17,11 @@ export async function runWord(): Promise<void> {
   });
 }
 
-export async function insertTextInWord(text: string) {
+export async function insertTextInWord(text: string): Promise<void> {
   // Write text to the document.
   try {
     await Word.run(async (context) => {
-      let body = context.document.body;
+      let body: Word.Body = context.document.body;
       body.insertParagraph(text, Word.InsertLocation.end);
       await context.sync();
     });

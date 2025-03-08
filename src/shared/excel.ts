@@ -19,12 +19,12 @@ export async function runExcel(): Promise<void> {
   });
 }
 
-export async function insertTextInExcel(text: string) {
+export async function insertTextInExcel(text: string): Promise<void> {
   // Write text to the top left cell.
   try {
     await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      const range = sheet.getRange("A1");
+      const sheet: Excel.Worksheet = context.workbook.worksheets.getActiveWorksheet();
+      const range: Excel.Range = sheet.getRange("A1");
       range.values = [[text]];
       range.format.autofitColumns();
       await context.sync();

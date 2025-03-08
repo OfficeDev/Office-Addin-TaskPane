@@ -15,11 +15,11 @@ export async function runPowerPoint(): Promise<void> {
   await Office.context.document.setSelectedDataAsync("Hello World!", options);
 }
 
-export async function insertTextInPowerPoint(text: string) {
+export async function insertTextInPowerPoint(text: string): Promise<void> {
   try {
     await PowerPoint.run(async (context) => {
-      const slide = context.presentation.getSelectedSlides().getItemAt(0);
-      const textBox = slide.shapes.addTextBox(text);
+      const slide: PowerPoint.Slide = context.presentation.getSelectedSlides().getItemAt(0);
+      const textBox: PowerPoint.Shape = slide.shapes.addTextBox(text);
       textBox.fill.setSolidColor("white");
       textBox.lineFormat.color = "black";
       textBox.lineFormat.weight = 1;

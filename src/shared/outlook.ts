@@ -21,7 +21,7 @@ export async function runOutlook(text: string): Promise<void> {
   Office.context.mailbox.item?.notificationMessages.replaceAsync("ActionPerformanceNotification", message);
 }
 
-export async function insertTextInOutlook(text: string) {
+export async function insertTextInOutlook(text: string): Promise<void> {
   // Write text to the cursor point in the compose surface.
   try {
     Office.context.mailbox.item?.body.setSelectedDataAsync(
