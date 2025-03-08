@@ -18,3 +18,18 @@ export async function runExcel(): Promise<void> {
     console.log(`The range address was ${range.address}.`);
   });
 }
+
+export async function insertTextInExcel(text: string) {
+  // Write text to the top left cell.
+  try {
+    await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      const range = sheet.getRange("A1");
+      range.values = [[text]];
+      range.format.autofitColumns();
+      await context.sync();
+    });
+  } catch (error) {
+    console.log("Error: " + error);
+  }
+}

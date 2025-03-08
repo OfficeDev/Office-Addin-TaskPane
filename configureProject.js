@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
-const { web } = require("webpack");
 
 const readFileAsync = util.promisify(fs.readFile);
 const unlinkFileAsync = util.promisify(fs.unlink);
@@ -31,6 +30,8 @@ const testPackages = [
   "request",
   "ts-node",
 ];
+
+const hostNames = { excel: "Excel", outlook: "Outlook", powerpoint: "PowerPoint", word: "Word" };
 
 // Help Text
 if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
@@ -113,18 +114,20 @@ async function convertProject() {
 
 async function updateSourceFiles() {
   // Delete unused source files
-  const taskpaneFilePath = `./src/taskpane/taskpane.ts`;
-  const commandsFilePath = `./src/commands/commands.ts`;
+  const taskpaneFilePath = extras.includes("react") ? "./src/reactTaskpane/taskpane.ts" : "./src/taskpane/taskpane.ts";
+  const commandsFilePath = "./src/commands/commands.ts";
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
   let commandsContent = await readFileAsync(commandsFilePath, "utf8");
 
   supportedHosts.forEach(function (host) {
+    const importRegex = new RegExp(`^import\\s+.*\\b${host}\\b.*;\r?\n?`, "gm");
     if (!hosts.includes(host)) {
       deleteFileAsync(`./src/shared/${host}.ts`);
       deleteFileAsync(`./src/commands/${host}.ts`);
       deleteFileAsync(`./src/taskpane/${host}.ts`);
-      taskpaneContent = taskpaneContent.replace(new RegExp(`import "\\./${host}";\r?\n?`, "gm"), "");
-      commandsContent = commandsContent.replace(new RegExp(`import "\\./${host}";\r?\n?`, "gm"), "");
+      taskpaneContent = taskpaneContent.replace(importRegex, "")
+        .replace(new RegExp(`^\\s+case\\s+Office\\.HostType\\.${hostNames[host]}:[\\s\\S]*?break;\r?\n?`, "gm"), "");
+      commandsContent = commandsContent.replace(importRegex, "");
     }
   });
 
@@ -171,8 +174,20 @@ async function updateFeatureFiles() {
 async function updateWebpackConfig() {
   // Helper functions
   function removeFeature(content, feature) {
-    return content.replace(new RegExp(`^\\s*["']?${feature}["']?:\\s*(?:{[^}]*}|\\[[^\\]]*\\]|["'][^"']*["']),?\\s*$`, "gm"), "")
+    let updatedcontent = content // remove entry and plugin
+      .replace(new RegExp(`^\\s*["']?${feature}["']?:\\s*(?:{[^}]*}|\\[[^\\]]*\\]|["'][^"']*["']),?\\s*$`, "gm"), "")
       .replace(new RegExp(`^\\s*new HtmlWebpackPlugin\\(\\s*{\\s*filename:\\s*["']${feature}\\.html["'][^}]*}\\s*\\),?\\s*$`, "gm"), "");
+    
+    // remove special config elements
+    if (feature === "functions") {
+      updatedcontent = updatedcontent
+        .replace(/^\s*const\s+CustomFunctionsMetadataPlugin[\s\S]*?$/gm, "")
+        .replace(/^\s*new CustomFunctionsMetadataPlugin\(\s*{[^}]*}\s*\),?$/gm, "");
+    } else if (feature === "react") {
+      // remove reactTaskpane entry
+      updatedcontent = removeFeature(updatedcontent, "reactTaskpane");
+    }
+    return updatedcontent;
   }
 
   function removeExtention(content, extension) {
@@ -184,17 +199,20 @@ async function updateWebpackConfig() {
   const webpack = `webpack.config.js`;
   let webpackContent = await readFileAsync(webpack, "utf8");
 
-  // Remove unused entries
+  // Remove unused entry points
   supportedFeatures.forEach(function (feature) {
     if (!features.includes(feature)) {
       webpackContent = removeFeature(webpackContent, feature);
     }
   });
   
-  // Remove react information if not using react
+  // Update for react
   if (!extras.includes("react") || !features.includes("taskpane")) {
     webpackContent = removeFeature(webpackContent, "react");
     webpackContent = removeExtention(webpackContent, "tsx");
+  } else if (features.includes("taskpane") && extras.includes("react")) {
+    webpackContent = removeFeature(webpackContent, "taskpane");
+    webpackContent = webpackContent.replace(/reactTaskpane/gm, "taskpane");
   }
 
   // Remove ts information if using js
@@ -340,7 +358,7 @@ async function modifyXmlManifest() {
 
     // Remove command surface if not used
     if (!features.includes("commands") && !features.includes("taskpane")) {
-      manifestContent = manifestContent.replace(/^\s*<ExtensionPoint\s+xsi:type="MessageReadCommandSurface">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "");
+      manifestContent = manifestContent.replace(/^\s*<ExtensionPoint\s+xsi:type="[a-zA-Z]+CommandSurface">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "");
     }
 
     // Remove events if not selected
@@ -355,7 +373,7 @@ async function modifyXmlManifest() {
     // Remove taskpane if not selected
     if (!features.includes("taskpane")) {
       outlookManifestContent = outlookManifestContent
-        .replace(/^\s*<Control\s+xsi:type="Button" id="TaskpaneButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<Control\s+xsi:type="Button" id="TaskpaneButton">[\s\S]*?<\/Control>\s*$/gm, "")
         .replace(/^\s*<bt:Url\s+id=\"Taskpane\.Url\".*\/>\s*$/gm, "")
         .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Label\".*\/>\s*$/gm, "")
         .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Tooltip\".*\/>\s*$/gm, "");
@@ -364,7 +382,7 @@ async function modifyXmlManifest() {
     // Remove commands if not selected
     if (!features.includes("commands")) {
       outlookManifestContent = outlookManifestContent
-        .replace(/^\s*<Control\s+xsi:type="Button" id="ActionButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<Control\s+xsi:type="Button" id="ActionButton">[\s\S]*?<\/Control>\s*$/gm, "")
         .replace(/^\s*<FunctionFile[^/]+\/>\*$/gm, "")
         .replace(/^\s*<bt:Url\s+id=\"Commands\.Url\".*\/>\s*$/gm, "")
         .replace(/^\s*<bt:String\s+id=\"ActionButton\.Label\".*\/>\s*$/gm, "")
@@ -440,7 +458,7 @@ async function modifyXmlManifest() {
     // Remove taskpane if not selected
     if (!features.includes("taskpane")) {
       manifestContent = manifestContent
-        .replace(/^\s*<Control\s+xsi:type="Button" id="TaskpaneButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<Control\s+xsi:type="Button" id="TaskpaneButton">[\s\S]*?<\/Control>\s*$/gm, "")
         .replace(/^\s*<bt:Url\s+id=\"Taskpane\.Url\".*\/>\s*$/gm, "")
         .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Label\".*\/>\s*$/gm, "")
         .replace(/^\s*<bt:String\s+id=\"TaskpaneButton\.Tooltip\".*\/>\s*$/gm, "");
@@ -449,7 +467,7 @@ async function modifyXmlManifest() {
     // Remove commands if not selected
     if (!features.includes("commands")) {
       manifestContent = manifestContent
-        .replace(/^\s*<Control\s+xsi:type="Button" id="ActionButton">[\s\S]*?<\/ExtensionPoint>\s*$/gm, "")
+        .replace(/^\s*<Control\s+xsi:type="Button" id="ActionButton">[\s\S]*?<\/Control>\s*$/gm, "")
         .replace(/^\s*<FunctionFile[^/]+\/>\*$/gm, "")
         .replace(/^\s*<bt:Url\s+id=\"Commands\.Url\".*\/>\s*$/gm, "")
         .replace(/^\s*<bt:String\s+id=\"ActionButton\.Label\".*\/>\s*$/gm, "")

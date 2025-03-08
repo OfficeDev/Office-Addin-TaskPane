@@ -2,18 +2,25 @@
   "compilerOptions": {
     "allowJs": true,
     "baseUrl": ".",
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
+    "module": "ES2020",
+    "moduleResolution": "node",
     "noEmitOnError": true,
-    "outDir": "lib",
+    "outDir": "dist",
+    "removeComments": false,
     "sourceMap": true,
     "strict": true,
     "target": "es5",
     "lib": [
-      "es2015",
+      "es7",
       "dom"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
     ]
   },
   "exclude": [
@@ -21,6 +28,9 @@
     "dist",
   ],
   "ts-node": { 
+    "compilerOptions": {
+      "module": "commonjs"
+    },
     "files": true 
   }
 }

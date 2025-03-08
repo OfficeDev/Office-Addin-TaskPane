@@ -1,16 +1,28 @@
-/* global Excel console */
+import { insertTextInExcel } from "../shared/excel";
+import { insertTextInOutlook } from "../shared/outlook";
+import { insertTextInPowerPoint } from "../shared/powerpoint";
+import { insertTextInWord } from "../shared/word";
+
+/* global Office */
 
 export async function insertText(text: string) {
-  // Write text to the top left cell.
-  try {
-    await Excel.run(async (context) => {
-      const sheet = context.workbook.worksheets.getActiveWorksheet();
-      const range = sheet.getRange("A1");
-      range.values = [[text]];
-      range.format.autofitColumns();
-      await context.sync();
-    });
-  } catch (error) {
-    console.log("Error: " + error);
-  }
+  Office.onReady(async (info) => {
+    switch (info.host) {
+      case Office.HostType.Excel:
+        await insertTextInExcel(text);
+        break;
+      case Office.HostType.Outlook:
+        await insertTextInOutlook(text);
+        break;
+      case Office.HostType.PowerPoint:
+        await insertTextInPowerPoint(text);
+        break;
+      case Office.HostType.Word:
+        await insertTextInWord(text);
+        break;
+      default: {
+        throw new Error("Don't know how to insert text when running in ${info.host}.");
+      }
+    }
+  });
 }

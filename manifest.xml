@@ -67,6 +67,21 @@
                     <SourceLocation resid="Taskpane.Url" />
                   </Action>
                 </Control>
+                <Control xsi:type="Button" id="ActionButton">
+                  <Label resid="ActionButton.Label"/>
+                  <Supertip>
+                    <Title resid="ActionButton.Label"/>
+                    <Description resid="ActionButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>action</FunctionName>
+                  </Action>
+                </Control>
               </Group>
             </OfficeTab>
           </ExtensionPoint>
@@ -106,6 +121,21 @@
                   <Action xsi:type="ShowTaskpane">
                     <TaskpaneId>ButtonId1</TaskpaneId>
                     <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+                <Control xsi:type="Button" id="ActionButton">
+                  <Label resid="ActionButton.Label"/>
+                  <Supertip>
+                    <Title resid="ActionButton.Label"/>
+                    <Description resid="ActionButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>action</FunctionName>
                   </Action>
                 </Control>
               </Group>
@@ -163,6 +193,21 @@
                     <SourceLocation resid="Taskpane.Url" />
                   </Action>
                 </Control>
+                <Control xsi:type="Button" id="ActionButton">
+                  <Label resid="ActionButton.Label"/>
+                  <Supertip>
+                    <Title resid="ActionButton.Label"/>
+                    <Description resid="ActionButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ExecuteFunction">
+                    <FunctionName>action</FunctionName>
+                  </Action>
+                </Control>
               </Group>
             </OfficeTab>
           </ExtensionPoint>
@@ -188,10 +233,12 @@
         <bt:String id="GetStarted.Title" DefaultValue="Get started with your sample add-in!" />
         <bt:String id="CommandsGroup.Label" DefaultValue="Commands Group" />
         <bt:String id="TaskpaneButton.Label" DefaultValue="Show Task Pane" />
+        <bt:String id="ActionButton.Label" DefaultValue="Perform an action"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="GetStarted.Description" DefaultValue="Your sample add-in loaded successfully. Go to the HOME tab and click the 'Show Task Pane' button to get started." />
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to Show a Task Pane" />
+        <bt:String id="ActionButton.Tooltip" DefaultValue="Perform an action when clicked."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

@@ -21,10 +21,11 @@ module.exports = async (env, options) => {
     entry: {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
       react: ["react", "react-dom"],
-      taskpane: {
-        import: ["./src/taskpane/taskpane.ts", "./src/taskpane/taskpane.html"],
+      reactTaskpane: {
+        import: ["./src/reactTaskpane/index.tsx", "./src/reactTaskpane/taskpane.html"],
         dependOn: "react",
       },
+      taskpane:["./src/taskpane/taskpane.ts", "./src/taskpane/taskpane.html"],
       commands: ["./src/commands/commands.ts", "./src/commands/commands.html"],
       functions: ["./src/functions/functions.ts", "./src/functions/functions.html"],
       events: ["./src/events/events.ts", "./src/events/events.html"],
@@ -62,7 +63,7 @@ module.exports = async (env, options) => {
           use: "html-loader",
         },
         {
-          test: /\.(png|jpg|jpeg|gif|ico)$/,
+          test: /\.(png|jpg|jpeg|ttf|woff|woff2|gif|ico)$/,
           type: "asset/resource",
           generator: {
             filename: "assets/[name][ext][query]",
@@ -75,6 +76,11 @@ module.exports = async (env, options) => {
         filename: "taskpane.html",
         template: "./src/taskpane/taskpane.html",
         chunks: ["polyfill", "taskpane"],
+      }),
+      new HtmlWebpackPlugin({
+        filename: "reactTaskpane.html",
+        template: "./src/reactTaskpane/taskpane.html",
+        chunks: ["polyfill", "reactTaskpane", "react"],
       }),
       new HtmlWebpackPlugin({
         filename: "commands.html",
