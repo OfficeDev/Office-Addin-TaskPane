@@ -1,4 +1,3 @@
-- Make shared runtime work
 - Modify json manifest on convert
 - Add functional outlook event
 - Make the auth option used

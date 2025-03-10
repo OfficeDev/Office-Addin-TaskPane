@@ -181,9 +181,9 @@ async function updateFeatureFiles() {
 async function updateWebpackConfig() {
   // Helper functions
   function removeFeature(content, feature) {
-    let updatedcontent = content // remove entry and plugin
-      .replace(new RegExp(`^\\s*["']?${feature}["']?:\\s*(?:{[^}]*}|\\[[^\\]]*\\]|["'][^"']*["']),?\\s*$`, "gm"), "")
-      .replace(new RegExp(`^\\s*new HtmlWebpackPlugin\\(\\s*{\\s*filename:\\s*["']${feature}\\.html["'][^}]*}\\s*\\),?\\s*$`, "gm"), "");
+    // remove entry and plugin
+    let updatedcontent = removeHtmlPlugin(content, feature) 
+      .replace(new RegExp(`^\\s*["']?${feature}["']?:\\s*(?:{[^}]*}|\\[[^\\]]*\\]|["'][^"']*["']),?\\s*$`, "gm"), "");
     
     // remove special config elements
     if (feature === "functions") {
@@ -197,9 +197,13 @@ async function updateWebpackConfig() {
     return updatedcontent;
   }
 
+  function removeHtmlPlugin(content, plugin) {
+    return content.replace(new RegExp(`^\\s*new HtmlWebpackPlugin\\(\\s*{\\s*filename:\\s*["']${plugin}\\.html["'][^}]*}\\s*\\),?\\s*$`, "gm"), "");
+  }
+
   function removeExtention(content, extension) {
    return content.replace(new RegExp(`^\\s*{\\s*test:\\s*\\/\\\\.${extension}\\??\\$\\/[^{}]*(?:{[^{}]*}[^{}]*)*},?\\s*$`, "gm"), "")
-    .replace(new RegExp(`,?\\s*["']\\.${extension}["']`, "g"), "");
+    .replace(new RegExp(`,\\s*["']\\.${extension}["']|["']\\.${extension}["'],?\\s*`, "g"), "");
   }
 
   // Update webpack.config.js
@@ -221,6 +225,22 @@ async function updateWebpackConfig() {
     webpackContent = removeFeature(webpackContent, "taskpane");
     webpackContent = webpackContent.replace(/reactTaskpane/gm, "taskpane");
   }
+
+  // Update for shared runtime
+  if (features.includes("sharedruntime")) {
+    // Remove extra plugins
+    ["commands", "functions"].forEach(function (feature) {
+      if (features.includes(feature)) {
+        webpackContent = removeHtmlPlugin(webpackContent, feature)
+          .replace(
+            /(^\s*new HtmlWebpackPlugin\(\s*{\s*filename:\s*["']taskpane\.html["'][\s\S]*?chunks:\s*\[[^\]]+)(\][^}]*}\s*\),?\s*$)/gm,
+            `$1, "${feature}"$2`
+          );
+      }
+    });
+  }
+
+
 
   // Remove ts information if using js
   if (codeLanguage === "js") {
@@ -338,12 +358,12 @@ async function updateSupportFiles() {
   await deleteFileAsync(".npmrc");
   await deleteFileAsync("package-lock.json");
 
-  // Update .gitignore if react
+  // Update .eslintrc.json
   if (extras.includes("react")) {
-    const gitIgnore = ".gitignore";
-    const gitIgnoreContent = await readFileAsync(gitIgnore, "utf8");
-    const updatedContent = gitIgnoreContent.replace("office-addins/recommended", "office-addins/react");
-    await writeFileAsync(gitIgnore, updatedContent);
+    const eslint = ".eslintrc.json";
+    const eslintContent = await readFileAsync(eslint, "utf8");
+    const updatedContent = eslintContent.replace("office-addins/recommended", "office-addins/react");
+    await writeFileAsync(eslint, updatedContent);
   }
 }
 
