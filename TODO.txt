@@ -1,9 +1,8 @@
-- Modify json manifest on convert
-- Fix react insertText reference
-- Make the auth option used
-- Add functional outlook event
 - Make shared runtime work
+- Modify json manifest on convert
+- Add functional outlook event
+- Make the auth option used
+- manually test combinations
+- update tests
 - Update readme
 - Hook up to generator-office
-- update tests
-- manually test combinations
