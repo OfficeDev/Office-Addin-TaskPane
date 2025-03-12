@@ -34,7 +34,7 @@
           "type": "Delegated"
         },
         {
-          "name": "Document.ReadWrite.User",
+          "name": "Document.Read.User",
           "type": "Delegated"
         }
       ]
@@ -103,7 +103,7 @@
                   ],
                   "controls": [
                     {
-                      "id": "openTaskPaneButton",
+                      "id": "TaskPaneButton",
                       "type": "button",
                       "label": "Show Taskpane",
                       "icons": [
@@ -118,7 +118,7 @@
                       "actionId": "TaskPaneRuntimeShow"
                     },
                     {
-                      "id": "ActionButton",
+                      "id": "CommandsButton",
                       "type": "button",
                       "label": "Perform an action",
                       "icons": [

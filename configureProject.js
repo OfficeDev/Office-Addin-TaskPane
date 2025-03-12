@@ -12,6 +12,7 @@ const renameAsync = util.promisify(fs.rename);
 
 const supportedHosts = ["excel", "outlook", "powerpoint", "word"];
 const xmlHostTypes = { excel: "Workbook", outlook: "Mailbox", powerpoint: "Presentation", word: "Document" };
+const jsonScopes = { outlook: "mail", excel: "workbook", word: "document", powerpoint: "presentation"};
 const supportedFeatures = ["commands", "functions", "events", "taskpane", "sharedruntime"];
 const supportedExtras = ["react", "auth"];
 
@@ -105,13 +106,7 @@ async function convertProject() {
   await updatePackageJson();
   await updateLaunchJsonFile();
   await updateSupportFiles();
-
-  // Make manifest type specific changes
-  if (manifestType === "xml") {
-    modifyProjectForXMLManifest();
-  } else {
-    modifyProjectForJsonManifest();
-  }
+  await updateManifest();
 
   // Convert TypeScript to JavaScript if necessary
   if (codeLanguage === "js") {
@@ -147,7 +142,7 @@ async function updateFeatureFiles() {
   supportedFeatures.forEach(function (feature) {
     if (!features.includes(feature)) {
       deleteFolder(path.resolve(`./src/${feature}`));
-      if(feature === "taskpane" && extras.includes("react")) {
+      if(feature === "taskpane") {
         deleteFolder(path.resolve(`./src/reactTaskpane`));
       }
     }
@@ -367,16 +362,24 @@ async function updateSupportFiles() {
   }
 }
 
-async function modifyProjectForXMLManifest() {
-  // Remove JSON manifest related files
-  await deleteFileAsync("manifest.json");
-  supportedHosts.forEach(async function (host) {
-    await deleteFileAsync(`manifest.${host}.json`);
-  });
-  await deleteFileAsync("assets/color.png");
-  await deleteFileAsync("assets/outline.png");
+async function updateManifest() {
+  let removeManifestType = manifestType === "xml" ? "json" : "xml";
 
-  await modifyXmlManifest();
+  // Make manifest file changes
+  if (manifestType === "xml") {
+    await deleteFileAsync("assets/color.png");
+    await deleteFileAsync("assets/outline.png");
+    modifyXmlManifest();
+
+  } else {
+    modifyJsonManifest();
+  }
+
+  // Remove unneeded manifest files
+  await deleteFileAsync(`manifest.${removeManifestType}`);
+  supportedHosts.forEach(async function (host) {
+    await deleteFileAsync(`manifest.${host}.${removeManifestType}`);
+  });
 }
 
 async function modifyXmlManifest() {
@@ -511,36 +514,52 @@ async function modifyXmlManifest() {
   }
 }
 
-async function modifyProjectForJsonManifest() {
-  // Remove XML manifest related files
-  await deleteFileAsync("manifest.xml");
-  supportedHosts.forEach(async function (host) {
-    await deleteFileAsync(`manifest.${host}.xml`);
-  });
-
-  // Remove host specific JSON manifests
-  supportedHosts.forEach(async function (host) {
-    await deleteFileAsync(`manifest.${host}.json`);
-  });
-
-  await modifyJsonManifest();
-}
-
 async function modifyJsonManifest() {
   const manifestFilePath = `./manifest.json`;
   let manifestContent = await readFileAsync(manifestFilePath, "utf8");
   const manifest = JSON.parse(manifestContent);
 
   // Remove unneeded authorizations
+  let permissionNames = [];
+  if (hosts.includes("outlook")) {
+    permissionNames.push("MailboxItem");
+  } else if (hosts.some((host) => ["word", "excel", "powerpoint"].includes(host))) {
+    permissionNames.push("Document");
+  }
 
+  if (permissionNames.length > 0) {
+    manifest.authorization.permissions.resourceSpecific = 
+      manifest.authorization.permissions.resourceSpecific.filter(
+        (permission) =>  permissionNames.includes(permission.name.split(".")[0])
+      );
+  } else {
+    delete manifest.autorization;
+  }
+
+  let extenstion = manifest.extensions[0];
   // Remove unneeded requirements
+  let supportedScopes = hosts.map(host => jsonScopes[host]);
+  extenstion.requirements.scopes = extenstion.requirements.scopes.filter((scope) => supportedScopes.includes(scope));
 
   // Remove unneeded runtimes
+  extenstion.runtimes = extenstion.runtimes.filter((runtime) => { 
+    const runtimePrefix = runtime.id.split("Runtime")[0].toLowerCase();
+    return features.includes(runtimePrefix);
+  });
 
-  // Remove unneeded ribbons
+  // Remove unneeded ribbon buttons
+  if (!features.includes("commands") && !features.includes("taskpane")) {
+    extenstion.ribbons = [];
+  } else {
+
+  extenstion.ribbons[0].tabs[0].groups[0].controls = extenstion.ribbons[0].tabs[0].groups[0].controls.filter((control) => {
+      const controlIdPrefix = control.id.split("Button")[0].toLowerCase();
+      return features.includes(controlIdPrefix);
+    });
+  }
 
   // Wriet the updated manifest back to the file
-  await writeFileAsync(manifestFilePath, manifestContent);
+  await writeFileAsync(manifestFilePath, JSON.stringify(manifest, null, 2));
 }
 
 async function convertProjectToJavascript() {

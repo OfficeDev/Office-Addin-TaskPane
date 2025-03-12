@@ -1,4 +1,3 @@
-- Modify json manifest on convert
 - Make the auth option used
 - manually test combinations
 - update tests
