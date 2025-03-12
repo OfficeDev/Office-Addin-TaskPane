@@ -38,7 +38,7 @@ const hostNames = { excel: "Excel", outlook: "Outlook", powerpoint: "PowerPoint"
 if (process.argv[2] && process.argv[2].toLowerCase() === "help") {
   console.log("SYNTAX: configureProject.js <hosts> <features> <codeLanguage> <manifestType> <extras> <projectName> <appId>");
   console.log();
-  console.log(`  hosts \tSpecifies which Office apps (comma seperated) will host the add-in: ${supporterHosts.join(", ")}`);
+  console.log(`  hosts \tSpecifies which Office apps (comma seperated) will host the add-in: ${supportedHosts.join(", ")}`);
   console.log(
     `  features \tSpecifies which features (comma seperated) to include in the add-in: ${supportedFeatures.join(", ")}`
   );
