@@ -12,8 +12,8 @@
     "dev_server_port": 3000
   },
   "engines": {
-    "node": ">=16 <21",
-    "npm": ">=7 <11"
+    "node": ">=16 <25",
+    "npm": ">=7 <12"
   },
   "scripts": {
     "build": "webpack --mode production",
@@ -33,15 +33,16 @@
     "validate": "office-addin-manifest validate manifest.xml",
     "watch": "webpack --mode development --watch"
   },
-  "dependencies": {
+  "dependencies": { 
     "core-js": "^3.36.0",
+    "npm": "^10.9.2",
     "regenerator-runtime": "^0.14.1"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.25.4",
     "@babel/preset-typescript": "^7.23.3",
-    "@types/mocha": "^10.0.6",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.11.25",
     "@types/office-js": "^1.0.377",
     "@types/office-runtime": "^1.0.35",
@@ -51,7 +52,7 @@
     "file-loader": "^6.2.0",
     "html-loader": "^5.0.0",
     "html-webpack-plugin": "^5.6.0",
-    "mocha": "^11.1.0",
+    "mocha": "^11.7.4",
     "office-addin-cli": "^2.0.3",
     "office-addin-debugging": "^6.0.3",
     "office-addin-dev-certs": "^2.0.3",
