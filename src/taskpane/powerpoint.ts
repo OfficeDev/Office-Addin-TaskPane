@@ -3,7 +3,7 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global document, PowerPoint */
+/* global document, Office, PowerPoint */
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.PowerPoint) {
