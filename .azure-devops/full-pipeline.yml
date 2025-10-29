@@ -9,6 +9,7 @@ extends:
   parameters:
     pool:
       name: OE-OfficeClientApps
+      image: Prod-OfficeClientApps-Win11
     sdl:
       eslint:
         configuration: required
