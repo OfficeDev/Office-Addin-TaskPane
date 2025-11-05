@@ -19,6 +19,7 @@ extends:
       jobs:
       - job: Windows_10_Latest
         steps:
+        - template: /.azure-devops/node.yml@self
         - template: /.azure-devops/install.yml@self
         - template: /.azure-devops/lint.yml@self
         - template: /.azure-devops/build.yml@self
@@ -29,6 +30,7 @@ extends:
             webView: "edge-chromium"
       - job: WebView_EdgeLegacy
         steps:
+        - template: /.azure-devops/node.yml@self
         - template: /.azure-devops/install.yml@self
         - template: /.azure-devops/lint.yml@self
         - template: /.azure-devops/build.yml@self
@@ -39,6 +41,7 @@ extends:
             webView: "edge-legacy"
       - job: WebView_IE
         steps:
+        - template: /.azure-devops/node.yml@self
         - template: /.azure-devops/install.yml@self
         - template: /.azure-devops/lint.yml@self
         - template: /.azure-devops/build.yml@self
