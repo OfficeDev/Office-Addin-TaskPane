@@ -1,7 +1,12 @@
-import { insertBlueParagraphInWord } from "./word";
-import { setRangeColorInExcel } from "./excel";
-import { insertTextInPowerPoint } from "./powerpoint";
-import { setNotificationInOutlook } from "./outlook";
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
+ * See LICENSE in the project root for license information.
+ */
+
+import { insertBlueParagraphInWord } from "./commands.word";
+import { setRangeColorInExcel } from "./commands.excel";
+import { insertTextInPowerPoint } from "./commands.powerpoint";
+import { setNotificationInOutlook } from "./commands.outlook";
 
 /* global Office */
 

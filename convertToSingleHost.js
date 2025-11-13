@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
-const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word", "wxpo"];
+const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
 
 if (process.argv.length <= 2) {
   const hostList = hosts.map((host) => `'${host}'`).join(", ");
@@ -19,6 +19,7 @@ if (process.argv.length <= 2) {
 }
 
 const host = process.argv[2];
+const targetHosts = getTargetHosts(host);
 const manifestType = process.argv[3] || "xml";
 const projectName = process.argv[4];
 let appId = process.argv[5];
@@ -44,7 +45,7 @@ async function modifyProjectForSingleHost(host) {
   }
   if (
     (manifestType === "json" && (host === "onenote" || host === "project")) ||
-    (manifestType === "xml" && host === "wxpo")
+    (manifestType === "xml" && targetHosts.length > 1)
   ) {
     throw new Error(`'${host}' is not supported for ${manifestType} manifest.`);
   }
@@ -66,7 +67,6 @@ async function convertProjectToSingleHost(host, manifestType) {
   // Copy over host-specific taskpane code to taskpane.ts
   const taskpaneFilePath = "./src/taskpane/taskpane.ts";
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
-  let targetHosts = getTargetHosts(host);
 
   for (const host of hosts) {
     if (!targetHosts.includes(host)) {
@@ -105,12 +105,7 @@ async function updatePackageJsonForSingleHost(host, manifestType) {
   let content = JSON.parse(data);
 
   // Update 'config' section in package.json to use selected host
-  if (host === "wxpo") {
-    // Specify a default debug host for json manifest
-    content.config["app_to_debug"] = "excel";
-  } else {
-    content.config["app_to_debug"] = host;
-  }
+  content.config["app_to_debug"] = targetHosts[0];
 
   // Remove 'engines' section
   delete content.engines;
@@ -120,15 +115,6 @@ async function updatePackageJsonForSingleHost(host, manifestType) {
     for (const key of Object.keys(content.scripts)) {
       if (content.scripts[key].includes(".xml")) {
         content.scripts[key] = content.scripts[key].replace(".xml", ".json");
-      }
-    }
-  }
-
-  if (host != "wxpo") {
-    // Remove special start scripts
-    for (const key of Object.keys(content.scripts)) {
-      if (key.includes("start:") && !key.includes(host)) {
-        delete content.scripts[key];
       }
     }
   }
@@ -163,7 +149,7 @@ async function updateLaunchJsonFile(host) {
   const launchJson = `.vscode/launch.json`;
   const launchJsonContent = await readFileAsync(launchJson, "utf8");
   let content = JSON.parse(launchJsonContent);
-  const targetConfigurations = getTargetHosts(host).flatMap(function (host) {
+  const targetConfigurations = targetHosts.flatMap(function (host) {
     return content.configurations.filter(function (config) {
       return config.name.startsWith(getHostName(host));
     });
@@ -192,7 +178,7 @@ function getHostName(host) {
 }
 
 function getTargetHosts(host) {
-  return host == "wxpo" ? ["word", "excel", "powerpoint", "outlook"] : [host];
+  return host == "wxpo" ? ["excel", "word", "powerpoint", "outlook"] : [host];
 }
 
 function deleteFolder(folder) {
@@ -251,19 +237,6 @@ async function updateWebpackConfigForJSONManifest() {
   await writeFileAsync(webPack, updatedContent);
 }
 
-async function updateTasksJsonFileForJSONManifest() {
-  const tasksJson = `.vscode/tasks.json`;
-  const data = await readFileAsync(tasksJson, "utf8");
-  let content = JSON.parse(data);
-
-  content.tasks.forEach(function (task) {
-    if (task.label.startsWith("Build") || task.label.startsWith("Debug:")) {
-      task.dependsOn = ["Install"];
-    }
-  });
-
-  await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
-}
 
 async function modifyCommandsFile(host) {
   const supportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
@@ -275,7 +248,7 @@ async function modifyCommandsFile(host) {
   await writeFileAsync("./src/commands/commands.ts", fileContent);
   for (const iter of supportedHosts) {
     // remove needless ${host}.ts
-    if (host !== "wxpo" && iter !== host && fs.existsSync(`./src/commands/${iter}.ts`)) {
+    if (!targetHosts.includes(iter) && fs.existsSync(`./src/commands/${iter}.ts`)) {
       await unlinkFileAsync(`./src/commands/${iter}.ts`);
     }
     // remove all commands.${host}.ts
@@ -287,7 +260,6 @@ async function modifyCommandsFile(host) {
 
 async function modifyProjectForJSONManifest() {
   await updateWebpackConfigForJSONManifest();
-  await updateTasksJsonFileForJSONManifest();
   await deleteXMLManifestRelatedFiles();
 }
 
