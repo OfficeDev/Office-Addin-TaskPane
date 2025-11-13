@@ -1,7 +1,7 @@
 {
-    "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.24/MicrosoftTeams.schema.json",
     "id": "f2b103f1-1ab1-4e1b-8f0b-072aa3d4e19d",
-    "manifestVersion": "devPreview",
+    "manifestVersion": "1.24",
     "version": "1.0.0",
     "name": {
       "short": "Contoso Task Pane Add-in",
@@ -45,9 +45,6 @@
         },
         "runtimes": [
           {
-            "requirements": {
-              "capabilities": [{ "name": "AddinCommands", "minVersion": "1.1" }]
-            },
             "id": "TaskPaneRuntime",
             "type": "general",
             "code": {
@@ -57,9 +54,7 @@
             "actions": [
               {
                 "id": "TaskPaneRuntimeShow",
-                "type": "openPage",
-                "pinnable": false,
-                "view": "dashboard"
+                "type": "openPage"
               }
             ]
           },
@@ -67,15 +62,13 @@
             "id": "CommandsRuntime",
             "type": "general",
             "code": {
-              "page": "https://localhost:3000/commands.html",
-              "script": "https://localhost:3000/commands.js"
+              "page": "https://localhost:3000/commands.html"
             },
             "lifetime": "short",
             "actions": [
               {
                 "id": "action",
-                "type": "executeFunction",
-                "displayName": "action"
+                "type": "executeFunction"
               }
             ]
           }
@@ -88,7 +81,7 @@
                 "builtInTabId": "TabHome",
                 "groups": [
                   {
-                    "id": "msgReadGroup",
+                    "id": "documentGroup",
                     "label": "Contoso Add-in",
                     "icons": [
                       {
@@ -106,9 +99,9 @@
                     ],
                     "controls": [
                       {
-                        "id": "msgReadOpenPaneButton",
+                        "id": "OpenPaneButton",
                         "type": "button",
-                        "label": "Show Taskpane",
+                        "label": "Show Task Pane",
                         "icons": [
                           {
                             "size": 16,
@@ -124,8 +117,8 @@
                           }
                         ],
                         "supertip": {
-                          "title": "Show Taskpane",
-                          "description": "Opens a pane displaying all available properties."
+                          "title": "Show Task Pane",
+                          "description": "Opens a task pane"
                         },
                         "actionId": "TaskPaneRuntimeShow"
                       },
