@@ -19,7 +19,7 @@ if (process.argv.length <= 2) {
 }
 
 const host = process.argv[2];
-const targetHosts = getTargetHosts(host);
+const targetHosts = host == "wxpo" ? ["excel", "word", "powerpoint", "outlook"] : [host];
 const manifestType = process.argv[3] || "xml";
 const projectName = process.argv[4];
 let appId = process.argv[5];
@@ -37,17 +37,24 @@ const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
 
 async function modifyProjectForSingleHost(host) {
-  if (!host) {
-    throw new Error("The host was not provided.");
+  if (!targetHosts || targetHosts.length === 0) {
+    throw new Error("No target hosts were provided.");
   }
-  if (!hosts.includes(host)) {
-    throw new Error(`'${host}' is not a supported host.`);
+  
+  // Validate all target hosts
+  for (const targetHost of targetHosts) {
+    if (!hosts.includes(targetHost)) {
+      throw new Error(`'${targetHost}' is not a supported host.`);
+    }
   }
-  if (
-    (manifestType === "json" && (host === "onenote" || host === "project")) ||
-    (manifestType === "xml" && targetHosts.length > 1)
-  ) {
-    throw new Error(`'${host}' is not supported for ${manifestType} manifest.`);
+  
+  // Check for unsupported combinations
+  const unsupportedJSONHosts = targetHosts.filter(h => h === "onenote" || h === "project");
+  if (manifestType === "json" && unsupportedJSONHosts.length > 0) {
+    throw new Error(`'${unsupportedJSONHosts.join(", ")}' is not supported for ${manifestType} manifest.`);
+  }
+  if (manifestType === "xml" && targetHosts.length > 1) {
+    throw new Error(`Multiple hosts are not supported for ${manifestType} manifest.`);
   }
 
   await convertProjectToSingleHost(host, manifestType);
@@ -175,10 +182,6 @@ function getHostName(host) {
     default:
       throw new Error(`'${host}' is not a supported host.`);
   }
-}
-
-function getTargetHosts(host) {
-  return host == "wxpo" ? ["excel", "word", "powerpoint", "outlook"] : [host];
 }
 
 function deleteFolder(folder) {
