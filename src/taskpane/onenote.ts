@@ -9,11 +9,11 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.OneNote) {
     document.getElementById("sideload-msg").style.display = "none";
     document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = run;
+    document.getElementById("run").onclick = runOneNote;
   }
 });
 
-export async function run() {
+export async function runOneNote() {
   /**
    * Insert your OneNote code here
    */

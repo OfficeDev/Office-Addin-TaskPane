@@ -24,8 +24,8 @@ describe("PowerPoint", function () {
     const officeMock: OfficeMockObject = new OfficeMockObject(PowerPointMockData); // Mocking the common office-js namespace
     global.Office = officeMock as any;
 
-    const { run } = require("../../src/taskpane/powerpoint");
-    await run();
+    const { runPowerPoint } = require("../../src/taskpane/powerpoint");
+    await runPowerPoint();
 
     assert.strictEqual(officeMock.context.document.data, "Hello World!");
   });
