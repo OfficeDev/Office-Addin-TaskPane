@@ -16,15 +16,22 @@ Office.onReady(async (info) => {
   }
 });
 
-async function getSelectedText(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    Office.context.document.getSelectedDataAsync(Office.CoercionType.Text, (result: Office.AsyncResult<string>) => {
-      if (result.status === Office.AsyncResultStatus.Failed) {
-        reject(result.error);
-      } else {
-        resolve(result.value);
-      }
-    });
+async function getText(): Promise<string> {
+  return PowerPoint.run(async (context) => {
+    const shapes = context.presentation.slides.getItemAt(0).shapes;
+    shapes.load("items");
+    await context.sync();
+
+    const textboxShapes = shapes.items.filter(shape => shape.name === "GreetingTextbox");
+      
+    if (textboxShapes.length > 0) {
+      const textFrame = textboxShapes[0].textFrame.load("textRange");
+      await context.sync();
+
+      return textFrame.textRange.text;
+    } else {
+      return "";
+    }
   });
 }
 
@@ -33,11 +40,11 @@ export async function runTest(): Promise<void> {
   await run();
   await testHelpers.sleep(2000);
 
-  // get selected text
-  const selectedText = await getSelectedText();
+  // get inserted selected text
+  const text = await getText();
 
   // send test results
-  testHelpers.addTestResult(testValues, "output-message", selectedText, "Hello World!");
+  testHelpers.addTestResult(testValues, "output-message", text, "Hello World!");
 
   await sendTestResults(testValues, port);
 }
