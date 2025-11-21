@@ -247,21 +247,6 @@ async function modifyCommandsFile(host) {
     throw new Error(`'${host}' is not a supported host.`);
   }
 
-  if (host === "wxpo") {
-    // For wxpo, we need all command files from excel, word, powerpoint, and outlook
-    // Remove Office.onReady from individual host files to avoid conflicts
-    for (const hostName of ["word", "excel", "powerpoint", "outlook"]) {
-      const hostFilePath = `./src/commands/commands.${hostName}.ts`;
-      if (fs.existsSync(hostFilePath)) {
-        let content = await readFileAsync(hostFilePath, "utf8");
-        // Remove the Office.onReady registration block
-        content = content.replace(/\/\/ Register the add-in commands[\s\S]*$/, "");
-        await writeFileAsync(hostFilePath, content.trimEnd() + "\n");
-      }
-    }
-    return;
-  }
-
   // Write the host command file content to commands.ts
   const fileContent = await readFileAsync(`./src/commands/commands.${host}.ts`, "utf8");
   await writeFileAsync("./src/commands/commands.ts", fileContent);
