@@ -4,29 +4,57 @@ import { OfficeMockObject } from "office-addin-mock";
 
 /* global describe, global, it, require */
 
+// office-addin-mock needs to be able to handle collections like "Slides" and "Shapes" before we can fully verify load and sync behavior.
+// For now, we're using and not completely mocked object to verify the general flow.
+
+const slide = {
+  shapes: {
+    addTextBox: function (text: string, options: any) {
+      const shape = {
+        name: "",
+        textFrame: {
+          textRange: {
+            text: text,
+          },
+        },
+      };
+      this.items.push(shape);
+      return shape;
+    },
+    items: [],
+  },
+};
+
 const PowerPointMockData = {
   context: {
-    document: {
-      setSelectedDataAsync: function (data: string, options?) {
-        this.data = data;
-        this.options = options;
+    presentation: {
+      slides: {
+        getItemAt(index: number) {
+          return slide;
+        },
       },
     },
   },
-  CoercionType: {
-    Text: {},
+  run: async function (callback) {
+    await callback(this.context);
   },
+};
+
+const OfficeMockData = {
   onReady: async function () {},
 };
 
 describe("PowerPoint", function () {
   it("Run", async function () {
-    const officeMock: OfficeMockObject = new OfficeMockObject(PowerPointMockData); // Mocking the common office-js namespace
-    global.Office = officeMock as any;
+    
+    const pptMock: OfficeMockObject = new OfficeMockObject(PowerPointMockData); // Mocking the host specific namespace
+    global.PowerPoint = pptMock as any;
+    global.Office = new OfficeMockObject(OfficeMockData) as any; // Mocking the common office-js namespace
 
     const { run } = require("../../src/taskpane/powerpoint");
     await run();
 
-    assert.strictEqual(officeMock.context.document.data, "Hello World!");
+    // Check that a text box was added with the correct text
+    assert.strictEqual(slide.shapes.items[0].textFrame.textRange.text, "Hello World!");
   });
 });
