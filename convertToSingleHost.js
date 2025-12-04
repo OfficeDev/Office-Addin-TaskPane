@@ -60,10 +60,15 @@ async function modifyProjectForSingleHost(host) {
   await convertProjectToSingleHost(host, manifestType);
 
   await updatePackageJsonForSingleHost(host, manifestType);
-  await updateLaunchJsonFile(host);
+  await updateLaunchJsonFile();
 }
 
 async function convertProjectToSingleHost(host, manifestType) {
+  const commandsSupportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
+  if (!commandsSupportedHosts.includes(host)) {
+    throw new Error(`'${host}' does not support commands.`);
+  }
+
   // Copy host-specific manifest over manifest file
   const manifestPath = `./manifest.${host}.${manifestType}`;
   if (fs.existsSync(manifestPath)) {
@@ -74,23 +79,32 @@ async function convertProjectToSingleHost(host, manifestType) {
   // Copy over host-specific taskpane code to taskpane.ts
   const taskpaneFilePath = "./src/taskpane/taskpane.ts";
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
+  
+  // Copy over host-specific commands code to commands.ts
+  const commandsContent = await readFileAsync(`./src/commands/commands.${host}.ts`, "utf8");
+  await writeFileAsync('./src/commands/commands.ts', commandsContent);
 
-  for (const host of hosts) {
-    if (!targetHosts.includes(host)) {
-      if (fs.existsSync(`./src/taskpane/${host}.ts`)) {
-        await unlinkFileAsync(`./src/taskpane/${host}.ts`);
+  for (const hostName of hosts) {
+    if (!targetHosts.includes(hostName)) {
+      if (fs.existsSync(`./src/taskpane/${hostName}.ts`)) {
+        await unlinkFileAsync(`./src/taskpane/${hostName}.ts`);
       }
       // remove unneeded imports
-      taskpaneContent = taskpaneContent.replace(`import "./${host}";`, "").replace(/^\s*[\r\n]/gm, "");
+      taskpaneContent = taskpaneContent.replace(`import "./${hostName}";`, "").replace(/^\s*[\r\n]/gm, "");
     }
     // Remove unneeded manifest templates
-    if (fs.existsSync(`./manifest.${host}.${manifestType}`)) {
-      await unlinkFileAsync(`./manifest.${host}.${manifestType}`);
+    if (fs.existsSync(`./manifest.${hostName}.${manifestType}`)) {
+      await unlinkFileAsync(`./manifest.${hostName}.${manifestType}`);
+    }
+    // Remove unneeded commands files
+    if (targetHosts.length === 1 || (targetHosts.length > 1 && !targetHosts.includes(hostName))) {
+      if (fs.existsSync(`./src/commands/commands.${hostName}.ts`)) {
+        await unlinkFileAsync(commandsFile);
+      }
     }
   }
+  
   await writeFileAsync(taskpaneFilePath, taskpaneContent);
-
-  await modifyCommandsFile(host);
 
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
@@ -108,7 +122,13 @@ async function convertProjectToSingleHost(host, manifestType) {
 async function updatePackageJsonForSingleHost(host, manifestType) {
   // Update package.json to reflect selected host
   const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
+  let data = await readFileAsync(packageJson, "utf8");
+  
+  if (manifestType === "json") {
+    // Change manifest file name extension
+    data = data.replace(/\.xml/g, ".json");
+  }
+  
   let content = JSON.parse(data);
 
   // Update 'config' section in package.json to use selected host
@@ -116,15 +136,6 @@ async function updatePackageJsonForSingleHost(host, manifestType) {
 
   // Remove 'engines' section
   delete content.engines;
-
-  if (manifestType === "json") {
-    // Change manifest file name extension
-    for (const key of Object.keys(content.scripts)) {
-      if (content.scripts[key].includes(".xml")) {
-        content.scripts[key] = content.scripts[key].replace(".xml", ".json");
-      }
-    }
-  }
 
   // Remove scripts that are unrelated to the selected host
   for (const key of Object.keys(content.scripts)) {
@@ -151,37 +162,17 @@ async function updatePackageJsonForSingleHost(host, manifestType) {
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
-async function updateLaunchJsonFile(host) {
+async function updateLaunchJsonFile() {
   // Remove 'Debug Tests' configuration from launch.json
   const launchJson = `.vscode/launch.json`;
   const launchJsonContent = await readFileAsync(launchJson, "utf8");
   let content = JSON.parse(launchJsonContent);
-  const targetConfigurations = targetHosts.flatMap(function (host) {
-    return content.configurations.filter(function (config) {
-      return config.name.startsWith(getHostName(host));
+  content.configurations = content.configurations.filter(function (config) {
+    return targetHosts.some((host) => {
+      return config.name.toLowerCase().startsWith(host);
     });
   });
-  content.configurations = targetConfigurations;
   await writeFileAsync(launchJson, JSON.stringify(content, null, 2));
-}
-
-function getHostName(host) {
-  switch (host) {
-    case "excel":
-      return "Excel";
-    case "onenote":
-      return "OneNote";
-    case "outlook":
-      return "Outlook";
-    case "powerpoint":
-      return "PowerPoint";
-    case "project":
-      return "Project";
-    case "word":
-      return "Word";
-    default:
-      throw new Error(`'${host}' is not a supported host.`);
-  }
 }
 
 function deleteFolder(folder) {
@@ -238,25 +229,6 @@ async function updateWebpackConfigForJSONManifest() {
   const webPackContent = await readFileAsync(webPack, "utf8");
   const updatedContent = webPackContent.replace(".xml", ".json");
   await writeFileAsync(webPack, updatedContent);
-}
-
-
-async function modifyCommandsFile(host) {
-  const supportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
-  if (!supportedHosts.includes(host)) {
-    throw new Error(`'${host}' is not a supported host.`);
-  }
-
-  // Write the host command file content to commands.ts
-  const fileContent = await readFileAsync(`./src/commands/commands.${host}.ts`, "utf8");
-  await writeFileAsync("./src/commands/commands.ts", fileContent);
-
-  for (const iter of supportedHosts) {
-    // remove all commands.${host}.ts
-    if ((targetHosts.length === 1 || (targetHosts.length > 1 && !targetHosts.includes(iter))) && fs.existsSync(`./src/commands/commands.${iter}.ts`)) {
-      await unlinkFileAsync(`./src/commands/commands.${iter}.ts`);
-    }
-  }
 }
 
 async function modifyProjectForJSONManifest() {
