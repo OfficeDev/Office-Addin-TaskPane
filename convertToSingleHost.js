@@ -5,6 +5,8 @@ const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+const commandsSupportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
+
 
 if (process.argv.length <= 2) {
   const hostList = hosts.map((host) => `'${host}'`).join(", ");
@@ -56,6 +58,9 @@ async function modifyProjectForSingleHost(host) {
   if (manifestType === "xml" && targetHosts.length > 1) {
     throw new Error(`Multiple hosts are not supported for ${manifestType} manifest.`);
   }
+  if (!commandsSupportedHosts.includes(host)) {
+    throw new Error(`'${host}' does not support commands.`);
+  }
 
   await convertProjectToSingleHost(host, manifestType);
 
@@ -64,10 +69,6 @@ async function modifyProjectForSingleHost(host) {
 }
 
 async function convertProjectToSingleHost(host, manifestType) {
-  const commandsSupportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
-  if (!commandsSupportedHosts.includes(host)) {
-    throw new Error(`'${host}' does not support commands.`);
-  }
 
   // Copy host-specific manifest over manifest file
   const manifestPath = `./manifest.${host}.${manifestType}`;
@@ -81,26 +82,26 @@ async function convertProjectToSingleHost(host, manifestType) {
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
   
   // Copy over host-specific commands code to commands.ts
-  const commandsContent = await readFileAsync(`./src/commands/commands.${host}.ts`, "utf8");
-  await writeFileAsync('./src/commands/commands.ts', commandsContent);
+  const commandsContent = await readFileAsync(`./src/commands/commands.ts`, "utf8");
 
   for (const hostName of hosts) {
     if (!targetHosts.includes(hostName)) {
       if (fs.existsSync(`./src/taskpane/${hostName}.ts`)) {
         await unlinkFileAsync(`./src/taskpane/${hostName}.ts`);
       }
-      // remove unneeded imports
+      // remove unneeded imports from taskpane
       taskpaneContent = taskpaneContent.replace(`import "./${hostName}";`, "").replace(/^\s*[\r\n]/gm, "");
+
+      // remove unneeded commands files
+      if (fs.existsSync(`./src/commands/commands.${hostName}.ts`)) {
+        await unlinkFileAsync(`./src/commands/commands.${hostName}.ts`);
+      }
+      // remove unneeded imports from commands
+      commandsContent = commandsContent.replace(`import "./commands.${hostName}";`, "").replace(/^\s*[\r\n]/gm, "");
     }
     // Remove unneeded manifest templates
     if (fs.existsSync(`./manifest.${hostName}.${manifestType}`)) {
       await unlinkFileAsync(`./manifest.${hostName}.${manifestType}`);
-    }
-    // Remove unneeded commands files
-    if (targetHosts.length === 1 || (targetHosts.length > 1 && !targetHosts.includes(hostName))) {
-      if (fs.existsSync(`./src/commands/commands.${hostName}.ts`)) {
-        await unlinkFileAsync(commandsFile);
-      }
     }
   }
   
