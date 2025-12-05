@@ -82,7 +82,7 @@ async function convertProjectToSingleHost(host, manifestType) {
   let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
   
   // Copy over host-specific commands code to commands.ts
-  const commandsContent = await readFileAsync(`./src/commands/commands.ts`, "utf8");
+  let commandsContent = await readFileAsync(`./src/commands/commands.ts`, "utf8");
 
   for (const hostName of hosts) {
     if (!targetHosts.includes(hostName)) {
