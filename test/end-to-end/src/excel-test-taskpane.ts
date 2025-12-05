@@ -1,5 +1,5 @@
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
-import { run } from "../../../src/taskpane/excel";
+import { runExcel } from "../../../src/taskpane/excel";
 import * as testHelpers from "./test-helpers";
 
 /* global Excel, Office */
@@ -18,7 +18,7 @@ Office.onReady(async (info) => {
 
 export async function runTest(): Promise<void> {
   // Execute taskpane code
-  await run();
+  await runExcel();
   await testHelpers.sleep(2000);
 
   // Get output of executed taskpane code

@@ -1,5 +1,5 @@
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
-import { run } from "../../../src/taskpane/word";
+import { runWord } from "../../../src/taskpane/word";
 import * as testHelpers from "./test-helpers";
 
 /* global Office, Word */
@@ -18,7 +18,7 @@ Office.onReady(async (info) => {
 
 export async function runTest() {
   // Execute taskpane code
-  await run();
+  await runWord();
   await testHelpers.sleep(2000);
 
   // Get output of executed taskpane code

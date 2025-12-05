@@ -33,8 +33,8 @@ describe("Excel", function () {
     global.Excel = excelMock as any;
     global.Office = new OfficeMockObject(OfficeMockData) as any; // Mocking the common office-js namespace
 
-    const { run } = require("../../src/taskpane/excel");
-    await run();
+    const { runExcel } = require("../../src/taskpane/excel");
+    await runExcel();
 
     assert.strictEqual(excelMock.context.workbook.range.format.fill.color, "yellow");
   });
