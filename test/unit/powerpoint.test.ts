@@ -51,8 +51,8 @@ describe("PowerPoint", function () {
     global.PowerPoint = pptMock as any;
     global.Office = new OfficeMockObject(OfficeMockData) as any; // Mocking the common office-js namespace
 
-    const { run } = require("../../src/taskpane/powerpoint");
-    await run();
+    const { runPowerPoint } = require("../../src/taskpane/powerpoint");
+    await runPowerPoint();
 
     // Check that a text box was added with the correct text
     assert.strictEqual(slide.shapes.items[0].textFrame.textRange.text, "Hello World!");

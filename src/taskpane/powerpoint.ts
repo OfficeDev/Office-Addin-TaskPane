@@ -9,11 +9,11 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.PowerPoint) {
     document.getElementById("sideload-msg").style.display = "none";
     document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = run;
+    document.getElementById("run").onclick = runPowerPoint;
   }
 });
 
-export async function run() {
+export async function runPowerPoint() {
   /**
    * Insert your PowerPoint code here
    */

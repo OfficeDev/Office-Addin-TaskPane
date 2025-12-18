@@ -9,11 +9,11 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.Project) {
     document.getElementById("sideload-msg").style.display = "none";
     document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = run;
+    document.getElementById("run").onclick = runProject;
   }
 });
 
-export async function run() {
+export async function runProject() {
   try {
     // Get the GUID of the selected task
     Office.context.document.getSelectedTaskAsync((result) => {

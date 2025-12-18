@@ -1,5 +1,5 @@
 import { pingTestServer, sendTestResults } from "office-addin-test-helpers";
-import { run } from "../../../src/taskpane/powerpoint";
+import { runPowerPoint } from "../../../src/taskpane/powerpoint";
 import * as testHelpers from "./test-helpers";
 
 /* global Office, Promise */
@@ -37,7 +37,7 @@ async function getText(): Promise<string> {
 
 export async function runTest(): Promise<void> {
   // Execute taskpane code
-  await run();
+  await runPowerPoint();
   await testHelpers.sleep(2000);
 
   // get inserted selected text

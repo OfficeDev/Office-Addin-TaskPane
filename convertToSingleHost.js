@@ -5,6 +5,8 @@ const path = require("path");
 const util = require("util");
 const childProcess = require("child_process");
 const hosts = ["excel", "onenote", "outlook", "powerpoint", "project", "word"];
+const commandsSupportedHosts = ["word", "excel", "powerpoint", "outlook", "wxpo"];
+
 
 if (process.argv.length <= 2) {
   const hostList = hosts.map((host) => `'${host}'`).join(", ");
@@ -19,7 +21,8 @@ if (process.argv.length <= 2) {
 }
 
 const host = process.argv[2];
-const manifestType = process.argv[3];
+const targetHosts = host == "wxpo" ? ["excel", "word", "powerpoint", "outlook"] : [host];
+const manifestType = process.argv[3] || "xml";
 const projectName = process.argv[4];
 let appId = process.argv[5];
 const testPackages = [
@@ -36,32 +39,75 @@ const unlinkFileAsync = util.promisify(fs.unlink);
 const writeFileAsync = util.promisify(fs.writeFile);
 
 async function modifyProjectForSingleHost(host) {
-  if (!host) {
-    throw new Error("The host was not provided.");
+  if (!targetHosts || targetHosts.length === 0) {
+    throw new Error("No target hosts were provided.");
   }
-  if (!hosts.includes(host)) {
-    throw new Error(`'${host}' is not a supported host.`);
+  
+  // Validate all target hosts
+  for (const targetHost of targetHosts) {
+    if (!hosts.includes(targetHost)) {
+      throw new Error(`'${targetHost}' is not a supported host.`);
+    }
   }
-  await convertProjectToSingleHost(host);
-  await updatePackageJsonForSingleHost(host);
-  await updateLaunchJsonFile(host);
+  
+  // Check for unsupported combinations
+  const unsupportedJSONHosts = targetHosts.filter(h => h === "onenote" || h === "project");
+  if (manifestType === "json" && unsupportedJSONHosts.length > 0) {
+    throw new Error(`'${unsupportedJSONHosts.join(", ")}' is not supported for ${manifestType} manifest.`);
+  }
+  if (manifestType === "xml" && targetHosts.length > 1) {
+    throw new Error(`Multiple hosts are not supported for ${manifestType} manifest.`);
+  }
+  if (!commandsSupportedHosts.includes(host)) {
+    throw new Error(`'${host}' does not support commands.`);
+  }
+
+  await convertProjectToSingleHost(host, manifestType);
+
+  await updatePackageJsonForSingleHost(host, manifestType);
+  await updateLaunchJsonFile();
 }
 
-async function convertProjectToSingleHost(host) {
-  // Copy host-specific manifest over manifest.xml
-  const manifestContent = await readFileAsync(`./manifest.${host}.xml`, "utf8");
-  await writeFileAsync(`./manifest.xml`, manifestContent);
+async function convertProjectToSingleHost(host, manifestType) {
+
+  // Copy host-specific manifest over manifest file
+  const manifestPath = `./manifest.${host}.${manifestType}`;
+  if (fs.existsSync(manifestPath)) {
+    let manifestContent = await readFileAsync(manifestPath, "utf8");
+    await writeFileAsync(`./manifest.${manifestType}`, manifestContent);
+  }
 
   // Copy over host-specific taskpane code to taskpane.ts
-  const srcContent = await readFileAsync(`./src/taskpane/${host}.ts`, "utf8");
-  await writeFileAsync(`./src/taskpane/taskpane.ts`, srcContent);
+  const taskpaneFilePath = "./src/taskpane/taskpane.ts";
+  let taskpaneContent = await readFileAsync(taskpaneFilePath, "utf8");
+  
+  // Copy over host-specific commands code to commands.ts
+  const commandsFilePath = "./src/commands/commands.ts";
+  let commandsContent = await readFileAsync(commandsFilePath, "utf8");
 
-  // Delete all host-specific files
-  hosts.forEach(async function (host) {
-    await unlinkFileAsync(`./manifest.${host}.xml`);
-    await unlinkFileAsync(`./src/taskpane/${host}.ts`);
-  });
+  for (const hostName of hosts) {
+    if (!targetHosts.includes(hostName)) {
+      if (fs.existsSync(`./src/taskpane/${hostName}.ts`)) {
+        await unlinkFileAsync(`./src/taskpane/${hostName}.ts`);
+      }
+      // remove unneeded imports from taskpane
+      taskpaneContent = taskpaneContent.replace(`import "./${hostName}";`, "").replace(/^\s*[\r\n]/gm, "");
 
+      // remove unneeded commands files
+      if (fs.existsSync(`./src/commands/commands.${hostName}.ts`)) {
+        await unlinkFileAsync(`./src/commands/commands.${hostName}.ts`);
+      }
+      // remove unneeded imports from commands
+      commandsContent = commandsContent.replace(`import "./commands.${hostName}";`, "").replace(/^\s*[\r\n]/gm, "");
+    }
+    // Remove unneeded manifest templates
+    if (fs.existsSync(`./manifest.${hostName}.${manifestType}`)) {
+      await unlinkFileAsync(`./manifest.${hostName}.${manifestType}`);
+    }
+  }
+  
+  await writeFileAsync(taskpaneFilePath, taskpaneContent);
+  await writeFileAsync(commandsFilePath, commandsContent);
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
 
@@ -75,71 +121,60 @@ async function convertProjectToSingleHost(host) {
   await deleteSupportFiles();
 }
 
-async function updatePackageJsonForSingleHost(host) {
+async function updatePackageJsonForSingleHost(host, manifestType) {
   // Update package.json to reflect selected host
   const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
+  let data = await readFileAsync(packageJson, "utf8");
+  
+  if (manifestType === "json") {
+    // Change manifest file name extension
+    data = data.replace(/\.xml/g, ".json");
+  }
+  
   let content = JSON.parse(data);
 
   // Update 'config' section in package.json to use selected host
-  content.config["app_to_debug"] = host;
+  content.config["app_to_debug"] = targetHosts[0];
 
   // Remove 'engines' section
   delete content.engines;
 
   // Remove scripts that are unrelated to the selected host
-  Object.keys(content.scripts).forEach(function (key) {
+  for (const key of Object.keys(content.scripts)) {
     if (key === "convert-to-single-host") {
       delete content.scripts[key];
     }
-  });
+  }
 
   // Remove test-related scripts
-  Object.keys(content.scripts).forEach(function (key) {
+  for (const key of Object.keys(content.scripts)) {
     if (key.includes("test")) {
       delete content.scripts[key];
     }
-  });
+  }
 
   // Remove test-related packages
-  Object.keys(content.devDependencies).forEach(function (key) {
+  for (const key of Object.keys(content.devDependencies)) {
     if (testPackages.includes(key)) {
       delete content.devDependencies[key];
     }
-  });
+  }
 
   // Write updated JSON to file
   await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
 }
 
-async function updateLaunchJsonFile(host) {
+async function updateLaunchJsonFile() {
   // Remove 'Debug Tests' configuration from launch.json
   const launchJson = `.vscode/launch.json`;
   const launchJsonContent = await readFileAsync(launchJson, "utf8");
   let content = JSON.parse(launchJsonContent);
   content.configurations = content.configurations.filter(function (config) {
-    return config.name.startsWith(getHostName(host));
+    return targetHosts.some((host) => {
+      return config.name.toLowerCase().startsWith(host);
+    });
   });
   await writeFileAsync(launchJson, JSON.stringify(content, null, 2));
-}
-
-function getHostName(host) {
-  switch (host) {
-    case "excel":
-      return "Excel";
-    case "onenote":
-      return "OneNote";
-    case "outlook":
-      return "Outlook";
-    case "powerpoint":
-      return "PowerPoint";
-    case "project":
-      return "Project";
-    case "word":
-      return "Word";
-    default:
-      throw new Error(`'${host}' is not a supported host.`);
-  }
 }
 
 function deleteFolder(folder) {
@@ -173,72 +208,22 @@ async function deleteSupportFiles() {
 
 async function deleteJSONManifestRelatedFiles() {
   await unlinkFileAsync("manifest.json");
+  for (const host of hosts) {
+    if (fs.existsSync(`./manifest.${host}.json`)) {
+      await unlinkFileAsync(`manifest.${host}.json`);
+    }
+  }
   await unlinkFileAsync("assets/color.png");
   await unlinkFileAsync("assets/outline.png");
 }
 
 async function deleteXMLManifestRelatedFiles() {
   await unlinkFileAsync("manifest.xml");
-}
-
-async function updatePackageJsonForXMLManifest() {
-  const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
-  let content = JSON.parse(data);
-
-  // Write updated JSON to file
-  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
-}
-
-async function updatePackageJsonForJSONManifest() {
-  const packageJson = `./package.json`;
-  const data = await readFileAsync(packageJson, "utf8");
-  let content = JSON.parse(data);
-
-  // Change manifest file name extension
-  content.scripts.start = "office-addin-debugging start manifest.json";
-  content.scripts.stop = "office-addin-debugging stop manifest.json";
-  content.scripts.validate = "office-addin-manifest validate manifest.json";
-
-  // Write updated JSON to file
-  await writeFileAsync(packageJson, JSON.stringify(content, null, 2));
-}
-
-async function updateTasksJsonFileForJSONManifest() {
-  const tasksJson = `.vscode/tasks.json`;
-  const data = await readFileAsync(tasksJson, "utf8");
-  let content = JSON.parse(data);
-
-  content.tasks.forEach(function (task) {
-    if (task.label.startsWith("Build")) {
-      task.dependsOn = ["Install"];
-    }
-    if (task.label === "Debug: Outlook Desktop") {
-      task.script = "start";
-      task.dependsOn = ["Check OS", "Install"];
+  hosts.forEach(async function (host) {
+    if (fs.existsSync(`./manifest.${host}.xml`)) {
+      await unlinkFileAsync(`manifest.${host}.xml`);
     }
   });
-
-  const checkOSTask = {
-    label: "Check OS",
-    type: "shell",
-    windows: {
-      command: "echo 'Sideloading in Outlook on Windows is supported'",
-    },
-    linux: {
-      command: "echo 'Sideloading on Linux is not supported' && exit 1",
-    },
-    osx: {
-      command: "echo 'Sideloading in Outlook on Mac is not supported' && exit 1",
-    },
-    presentation: {
-      clear: true,
-      panel: "dedicated",
-    },
-  };
-
-  content.tasks.push(checkOSTask);
-  await writeFileAsync(tasksJson, JSON.stringify(content, null, 2));
 }
 
 async function updateWebpackConfigForJSONManifest() {
@@ -249,9 +234,7 @@ async function updateWebpackConfigForJSONManifest() {
 }
 
 async function modifyProjectForJSONManifest() {
-  await updatePackageJsonForJSONManifest();
   await updateWebpackConfigForJSONManifest();
-  await updateTasksJsonFileForJSONManifest();
   await deleteXMLManifestRelatedFiles();
 }
 
@@ -266,10 +249,9 @@ modifyProjectForSingleHost(host).catch((err) => {
 
 let manifestPath = "manifest.xml";
 
-if (host !== "outlook" || manifestType !== "json") {
+if (manifestType !== "json") {
   // Remove things that are only relevant to JSON manifest
   deleteJSONManifestRelatedFiles();
-  updatePackageJsonForXMLManifest();
 } else {
   manifestPath = "manifest.json";
   modifyProjectForJSONManifest().catch((err) => {
@@ -289,8 +271,10 @@ if (projectName) {
     if (error) {
       console.error(`Error updating the manifest: ${error}`);
       process.exitCode = 1;
+      Promise.reject(stdout);
     } else {
       console.log(stdout);
+      Promise.resolve();
     }
   });
 }
