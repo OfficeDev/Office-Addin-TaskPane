@@ -19,6 +19,10 @@ extends:
       jobs:
       - job: Windows_Latest
         steps:
+        - task: NodeTool@0
+          displayName: 'Use Node 22.x'
+          inputs:
+            versionSpec: '22.x'
         - template: /.azure-devops/install.yml@self
         - template: /.azure-devops/lint.yml@self
         - template: /.azure-devops/build.yml@self

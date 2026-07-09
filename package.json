@@ -12,7 +12,7 @@
     "dev_server_port": 3000
   },
   "engines": {
-    "node": ">=20 <25",
+    "node": ">=22 <25",
     "npm": ">=9 <12"
   },
   "scripts": {

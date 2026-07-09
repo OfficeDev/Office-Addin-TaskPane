@@ -204,6 +204,9 @@ async function deleteSupportFiles() {
   await unlinkFileAsync("./convertToSingleHost.js");
   await unlinkFileAsync(".npmrc");
   await unlinkFileAsync("package-lock.json");
+  if (fs.existsSync(".mocharc.json")) {
+    await unlinkFileAsync(".mocharc.json");
+  }
 }
 
 async function deleteJSONManifestRelatedFiles() {

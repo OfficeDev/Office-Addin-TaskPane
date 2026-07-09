@@ -12,6 +12,9 @@ import * as testHelpers from "./src/test-helpers";
 const hosts = ["Excel", "PowerPoint", "Word"];
 const manifestPath = path.resolve(`${process.cwd()}/test/end-to-end/test-manifest.xml`);
 const testServerPort: number = 4201;
+// Finite timeout so a stuck sideload fails within minutes instead of hanging
+// until the CI job's timeout cancels the whole run.
+const testTimeout: number = 5 * 60 * 1000;
 
 hosts.forEach(function (host) {
   const testServer = new officeAddinTestServer.TestServer(testServerPort);
@@ -19,7 +22,7 @@ hosts.forEach(function (host) {
 
   describe(`Test ${host} Task Pane Project`, function () {
     before(`Setup test environment and sideload ${host}`, async function () {
-      this.timeout(0);
+      this.timeout(testTimeout);
       // Start test server and ping to ensure it's started
       const testServerStarted = await testServer.startTestServer(true /* mochaTest */);
       const serverResponse = await officeAddinTestHelpers.pingTestServer(testServerPort);
@@ -39,7 +42,7 @@ hosts.forEach(function (host) {
     }),
       describe(`Get test results for ${host} taskpane project`, function () {
         it("Validate expected result count", async function () {
-          this.timeout(0);
+          this.timeout(testTimeout);
           testValues = await testServer.getTestResults();
           assert.strictEqual(testValues.length > 0, true);
         });
@@ -54,7 +57,7 @@ hosts.forEach(function (host) {
         });
       });
     after(`Teardown test environment and shutdown ${host}`, async function () {
-      this.timeout(0);
+      this.timeout(testTimeout);
       // Stop the test server
       const stopTestServer = await testServer.stopTestServer();
       assert.strictEqual(stopTestServer, true);
