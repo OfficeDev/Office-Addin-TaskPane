@@ -12,6 +12,7 @@ import * as testHelpers from "./src/test-helpers";
 const hosts = ["Excel", "PowerPoint", "Word"];
 const manifestPath = path.resolve(`${process.cwd()}/test/end-to-end/test-manifest.xml`);
 const testServerPort: number = 4201;
+const testResultsTimeout: number = 120000; // 2 minutes to receive results before failing
 
 hosts.forEach(function (host) {
   const testServer = new officeAddinTestServer.TestServer(testServerPort);
@@ -39,9 +40,32 @@ hosts.forEach(function (host) {
     }),
       describe(`Get test results for ${host} taskpane project`, function () {
         it("Validate expected result count", async function () {
-          this.timeout(0);
-          testValues = await testServer.getTestResults();
-          assert.strictEqual(testValues.length > 0, true);
+          this.timeout(testResultsTimeout + 10000);
+          testValues = await Promise.race([
+            testServer.getTestResults(),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error(
+                `[${host}] Timed out after ${testResultsTimeout / 1000}s waiting for test results. ` +
+                `The add-in taskpane likely failed to initialize or encountered an unhandled error.`
+              )), testResultsTimeout)
+            ),
+          ]);
+
+          // Log diagnostic steps received from the taskpane (visible in pipeline output)
+          const diagnostics = testValues.find((v: any) => v.resultName === "diagnostic-steps");
+          if (diagnostics) {
+            console.log(`  [${host} Diagnostics] ${diagnostics.resultValue}`);
+          }
+
+          // Check if the taskpane reported an error
+          const errorResult = testValues.find((v: any) => v.resultName === "test-error");
+          if (errorResult) {
+            assert.fail(`[${host}] Taskpane reported error: ${errorResult.resultValue}`);
+          }
+
+          // Filter out diagnostic entries for actual result validation
+          testValues = testValues.filter((v: any) => v.resultName !== "diagnostic-steps");
+          assert.strictEqual(testValues.length > 0, true, `No test results received from ${host} add-in`);
         });
         it("Validate expected result name", async function () {
           assert.strictEqual(
@@ -49,7 +73,7 @@ hosts.forEach(function (host) {
             host.toLowerCase() === "excel" ? "fill-color" : "output-message"
           );
         });
-        it("Validate expected result", async function () {
+        it("Validate expected result value", async function () {
           assert.strictEqual(testValues[0].resultValue, testValues[0].expectedValue);
         });
       });

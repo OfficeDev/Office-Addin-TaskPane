@@ -6,32 +6,61 @@ import * as testHelpers from "./test-helpers";
 
 const port: number = 4201;
 let testValues: any = [];
+const steps: string[] = [];
 
 Office.onReady(async (info) => {
+  steps.push(`Office.onReady: host=${info.host}, platform=${info.platform}`);
   if (info.host === Office.HostType.Excel) {
-    const testServerResponse: object = await pingTestServer(port);
-    if (testServerResponse["status"] == 200) {
-      await runTest();
+    try {
+      steps.push("pingTestServer");
+      const testServerResponse: object = await pingTestServer(port);
+      if (testServerResponse["status"] == 200) {
+        steps.push("ping OK, running test");
+        await runTest();
+      } else {
+        steps.push(`ping returned unexpected status: ${JSON.stringify(testServerResponse)}`);
+        testHelpers.addTestResult(testValues, "test-error", `Ping failed: ${JSON.stringify(testServerResponse)}`, "no-error");
+        testHelpers.addDiagnosticResult(testValues, steps);
+        await sendTestResults(testValues, port).catch(() => {});
+      }
+    } catch (err) {
+      steps.push(`initialization error: ${err}`);
+      testHelpers.addTestResult(testValues, "test-error", `Initialization failed: ${err}`, "no-error");
+      testHelpers.addDiagnosticResult(testValues, steps);
+      await sendTestResults(testValues, port).catch(() => {});
     }
   }
 });
 
 export async function runTest(): Promise<void> {
-  // Execute taskpane code
-  await runExcel();
-  await testHelpers.sleep(2000);
-
-  // Get output of executed taskpane code
-  return Excel.run(async (context) => {
-    const range = context.workbook.getSelectedRange();
-    const cellFill = range.format.fill;
-    cellFill.load("color");
-    await context.sync();
+  try {
+    steps.push("runExcel start");
+    await runExcel();
+    steps.push("runExcel complete");
     await testHelpers.sleep(2000);
 
-    testHelpers.addTestResult(testValues, "fill-color", cellFill.color, "#FFFF00");
-    await sendTestResults(testValues, port);
-    testValues.pop();
-    await testHelpers.closeWorkbook();
-  });
+    steps.push("Excel.run start");
+    return Excel.run(async (context) => {
+      const range = context.workbook.getSelectedRange();
+      const cellFill = range.format.fill;
+      cellFill.load("color");
+      await context.sync();
+      steps.push("context.sync complete");
+      await testHelpers.sleep(2000);
+
+      steps.push(`fill color: ${cellFill.color}`);
+      testHelpers.addTestResult(testValues, "fill-color", cellFill.color, "#FFFF00");
+      testHelpers.addDiagnosticResult(testValues, steps);
+      await sendTestResults(testValues, port);
+      testValues.pop();
+      testValues.pop();
+      await testHelpers.closeWorkbook();
+    });
+  } catch (err) {
+    steps.push(`runTest error: ${err}`);
+    testValues = [];
+    testHelpers.addTestResult(testValues, "test-error", `runTest failed: ${err}`, "no-error");
+    testHelpers.addDiagnosticResult(testValues, steps);
+    await sendTestResults(testValues, port).catch(() => {});
+  }
 }

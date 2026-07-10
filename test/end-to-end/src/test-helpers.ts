@@ -55,6 +55,14 @@ export function addTestResult(testValues: any[], resultName: string, resultValue
   testValues.push(data);
 }
 
+export function addDiagnosticResult(testValues: any[], steps: string[]) {
+  testValues.push({
+    resultName: "diagnostic-steps",
+    resultValue: steps.join(" -> "),
+    expectedValue: "diagnostic",
+  });
+}
+
 export async function sleep(ms: number): Promise<any> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
