@@ -19,13 +19,13 @@ Office.onReady(async (info) => {
         await runTest();
       } else {
         steps.push(`ping returned unexpected status: ${JSON.stringify(testServerResponse)}`);
-        testHelpers.addTestResult(testValues, "test-error", `Ping failed: ${JSON.stringify(testServerResponse)}`, "no-error");
+        testHelpers.addErrorResult(testValues, `Ping failed: ${JSON.stringify(testServerResponse)}`);
         testHelpers.addDiagnosticResult(testValues, steps);
         await sendTestResults(testValues, port).catch(() => {});
       }
     } catch (err) {
-      steps.push(`initialization error: ${err}`);
-      testHelpers.addTestResult(testValues, "test-error", `Initialization failed: ${err}`, "no-error");
+      steps.push(`initialization error: ${testHelpers.formatError(err)}`);
+      testHelpers.addErrorResult(testValues, `Initialization failed: ${testHelpers.formatError(err)}`);
       testHelpers.addDiagnosticResult(testValues, steps);
       await sendTestResults(testValues, port).catch(() => {});
     }
@@ -55,9 +55,9 @@ export async function runTest() {
       testValues.pop();
     });
   } catch (err) {
-    steps.push(`runTest error: ${err}`);
+    steps.push(`runTest error: ${testHelpers.formatError(err)}`);
     testValues = [];
-    testHelpers.addTestResult(testValues, "test-error", `runTest failed: ${err}`, "no-error");
+    testHelpers.addErrorResult(testValues, `runTest failed: ${testHelpers.formatError(err)}`);
     testHelpers.addDiagnosticResult(testValues, steps);
     await sendTestResults(testValues, port).catch(() => {});
   }

@@ -52,9 +52,12 @@ hosts.forEach(function (host) {
           ]);
 
           // Log diagnostic steps received from the taskpane (visible in pipeline output)
-          const diagnostics = testValues.find((v: any) => v.resultName === "diagnostic-steps");
-          if (diagnostics) {
-            console.log(`  [${host} Diagnostics] ${diagnostics.resultValue}`);
+          const diagnosticSteps = testValues.filter((v: any) => v.resultName === "diagnostic-step");
+          if (diagnosticSteps.length > 0) {
+            console.log(`  [${host} Diagnostics]`);
+            diagnosticSteps.forEach((step: any, i: number) => {
+              console.log(`    Step ${i + 1}: ${step.resultValue}`);
+            });
           }
 
           // Check if the taskpane reported an error
@@ -63,8 +66,8 @@ hosts.forEach(function (host) {
             assert.fail(`[${host}] Taskpane reported error: ${errorResult.resultValue}`);
           }
 
-          // Filter out diagnostic entries for actual result validation
-          testValues = testValues.filter((v: any) => v.resultName !== "diagnostic-steps");
+          // Filter out diagnostic and error entries for actual result validation
+          testValues = testValues.filter((v: any) => v.resultName !== "diagnostic-step" && v.resultName !== "test-error");
           assert.strictEqual(testValues.length > 0, true, `No test results received from ${host} add-in`);
         });
         it("Validate expected result name", async function () {
