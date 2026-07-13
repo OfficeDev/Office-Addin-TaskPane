@@ -32,27 +32,23 @@ Office.onReady(async (info) => {
   }
 });
 
-async function waitForDocumentReady(maxRetries: number = 5): Promise<void> {
+async function retryOperation(operation: () => Promise<void>, maxRetries: number = 5, delayMs: number = 3000): Promise<void> {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      await Word.run(async (context) => {
-        context.document.body.load("text");
-        await context.sync();
-      });
+      await operation();
       return;
-    } catch {
-      await testHelpers.sleep(2000);
+    } catch (err) {
+      steps.push(`retry ${i + 1}/${maxRetries} failed: ${testHelpers.formatError(err)}`);
+      if (i === maxRetries - 1) throw err;
+      await testHelpers.sleep(delayMs);
     }
   }
 }
 
 export async function runTest() {
   try {
-    // Wait for Word document to be fully ready before interacting
-    steps.push("waiting for document ready");
-    await waitForDocumentReady();
     steps.push("runWord start");
-    await runWord();
+    await retryOperation(() => runWord());
     steps.push("runWord complete");
     await testHelpers.sleep(2000);
 
