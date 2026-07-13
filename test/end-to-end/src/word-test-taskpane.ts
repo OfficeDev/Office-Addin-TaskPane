@@ -33,65 +33,16 @@ Office.onReady(async (info) => {
 });
 
 async function getDocumentState(): Promise<string> {
-  const info: string[] = [];
   try {
-    await Word.run(async (context) => {
+    return await Word.run(async (context) => {
       const body = context.document.body;
       body.load("text,type");
       await context.sync();
-      info.push(`bodyText="${body.text.substring(0, 100)}"`);
-      info.push(`bodyType="${body.type}"`);
+      return `bodyText="${body.text.substring(0, 100)}", bodyType="${body.type}"`;
     });
   } catch (err) {
-    info.push(`body read failed: ${testHelpers.formatError(err)}`);
+    return `Failed to read doc state: ${testHelpers.formatError(err)}`;
   }
-
-  // Try desktop-only properties separately to avoid crashing if unsupported
-  try {
-    await Word.run(async (context) => {
-      const doc = context.document;
-      doc.load("saved");
-      await context.sync();
-      info.push(`saved=${doc.saved}`);
-    });
-  } catch {
-    info.push("saved=unsupported");
-  }
-
-  try {
-    await Word.run(async (context) => {
-      const doc = context.document;
-      doc.load("isReadOnly");
-      await context.sync();
-      info.push(`isReadOnly=${doc.isReadOnly}`);
-    });
-  } catch {
-    info.push("isReadOnly=unsupported");
-  }
-
-  try {
-    await Word.run(async (context) => {
-      const doc = context.document;
-      doc.load("protectionType");
-      await context.sync();
-      info.push(`protectionType=${doc.protectionType}`);
-    });
-  } catch {
-    info.push("protectionType=unsupported");
-  }
-
-  try {
-    await Word.run(async (context) => {
-      const doc = context.document;
-      doc.load("fullName");
-      await context.sync();
-      info.push(`fullName="${doc.fullName}"`);
-    });
-  } catch {
-    info.push("fullName=unsupported");
-  }
-
-  return info.join(", ");
 }
 
 export async function runTest() {
