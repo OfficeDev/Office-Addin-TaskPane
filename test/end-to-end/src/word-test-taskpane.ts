@@ -32,8 +32,25 @@ Office.onReady(async (info) => {
   }
 });
 
+async function waitForDocumentReady(maxRetries: number = 5): Promise<void> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await Word.run(async (context) => {
+        context.document.body.load("text");
+        await context.sync();
+      });
+      return;
+    } catch {
+      await testHelpers.sleep(2000);
+    }
+  }
+}
+
 export async function runTest() {
   try {
+    // Wait for Word document to be fully ready before interacting
+    steps.push("waiting for document ready");
+    await waitForDocumentReady();
     steps.push("runWord start");
     await runWord();
     steps.push("runWord complete");
