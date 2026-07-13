@@ -32,23 +32,39 @@ Office.onReady(async (info) => {
   }
 });
 
-async function retryOperation(operation: () => Promise<void>, maxRetries: number = 5, delayMs: number = 3000): Promise<void> {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      await operation();
-      return;
-    } catch (err) {
-      steps.push(`retry ${i + 1}/${maxRetries} failed: ${testHelpers.formatError(err)}`);
-      if (i === maxRetries - 1) throw err;
-      await testHelpers.sleep(delayMs);
-    }
+async function getDocumentState(): Promise<string> {
+  try {
+    return await Word.run(async (context) => {
+      const body = context.document.body;
+      body.load("text");
+      const properties = context.document.properties;
+      properties.load("title");
+      const contentControls = body.contentControls;
+      contentControls.load("items");
+      const sections = context.document.sections;
+      sections.load("items");
+      await context.sync();
+
+      const info: string[] = [];
+      info.push(`bodyText="${body.text.substring(0, 100)}"`);
+      info.push(`title="${properties.title}"`);
+      info.push(`contentControls=${contentControls.items.length}`);
+      info.push(`sections=${sections.items.length}`);
+      return info.join(", ");
+    });
+  } catch (err) {
+    return `Failed to read doc state: ${testHelpers.formatError(err)}`;
   }
 }
 
 export async function runTest() {
   try {
+    // Gather document state info for diagnostics
+    const docState = await getDocumentState();
+    steps.push(`document state: ${docState}`);
+
     steps.push("runWord start");
-    await retryOperation(() => runWord());
+    await runWord();
     steps.push("runWord complete");
     await testHelpers.sleep(2000);
 
