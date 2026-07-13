@@ -36,20 +36,32 @@ async function getDocumentState(): Promise<string> {
   try {
     return await Word.run(async (context) => {
       const body = context.document.body;
-      body.load("text");
+      body.load("text,type");
       const properties = context.document.properties;
       properties.load("title");
-      const contentControls = body.contentControls;
-      contentControls.load("items");
       const sections = context.document.sections;
       sections.load("items");
       await context.sync();
 
       const info: string[] = [];
       info.push(`bodyText="${body.text.substring(0, 100)}"`);
+      info.push(`bodyType="${body.type}"`);
       info.push(`title="${properties.title}"`);
-      info.push(`contentControls=${contentControls.items.length}`);
       info.push(`sections=${sections.items.length}`);
+
+      // Test if insertText works (different write method)
+      try {
+        const testRange = body.insertText("_test_", Word.InsertLocation.end);
+        await context.sync();
+        info.push("insertText=OK");
+        // Clean up
+        testRange.delete();
+        await context.sync();
+        info.push("delete=OK");
+      } catch (writeErr: any) {
+        info.push(`insertText=FAILED(${writeErr.code || writeErr.message || writeErr})`);
+      }
+
       return info.join(", ");
     });
   } catch (err) {
