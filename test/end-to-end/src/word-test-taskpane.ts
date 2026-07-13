@@ -35,32 +35,22 @@ Office.onReady(async (info) => {
 async function getDocumentState(): Promise<string> {
   try {
     return await Word.run(async (context) => {
-      const body = context.document.body;
+      const doc = context.document;
+      const body = doc.body;
       body.load("text,type");
-      const properties = context.document.properties;
-      properties.load("title");
-      const sections = context.document.sections;
-      sections.load("items");
+      doc.load("isReadOnly,protectionType,isFinal,isWriteReserved,path,fullName,saved");
       await context.sync();
 
       const info: string[] = [];
       info.push(`bodyText="${body.text.substring(0, 100)}"`);
       info.push(`bodyType="${body.type}"`);
-      info.push(`title="${properties.title}"`);
-      info.push(`sections=${sections.items.length}`);
-
-      // Test if insertText works (different write method)
-      try {
-        const testRange = body.insertText("_test_", Word.InsertLocation.end);
-        await context.sync();
-        info.push("insertText=OK");
-        // Clean up
-        testRange.delete();
-        await context.sync();
-        info.push("delete=OK");
-      } catch (writeErr: any) {
-        info.push(`insertText=FAILED(${writeErr.code || writeErr.message || writeErr})`);
-      }
+      info.push(`isReadOnly=${doc.isReadOnly}`);
+      info.push(`protectionType=${doc.protectionType}`);
+      info.push(`isFinal=${doc.isFinal}`);
+      info.push(`isWriteReserved=${doc.isWriteReserved}`);
+      info.push(`saved=${doc.saved}`);
+      info.push(`path="${doc.path}"`);
+      info.push(`fullName="${doc.fullName}"`);
 
       return info.join(", ");
     });
