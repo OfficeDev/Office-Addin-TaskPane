@@ -33,30 +33,65 @@ Office.onReady(async (info) => {
 });
 
 async function getDocumentState(): Promise<string> {
+  const info: string[] = [];
   try {
-    return await Word.run(async (context) => {
-      const doc = context.document;
-      const body = doc.body;
+    await Word.run(async (context) => {
+      const body = context.document.body;
       body.load("text,type");
-      doc.load("isReadOnly,protectionType,isFinal,isWriteReserved,path,fullName,saved");
       await context.sync();
-
-      const info: string[] = [];
       info.push(`bodyText="${body.text.substring(0, 100)}"`);
       info.push(`bodyType="${body.type}"`);
-      info.push(`isReadOnly=${doc.isReadOnly}`);
-      info.push(`protectionType=${doc.protectionType}`);
-      info.push(`isFinal=${doc.isFinal}`);
-      info.push(`isWriteReserved=${doc.isWriteReserved}`);
-      info.push(`saved=${doc.saved}`);
-      info.push(`path="${doc.path}"`);
-      info.push(`fullName="${doc.fullName}"`);
-
-      return info.join(", ");
     });
   } catch (err) {
-    return `Failed to read doc state: ${testHelpers.formatError(err)}`;
+    info.push(`body read failed: ${testHelpers.formatError(err)}`);
   }
+
+  // Try desktop-only properties separately to avoid crashing if unsupported
+  try {
+    await Word.run(async (context) => {
+      const doc = context.document;
+      doc.load("saved");
+      await context.sync();
+      info.push(`saved=${doc.saved}`);
+    });
+  } catch {
+    info.push("saved=unsupported");
+  }
+
+  try {
+    await Word.run(async (context) => {
+      const doc = context.document;
+      doc.load("isReadOnly");
+      await context.sync();
+      info.push(`isReadOnly=${doc.isReadOnly}`);
+    });
+  } catch {
+    info.push("isReadOnly=unsupported");
+  }
+
+  try {
+    await Word.run(async (context) => {
+      const doc = context.document;
+      doc.load("protectionType");
+      await context.sync();
+      info.push(`protectionType=${doc.protectionType}`);
+    });
+  } catch {
+    info.push("protectionType=unsupported");
+  }
+
+  try {
+    await Word.run(async (context) => {
+      const doc = context.document;
+      doc.load("fullName");
+      await context.sync();
+      info.push(`fullName="${doc.fullName}"`);
+    });
+  } catch {
+    info.push("fullName=unsupported");
+  }
+
+  return info.join(", ");
 }
 
 export async function runTest() {
