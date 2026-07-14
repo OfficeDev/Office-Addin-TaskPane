@@ -31,31 +31,29 @@ extends:
             script: |
               # Check Office licensing status
               Write-Host "=== Office Licensing Status ==="
-              $osppPaths = @(
-                "${env:ProgramFiles}\Microsoft Office\Office16\OSPP.VBS",
-                "${env:ProgramFiles(x86)}\Microsoft Office\Office16\OSPP.VBS",
-                "${env:ProgramFiles}\Microsoft Office\root\Office16\OSPP.VBS"
+              # For M365 Apps (subscription), use vnextdiag.ps1 instead of ospp.vbs
+              $vnextPaths = @(
+                "${env:ProgramFiles}\Microsoft Office\root\Office16\vnextdiag.ps1",
+                "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\vnextdiag.ps1"
               )
-              $osppFound = $false
-              foreach ($ospp in $osppPaths) {
-                if (Test-Path $ospp) {
-                  Write-Host "Using OSPP.VBS at: $ospp"
-                  cscript //nologo $ospp /dstatus
-                  $osppFound = $true
+              $diagFound = $false
+              foreach ($vnext in $vnextPaths) {
+                if (Test-Path $vnext) {
+                  Write-Host "Using vnextdiag.ps1 at: $vnext"
+                  & $vnext
+                  $diagFound = $true
                   break
                 }
               }
-              if (-not $osppFound) {
-                Write-Host "OSPP.VBS not found, checking registry for license state..."
-                $licPaths = @(
-                  "HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration",
-                  "HKLM:\SOFTWARE\Microsoft\Office\16.0\Common\Licensing"
-                )
-                foreach ($licPath in $licPaths) {
-                  if (Test-Path $licPath) {
-                    Write-Host "${licPath}:"
-                    Get-ItemProperty -Path $licPath | Format-List
-                  }
+              if (-not $diagFound) {
+                Write-Host "vnextdiag.ps1 not found, checking ClickToRun configuration..."
+                $c2rPath = "HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration"
+                if (Test-Path $c2rPath) {
+                  $c2r = Get-ItemProperty -Path $c2rPath
+                  Write-Host "ProductReleaseIds: $($c2r.ProductReleaseIds)"
+                  Write-Host "Platform: $($c2r.Platform)"
+                  Write-Host "VersionToReport: $($c2r.VersionToReport)"
+                  Write-Host "UpdateChannel: $($c2r.UpdateChannel)"
                 }
               }
               Write-Host "=== End Licensing Status ==="
