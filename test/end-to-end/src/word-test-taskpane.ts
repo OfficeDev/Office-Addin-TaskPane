@@ -9,7 +9,7 @@ let testValues: any = [];
 const steps: string[] = [];
 
 Office.onReady(async (info) => {
-  steps.push(`Office.onReady: host=${info.host}, platform=${info.platform}, version=${Office.context?.diagnostics?.version || "unknown"}, build=${Office.context?.diagnostics?.host || "unknown"}`);
+  steps.push(`Office.onReady: host=${info.host}, platform=${info.platform}`);
   if (info.host === Office.HostType.Word) {
     try {
       steps.push("pingTestServer");
@@ -32,25 +32,8 @@ Office.onReady(async (info) => {
   }
 });
 
-async function getDocumentState(): Promise<string> {
-  try {
-    return await Word.run(async (context) => {
-      const body = context.document.body;
-      body.load("text,type");
-      await context.sync();
-      return `bodyText="${body.text.substring(0, 100)}", bodyType="${body.type}"`;
-    });
-  } catch (err) {
-    return `Failed to read doc state: ${testHelpers.formatError(err)}`;
-  }
-}
-
 export async function runTest() {
   try {
-    // Gather document state info for diagnostics
-    const docState = await getDocumentState();
-    steps.push(`document state: ${docState}`);
-
     steps.push("runWord start");
     await runWord();
     steps.push("runWord complete");
