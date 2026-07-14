@@ -24,6 +24,20 @@ extends:
         - template: /.azure-devops/build.yml@self
         - template: /.azure-devops/devcerts.yml@self
         - template: /.azure-devops/edgewebview.yml@self
+        - task: PowerShell@2
+          displayName: 'Disable Office Protected View'
+          inputs:
+            targetType: 'inline'
+            script: |
+              $apps = @("Word", "Excel", "PowerPoint")
+              foreach ($app in $apps) {
+                $pvPath = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\ProtectedView"
+                New-Item -Path $pvPath -Force | Out-Null
+                Set-ItemProperty -Path $pvPath -Name "DisableAttachmentsInPV" -Value 1 -Type DWord
+                Set-ItemProperty -Path $pvPath -Name "DisableInternetFilesInPV" -Value 1 -Type DWord
+                Set-ItemProperty -Path $pvPath -Name "DisableUnsafeLocationsInPV" -Value 1 -Type DWord
+                Write-Host "Disabled Protected View for $app"
+              }
         - template: /.azure-devops/test.yml@self
           parameters:
             webView: "edge-chromium"
