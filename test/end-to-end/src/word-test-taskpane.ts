@@ -9,7 +9,7 @@ let testValues: any = [];
 const steps: string[] = [];
 
 Office.onReady(async (info) => {
-  steps.push(`Office.onReady: host=${info.host}, platform=${info.platform}`);
+  steps.push(`Office.onReady: host=${info.host}, platform=${info.platform}, version=${Office.context?.diagnostics?.version || "unknown"}, build=${Office.context?.diagnostics?.host || "unknown"}`);
   if (info.host === Office.HostType.Word) {
     try {
       steps.push("pingTestServer");
