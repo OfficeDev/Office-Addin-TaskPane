@@ -25,12 +25,13 @@ extends:
         - template: /.azure-devops/devcerts.yml@self
         - template: /.azure-devops/edgewebview.yml@self
         - task: PowerShell@2
-          displayName: 'Disable Office Protected View'
+          displayName: 'Configure Office Security for Tests'
           inputs:
             targetType: 'inline'
             script: |
               $apps = @("Word", "Excel", "PowerPoint")
               foreach ($app in $apps) {
+                # Disable Protected View
                 $pvPath = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\ProtectedView"
                 New-Item -Path $pvPath -Force | Out-Null
                 Set-ItemProperty -Path $pvPath -Name "DisableAttachmentsInPV" -Value 1 -Type DWord
@@ -38,6 +39,26 @@ extends:
                 Set-ItemProperty -Path $pvPath -Name "DisableUnsafeLocationsInPV" -Value 1 -Type DWord
                 Write-Host "Disabled Protected View for $app"
               }
+
+              # Add temp folder as trusted location for Word
+              $tempPath = [System.IO.Path]::GetTempPath()
+              $trustedPath = "HKCU:\Software\Microsoft\Office\16.0\Word\Security\Trusted Locations\Location99"
+              New-Item -Path $trustedPath -Force | Out-Null
+              Set-ItemProperty -Path $trustedPath -Name "Path" -Value $tempPath -Type String
+              Set-ItemProperty -Path $trustedPath -Name "AllowSubfolders" -Value 1 -Type DWord
+              Write-Host "Added trusted location for Word: $tempPath"
+
+              # Disable Word read-only recommended and mark-as-final behaviors
+              $wordOptionsPath = "HKCU:\Software\Microsoft\Office\16.0\Word\Options"
+              New-Item -Path $wordOptionsPath -Force | Out-Null
+              Set-ItemProperty -Path $wordOptionsPath -Name "DisableBootToOfficeStart" -Value 1 -Type DWord
+              Write-Host "Disabled Word Start screen"
+
+              # Disable Word file validation (can trigger read-only mode)
+              $wordFileValPath = "HKCU:\Software\Microsoft\Office\16.0\Word\Security\FileValidation"
+              New-Item -Path $wordFileValPath -Force | Out-Null
+              Set-ItemProperty -Path $wordFileValPath -Name "EnableOnLoad" -Value 0 -Type DWord
+              Write-Host "Disabled Word file validation"
         - template: /.azure-devops/test.yml@self
           parameters:
             webView: "edge-chromium"
