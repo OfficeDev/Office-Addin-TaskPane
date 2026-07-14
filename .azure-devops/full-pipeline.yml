@@ -29,6 +29,37 @@ extends:
           inputs:
             targetType: 'inline'
             script: |
+              # Check Office licensing status
+              Write-Host "=== Office Licensing Status ==="
+              $osppPaths = @(
+                "${env:ProgramFiles}\Microsoft Office\Office16\OSPP.VBS",
+                "${env:ProgramFiles(x86)}\Microsoft Office\Office16\OSPP.VBS",
+                "${env:ProgramFiles}\Microsoft Office\root\Office16\OSPP.VBS"
+              )
+              $osppFound = $false
+              foreach ($ospp in $osppPaths) {
+                if (Test-Path $ospp) {
+                  Write-Host "Using OSPP.VBS at: $ospp"
+                  cscript //nologo $ospp /dstatus
+                  $osppFound = $true
+                  break
+                }
+              }
+              if (-not $osppFound) {
+                Write-Host "OSPP.VBS not found, checking registry for license state..."
+                $licPaths = @(
+                  "HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration",
+                  "HKLM:\SOFTWARE\Microsoft\Office\16.0\Common\Licensing"
+                )
+                foreach ($licPath in $licPaths) {
+                  if (Test-Path $licPath) {
+                    Write-Host "${licPath}:"
+                    Get-ItemProperty -Path $licPath | Format-List
+                  }
+                }
+              }
+              Write-Host "=== End Licensing Status ==="
+
               $apps = @("Word", "Excel", "PowerPoint")
               foreach ($app in $apps) {
                 # Disable Protected View
