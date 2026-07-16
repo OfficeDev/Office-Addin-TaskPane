@@ -6,12 +6,28 @@ import * as testHelpers from "./test-helpers";
 
 const port: number = 4201;
 let testValues: any = [];
+const steps: string[] = [];
 
 Office.onReady(async (info) => {
+  steps.push(`Office.onReady: host=${info.host}, platform=${info.platform}`);
   if (info.host === Office.HostType.PowerPoint) {
-    const testServerResponse: object = await pingTestServer(port);
-    if (testServerResponse["status"] == 200) {
-      runTest();
+    try {
+      steps.push("pingTestServer");
+      const testServerResponse: object = await pingTestServer(port);
+      if (testServerResponse["status"] == 200) {
+        steps.push("ping OK, running test");
+        await runTest();
+      } else {
+        steps.push(`ping returned unexpected status: ${JSON.stringify(testServerResponse)}`);
+        testHelpers.addErrorResult(testValues, `Ping failed: ${JSON.stringify(testServerResponse)}`);
+        testHelpers.addDiagnosticResult(testValues, steps);
+        await sendTestResults(testValues, port).catch(() => {});
+      }
+    } catch (err) {
+      steps.push(`initialization error: ${testHelpers.formatError(err)}`);
+      testHelpers.addErrorResult(testValues, `Initialization failed: ${testHelpers.formatError(err)}`);
+      testHelpers.addDiagnosticResult(testValues, steps);
+      await sendTestResults(testValues, port).catch(() => {});
     }
   }
 });
@@ -36,15 +52,24 @@ async function getText(): Promise<string> {
 }
 
 export async function runTest(): Promise<void> {
-  // Execute taskpane code
-  await runPowerPoint();
-  await testHelpers.sleep(2000);
+  try {
+    steps.push("runPowerPoint start");
+    await runPowerPoint();
+    steps.push("runPowerPoint complete");
+    await testHelpers.sleep(2000);
 
-  // get inserted selected text
-  const text = await getText();
+    steps.push("getText start");
+    const text = await getText();
+    steps.push(`getText result: "${text}"`);
 
-  // send test results
-  testHelpers.addTestResult(testValues, "output-message", text, "Hello World!");
-
-  await sendTestResults(testValues, port);
+    testHelpers.addTestResult(testValues, "output-message", text, "Hello World!");
+    testHelpers.addDiagnosticResult(testValues, steps);
+    await sendTestResults(testValues, port);
+  } catch (err) {
+    steps.push(`runTest error: ${testHelpers.formatError(err)}`);
+    testValues = [];
+    testHelpers.addErrorResult(testValues, `runTest failed: ${testHelpers.formatError(err)}`);
+    testHelpers.addDiagnosticResult(testValues, steps);
+    await sendTestResults(testValues, port).catch(() => {});
+  }
 }

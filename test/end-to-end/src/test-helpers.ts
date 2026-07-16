@@ -55,6 +55,60 @@ export function addTestResult(testValues: any[], resultName: string, resultValue
   testValues.push(data);
 }
 
+export function addDiagnosticResult(testValues: any[], steps: string[]) {
+  for (const step of steps) {
+    testValues.push({
+      resultName: "diagnostic-step",
+      resultValue: step,
+      expectedValue: "diagnostic",
+    });
+  }
+}
+
+export function addErrorResult(testValues: any[], errorMessage: string) {
+  testValues.push({
+    resultName: "test-error",
+    resultValue: errorMessage,
+    expectedValue: "no-error",
+  });
+}
+
+export function formatError(err: any): string {
+  if (!err) return "Unknown error (null/undefined)";
+
+  const parts: string[] = [];
+
+  // Basic message
+  if (err.message) {
+    parts.push(`Message: ${err.message}`);
+  } else {
+    parts.push(`${err}`);
+  }
+
+  // Office.js error code
+  if (err.code) {
+    parts.push(`Code: ${err.code}`);
+  }
+
+  // Office.js debugInfo (OfficeExtension.Error)
+  if (err.debugInfo) {
+    if (err.debugInfo.code) parts.push(`DebugCode: ${err.debugInfo.code}`);
+    if (err.debugInfo.message) parts.push(`DebugMessage: ${err.debugInfo.message}`);
+    if (err.debugInfo.errorLocation) parts.push(`Location: ${err.debugInfo.errorLocation}`);
+    if (err.debugInfo.innerError) {
+      const inner = err.debugInfo.innerError;
+      parts.push(`InnerError: ${inner.code || ""} ${inner.message || JSON.stringify(inner)}`);
+    }
+  }
+
+  // Stack trace
+  if (err.stack) {
+    parts.push(`Stack: ${err.stack}`);
+  }
+
+  return parts.join(" | ");
+}
+
 export async function sleep(ms: number): Promise<any> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -24,6 +24,70 @@ extends:
         - template: /.azure-devops/build.yml@self
         - template: /.azure-devops/devcerts.yml@self
         - template: /.azure-devops/edgewebview.yml@self
+        - task: PowerShell@2
+          displayName: 'Configure Office Security for Tests'
+          inputs:
+            targetType: 'inline'
+            script: |
+              # Check Office licensing status
+              Write-Host "=== Office Licensing Status ==="
+              # For M365 Apps (subscription), use vnextdiag.ps1 instead of ospp.vbs
+              $vnextPaths = @(
+                "${env:ProgramFiles}\Microsoft Office\root\Office16\vnextdiag.ps1",
+                "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\vnextdiag.ps1"
+              )
+              $diagFound = $false
+              foreach ($vnext in $vnextPaths) {
+                if (Test-Path $vnext) {
+                  Write-Host "Using vnextdiag.ps1 at: $vnext"
+                  & $vnext
+                  $diagFound = $true
+                  break
+                }
+              }
+              if (-not $diagFound) {
+                Write-Host "vnextdiag.ps1 not found, checking ClickToRun configuration..."
+                $c2rPath = "HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration"
+                if (Test-Path $c2rPath) {
+                  $c2r = Get-ItemProperty -Path $c2rPath
+                  Write-Host "ProductReleaseIds: $($c2r.ProductReleaseIds)"
+                  Write-Host "Platform: $($c2r.Platform)"
+                  Write-Host "VersionToReport: $($c2r.VersionToReport)"
+                  Write-Host "UpdateChannel: $($c2r.UpdateChannel)"
+                }
+              }
+              Write-Host "=== End Licensing Status ==="
+
+              $apps = @("Word", "Excel", "PowerPoint")
+              foreach ($app in $apps) {
+                # Disable Protected View
+                $pvPath = "HKCU:\Software\Microsoft\Office\16.0\$app\Security\ProtectedView"
+                New-Item -Path $pvPath -Force | Out-Null
+                Set-ItemProperty -Path $pvPath -Name "DisableAttachmentsInPV" -Value 1 -Type DWord
+                Set-ItemProperty -Path $pvPath -Name "DisableInternetFilesInPV" -Value 1 -Type DWord
+                Set-ItemProperty -Path $pvPath -Name "DisableUnsafeLocationsInPV" -Value 1 -Type DWord
+                Write-Host "Disabled Protected View for $app"
+              }
+
+              # Add temp folder as trusted location for Word
+              $tempPath = [System.IO.Path]::GetTempPath()
+              $trustedPath = "HKCU:\Software\Microsoft\Office\16.0\Word\Security\Trusted Locations\Location99"
+              New-Item -Path $trustedPath -Force | Out-Null
+              Set-ItemProperty -Path $trustedPath -Name "Path" -Value $tempPath -Type String
+              Set-ItemProperty -Path $trustedPath -Name "AllowSubfolders" -Value 1 -Type DWord
+              Write-Host "Added trusted location for Word: $tempPath"
+
+              # Disable Word read-only recommended and mark-as-final behaviors
+              $wordOptionsPath = "HKCU:\Software\Microsoft\Office\16.0\Word\Options"
+              New-Item -Path $wordOptionsPath -Force | Out-Null
+              Set-ItemProperty -Path $wordOptionsPath -Name "DisableBootToOfficeStart" -Value 1 -Type DWord
+              Write-Host "Disabled Word Start screen"
+
+              # Disable Word file validation (can trigger read-only mode)
+              $wordFileValPath = "HKCU:\Software\Microsoft\Office\16.0\Word\Security\FileValidation"
+              New-Item -Path $wordFileValPath -Force | Out-Null
+              Set-ItemProperty -Path $wordFileValPath -Name "EnableOnLoad" -Value 0 -Type DWord
+              Write-Host "Disabled Word file validation"
         - template: /.azure-devops/test.yml@self
           parameters:
             webView: "edge-chromium"
