@@ -9,27 +9,39 @@ let testValues: any = [];
 
 Office.onReady(async (info) => {
   if (info.host === Office.HostType.Word) {
-    const testServerResponse: object = await pingTestServer(port);
-    if (testServerResponse["status"] == 200) {
-      await runTest();
+    try {
+      const testServerResponse: object = await pingTestServer(port);
+      if (testServerResponse["status"] == 200) {
+        await runTest();
+      } else {
+        testHelpers.addErrorResult(testValues, `Ping failed: ${JSON.stringify(testServerResponse)}`);
+        await sendTestResults(testValues, port).catch(() => {});
+      }
+    } catch (err) {
+      testHelpers.addErrorResult(testValues, `Initialization failed: ${testHelpers.formatError(err)}`);
+      await sendTestResults(testValues, port).catch(() => {});
     }
   }
 });
 
 export async function runTest() {
-  // Execute taskpane code
-  await runWord();
-  await testHelpers.sleep(2000);
-
-  // Get output of executed taskpane code
-  return Word.run(async (context) => {
-    var firstParagraph = context.document.body.paragraphs.getFirst();
-    firstParagraph.load("text");
-    await context.sync();
+  try {
+    await runWord();
     await testHelpers.sleep(2000);
 
-    testHelpers.addTestResult(testValues, "output-message", firstParagraph.text, "Hello World");
-    await sendTestResults(testValues, port);
-    testValues.pop();
-  });
+    return Word.run(async (context) => {
+      var firstParagraph = context.document.body.paragraphs.getFirst();
+      firstParagraph.load("text");
+      await context.sync();
+      await testHelpers.sleep(2000);
+
+      testHelpers.addTestResult(testValues, "output-message", firstParagraph.text, "Hello World");
+      await sendTestResults(testValues, port);
+      testValues.pop();
+    });
+  } catch (err) {
+    testValues = [];
+    testHelpers.addErrorResult(testValues, `runTest failed: ${testHelpers.formatError(err)}`);
+    await sendTestResults(testValues, port).catch(() => {});
+  }
 }
