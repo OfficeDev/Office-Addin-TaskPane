@@ -9,9 +9,17 @@ let testValues: any = [];
 
 Office.onReady(async (info) => {
   if (info.host === Office.HostType.PowerPoint) {
-    const testServerResponse: object = await pingTestServer(port);
-    if (testServerResponse["status"] == 200) {
-      runTest();
+    try {
+      const testServerResponse: object = await pingTestServer(port);
+      if (testServerResponse["status"] == 200) {
+        await runTest();
+      } else {
+        testHelpers.addErrorResult(testValues, `Ping failed: ${JSON.stringify(testServerResponse)}`);
+        await sendTestResults(testValues, port).catch(() => {});
+      }
+    } catch (err) {
+      testHelpers.addErrorResult(testValues, `Initialization failed: ${testHelpers.formatError(err)}`);
+      await sendTestResults(testValues, port).catch(() => {});
     }
   }
 });
@@ -36,15 +44,17 @@ async function getText(): Promise<string> {
 }
 
 export async function runTest(): Promise<void> {
-  // Execute taskpane code
-  await runPowerPoint();
-  await testHelpers.sleep(2000);
+  try {
+    await runPowerPoint();
+    await testHelpers.sleep(2000);
 
-  // get inserted selected text
-  const text = await getText();
+    const text = await getText();
 
-  // send test results
-  testHelpers.addTestResult(testValues, "output-message", text, "Hello World!");
-
-  await sendTestResults(testValues, port);
+    testHelpers.addTestResult(testValues, "output-message", text, "Hello World!");
+    await sendTestResults(testValues, port);
+  } catch (err) {
+    testValues = [];
+    testHelpers.addErrorResult(testValues, `runTest failed: ${testHelpers.formatError(err)}`);
+    await sendTestResults(testValues, port).catch(() => {});
+  }
 }
