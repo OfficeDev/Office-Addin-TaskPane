@@ -29,7 +29,7 @@ export async function runTest(): Promise<void> {
     await runExcel();
     await testHelpers.sleep(2000);
 
-    return Excel.run(async (context) => {
+    await Excel.run(async (context) => {
       const range = context.workbook.getSelectedRange();
       const cellFill = range.format.fill;
       cellFill.load("color");

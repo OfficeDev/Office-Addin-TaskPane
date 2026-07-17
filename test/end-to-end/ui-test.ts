@@ -41,15 +41,25 @@ hosts.forEach(function (host) {
       describe(`Get test results for ${host} taskpane project`, function () {
         it("Validate expected result count", async function () {
           this.timeout(testResultsTimeout + 10000);
-          testValues = await Promise.race([
-            testServer.getTestResults(),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error(
-                `[${host}] Timed out after ${testResultsTimeout / 1000}s waiting for test results. ` +
-                `The add-in taskpane likely failed to initialize or encountered an unhandled error.`
-              )), testResultsTimeout)
-            ),
-          ]);
+          let timeoutId: ReturnType<typeof setTimeout>;
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(
+              () =>
+                reject(
+                  new Error(
+                    `[${host}] Timed out after ${testResultsTimeout / 1000}s waiting for test results. ` +
+                      `The add-in taskpane likely failed to initialize or encountered an unhandled error.`
+                  )
+                ),
+              testResultsTimeout
+            );
+          });
+
+          try {
+            testValues = await Promise.race([testServer.getTestResults(), timeoutPromise]);
+          } finally {
+            clearTimeout(timeoutId);
+          }
 
           // Check if the taskpane reported an error
           const errorResult = testValues.find((v: any) => v.resultName === "test-error");

@@ -29,7 +29,7 @@ export async function runTest() {
     await runWord();
     await testHelpers.sleep(2000);
 
-    return Word.run(async (context) => {
+    await Word.run(async (context) => {
       var firstParagraph = context.document.body.paragraphs.getFirst();
       firstParagraph.load("text");
       await context.sync();
