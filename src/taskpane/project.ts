@@ -7,9 +7,9 @@
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Project) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = runProject;
+    document.getElementById("sideload-msg")!.style.display = "none";
+    document.getElementById("app-body")!.style.display = "flex";
+    document.getElementById("run")!.onclick = runProject;
   }
 });
 

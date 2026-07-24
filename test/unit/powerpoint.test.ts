@@ -7,10 +7,19 @@ import { OfficeMockObject } from "office-addin-mock";
 // office-addin-mock needs to be able to handle collections like "Slides" and "Shapes" before we can fully verify load and sync behavior.
 // For now, we're using and not completely mocked object to verify the general flow.
 
+type MockTextShape = {
+  name: string;
+  textFrame: {
+    textRange: {
+      text: string;
+    };
+  };
+};
+
 const slide = {
   shapes: {
     addTextBox: function (text: string, options: any) {
-      const shape = {
+      const shape: MockTextShape = {
         name: "",
         textFrame: {
           textRange: {
@@ -21,7 +30,7 @@ const slide = {
       this.items.push(shape);
       return shape;
     },
-    items: [],
+    items: [] as MockTextShape[],
   },
 };
 
@@ -35,7 +44,7 @@ const PowerPointMockData = {
       },
     },
   },
-  run: async function (callback) {
+  run: async function (callback: (context: any) => Promise<void> | void) {
     await callback(this.context);
   },
 };
@@ -48,8 +57,8 @@ describe("PowerPoint", function () {
   it("Run", async function () {
     
     const pptMock: OfficeMockObject = new OfficeMockObject(PowerPointMockData); // Mocking the host specific namespace
-    global.PowerPoint = pptMock as any;
-    global.Office = new OfficeMockObject(OfficeMockData) as any; // Mocking the common office-js namespace
+    (global as any).PowerPoint = pptMock;
+    (global as any).Office = new OfficeMockObject(OfficeMockData); // Mocking the common office-js namespace
 
     const { runPowerPoint } = require("../../src/taskpane/powerpoint");
     await runPowerPoint();

@@ -44,15 +44,15 @@ export async function closeDesktopApplication(application: string): Promise<bool
 
 export async function closeWorkbook(): Promise<void> {
   await sleep(1000);
-  await Excel.run(async (context) => context.workbook.close(Excel.CloseBehavior.skipSave));
+  await Excel.run(async (context: Excel.RequestContext) => context.workbook.close(Excel.CloseBehavior.skipSave));
 }
 
 export function addTestResult(testValues: any[], resultName: string, resultValue: any, expectedValue: any) {
-  var data = {};
-  data["expectedValue"] = expectedValue;
-  data["resultName"] = resultName;
-  data["resultValue"] = resultValue;
-  testValues.push(data);
+  testValues.push({
+    expectedValue,
+    resultName,
+    resultValue,
+  });
 }
 
 export function addErrorResult(testValues: any[], errorMessage: string) {
