@@ -10,8 +10,8 @@ let testValues: any = [];
 Office.onReady(async (info) => {
   if (info.host === Office.HostType.PowerPoint) {
     try {
-      const testServerResponse: object = await pingTestServer(port);
-      if (testServerResponse["status"] == 200) {
+      const testServerResponse = (await pingTestServer(port)) as { status?: number };
+      if (testServerResponse.status == 200) {
         await runTest();
       } else {
         testHelpers.addErrorResult(testValues, `Ping failed: ${JSON.stringify(testServerResponse)}`);
@@ -25,7 +25,7 @@ Office.onReady(async (info) => {
 });
 
 async function getText(): Promise<string> {
-  return PowerPoint.run(async (context) => {
+  return PowerPoint.run(async (context: PowerPoint.RequestContext) => {
     const shapes = context.presentation.slides.getItemAt(0).shapes;
     shapes.load("items");
     await context.sync();

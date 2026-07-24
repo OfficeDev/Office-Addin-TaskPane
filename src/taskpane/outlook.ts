@@ -7,9 +7,9 @@
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = runOutlook;
+    document.getElementById("sideload-msg")!.style.display = "none";
+    document.getElementById("app-body")!.style.display = "flex";
+    document.getElementById("run")!.onclick = runOutlook;
   }
 });
 
@@ -19,8 +19,9 @@ export async function runOutlook() {
    */
 
   const item = Office.context.mailbox.item;
-  let insertAt = document.getElementById("item-subject");
-  let label = document.createElement("b").appendChild(document.createTextNode("Subject: "));
+  const insertAt = document.getElementById("item-subject");
+  if (!insertAt || !item) return;
+  const label = document.createElement("b").appendChild(document.createTextNode("Subject: "));
   insertAt.appendChild(label);
   insertAt.appendChild(document.createElement("br"));
   insertAt.appendChild(document.createTextNode(item.subject));

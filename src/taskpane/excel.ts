@@ -7,15 +7,15 @@
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
-    document.getElementById("sideload-msg").style.display = "none";
-    document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = runExcel;
+    document.getElementById("sideload-msg")!.style.display = "none";
+    document.getElementById("app-body")!.style.display = "flex";
+    document.getElementById("run")!.onclick = runExcel;
   }
 });
 
 export async function runExcel() {
   try {
-    await Excel.run(async (context) => {
+    await Excel.run(async (context: Excel.RequestContext) => {
       /**
        * Insert your Excel code here
        */

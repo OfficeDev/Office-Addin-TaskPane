@@ -41,7 +41,7 @@ hosts.forEach(function (host) {
       describe(`Get test results for ${host} taskpane project`, function () {
         it("Validate expected result count", async function () {
           this.timeout(testResultsTimeout + 10000);
-          let timeoutId: ReturnType<typeof setTimeout>;
+          let timeoutId!: ReturnType<typeof setTimeout>;
           const timeoutPromise = new Promise<never>((_, reject) => {
             timeoutId = setTimeout(
               () =>
