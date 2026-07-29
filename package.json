@@ -68,11 +68,7 @@
     "typescript": "^5.4.2",
     "webpack": "^5.105.0",
     "webpack-cli": "^5.1.4",
-<<<<<<< HEAD
-    "webpack-dev-server": "5.2.5"
-=======
     "webpack-dev-server": "^6.0.0"
->>>>>>> origin/master
   },
   "prettier": "office-addin-prettier-config",
   "browserslist": [
