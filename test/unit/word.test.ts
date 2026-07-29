@@ -4,26 +4,36 @@ import { OfficeMockObject } from "office-addin-mock";
 
 /* global describe, global, it, require, Word */
 
-const WordMockData = {
-  context: {
-    document: {
-      body: {
-        paragraph: {
-          font: {},
-          text: "",
-        },
-        insertParagraph: function (paragraphText: string, insertLocation: Word.InsertLocation): Word.Paragraph {
-          this.paragraph.text = paragraphText;
-          this.paragraph.insertLocation = insertLocation;
-          return this.paragraph;
-        },
+type MockParagraph = {
+  font: {
+    color?: string;
+  };
+  insertLocation?: string;
+  text: string;
+};
+
+const wordMockContext = {
+  document: {
+    body: {
+      paragraph: {
+        font: {},
+        text: "",
+      } as MockParagraph,
+      insertParagraph: function (paragraphText: string, insertLocation: Word.InsertLocation): MockParagraph {
+        this.paragraph.text = paragraphText;
+        this.paragraph.insertLocation = insertLocation;
+        return this.paragraph;
       },
     },
   },
+};
+
+const WordMockData = {
+  context: wordMockContext,
   InsertLocation: {
     end: "End",
   },
-  run: async function (callback) {
+  run: async function (callback: (context: any) => Promise<void> | void) {
     await callback(this.context);
   },
 };
@@ -35,8 +45,8 @@ const OfficeMockData = {
 describe("Word", function () {
   it("Run", async function () {
     const wordMock: OfficeMockObject = new OfficeMockObject(WordMockData); // Mocking the host specific namespace
-    global.Word = wordMock as any;
-    global.Office = new OfficeMockObject(OfficeMockData) as any; // Mocking the common office-js namespace
+    (global as any).Word = wordMock;
+    (global as any).Office = new OfficeMockObject(OfficeMockData); // Mocking the common office-js namespace
 
     const { runWord } = require("../../src/taskpane/word");
     await runWord();

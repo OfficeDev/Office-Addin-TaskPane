@@ -27,8 +27,6 @@ module.exports = async (env, options) => {
       extensions: [".ts", ".tsx", ".html", ".js"],
       fallback: {
         child_process: false,
-        fs: false,
-        os: require.resolve("os-browserify/browser"),
       },
     },
     module: {
@@ -58,9 +56,6 @@ module.exports = async (env, options) => {
       ],
     },
     plugins: [
-      new webpack.ProvidePlugin({
-        process: "process/browser",
-      }),
       new HtmlWebpackPlugin({
         filename: "taskpane.html",
         template: "./test/end-to-end/src/test-taskpane.html",
