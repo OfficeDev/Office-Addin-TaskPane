@@ -1,3 +1,9 @@
 steps:
 - task: Npm@1
   displayName: 'Install'
+  inputs:
+    command: custom
+    # Omit optional and peer dependencies. These pull in the native keytar module,
+    # which downloads its prebuilt binary from a host that is unreachable under the
+    # pipeline's network isolation policy and then fails building from source.
+    customCommand: 'install --omit=optional --omit=peer'
