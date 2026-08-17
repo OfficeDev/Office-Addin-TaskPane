@@ -3,7 +3,8 @@ steps:
   displayName: 'Install'
   inputs:
     command: custom
-    # Omit optional and peer dependencies. These pull in the native keytar module,
-    # which downloads its prebuilt binary from a host that is unreachable under the
-    # pipeline's network isolation policy and then fails building from source.
-    customCommand: 'install --omit=optional --omit=peer'
+    # Skip package install scripts. The native keytar module (pulled in transitively)
+    # downloads its prebuilt binary from a host that is unreachable under the pipeline's
+    # network isolation policy, then falls back to building from source and fails.
+    # Nothing this pipeline runs needs a compiled native module.
+    customCommand: 'install --ignore-scripts'
