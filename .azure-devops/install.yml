@@ -3,5 +3,5 @@ steps:
   displayName: 'Install'
   inputs:
     command: custom
-    customCommand: "install --omit=peer"
+    customCommand: "install --ignore-scripts --verbose"
   timeoutInMinutes: 10
