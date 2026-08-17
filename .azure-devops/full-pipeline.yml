@@ -7,6 +7,9 @@ resources:
 extends:
   template: /v1/Office.Unofficial.PipelineTemplate.yml@OfficePipelineTemplates
   parameters:
+    parameters:
+    settings:
+      networkIsolationPolicy: Preferred,CFSClean,CFSClean2,CSFClean3
     pool:
       name: OE-OfficeClientApps
     sdl:
