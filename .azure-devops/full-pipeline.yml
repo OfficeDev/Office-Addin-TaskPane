@@ -8,7 +8,7 @@ extends:
   template: /v1/Office.Unofficial.PipelineTemplate.yml@OfficePipelineTemplates
   parameters:
     settings:
-      networkIsolationPolicy: Preferred,AzureStorage,CFSClean,CFSClean2
+      networkIsolationPolicy: DefaultDeny,CFSClean,CFSClean2
     pool:
       name: OE-OfficeClientApps
     sdl:
