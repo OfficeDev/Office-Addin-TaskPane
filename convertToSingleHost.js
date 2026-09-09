@@ -72,9 +72,6 @@ async function modifyProjectForSingleHost(host) {
   if (manifestType === "xml" && targetHosts.length > 1) {
     throw new Error(`Multiple hosts are not supported for ${manifestType} manifest.`);
   }
-  if (!commandsSupportedHosts.includes(host)) {
-    throw new Error(`'${host}' does not support commands.`);
-  }
 
   await convertProjectToSingleHost(host, manifestType);
 
@@ -120,8 +117,14 @@ async function convertProjectToSingleHost(host, manifestType) {
     }
   }
   
+  // Write final code files
   await writeFileAsync(taskpaneFilePath, taskpaneContent);
-  await writeFileAsync(commandsFilePath, commandsContent);
+  if (commandsSupportedHosts.includes(host)) {
+    await writeFileAsync(commandsFilePath, commandsContent);
+  } else {
+    deleteFolder(path.resolve(`./src/commands`));
+  }
+
   // Delete test folder
   deleteFolder(path.resolve(`./test`));
 
